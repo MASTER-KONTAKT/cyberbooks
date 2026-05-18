@@ -90,6 +90,7 @@
             font-weight: 500;
             font-size: 0.95rem;
             transition: color 0.3s ease;
+            text-transform: capitalize;
         }
 
         .nav-links a:hover, .nav-links a.active {
@@ -355,12 +356,31 @@
             font-size: 0.85rem;
         }
 
-        /* --- Responsywność --- */
+        /* --- Zaktualizowana Responsywność (Naprawione menu na telefonach) --- */
         @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .hero h1 { font-size: 2.3rem; }
-            .filter-panel { flex-direction: column; align-items: stretch; }
-            .books-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1.2rem; }
+            header {
+                padding: 1rem 3%;
+            }
+            .navbar {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+            .logo {
+                font-size: 1.4rem;
+            }
+            .nav-links { 
+                display: flex; /* Zapewnia, że linki są widoczne */
+                gap: 1.2rem;   /* Mniejszy odstęp na mniejszych ekranach */
+            }
+            .nav-links a {
+                font-size: 0.85rem; /* Delikatnie mniejsza czcionka, żeby wszystko się zmieściło */
+            }
+            .hero {
+                padding: 4rem 3% 2rem;
+            }
+            .hero h1 { font-size: 2.1rem; }
+            .filter-panel { flex-direction: column; align-items: stretch; padding: 1rem; }
+            .books-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
         }
     </style>
 </head>
@@ -372,7 +392,7 @@
             <ul class="nav-links">
                 <li><a href="#" class="active">Platforma</a></li>
                 <li><a href="#kategorie">Kategorie</a></li>
-                <li><a href="nowosci.html">nowosci</a></li>
+                <li><a href="nowosci.html">Nowości</a></li>
             </ul>
         </div>
     </header>
@@ -387,13 +407,12 @@
             <label for="categorySelect">Kategoria</label>
             <select id="categorySelect" class="filter-select" onchange="runFilter()">
                 <option value="all">Wszystkie kategorie</option>
-                <option value="zycie">Zycie</option>
-                <option value="thriller">Thriller</option>
+                <option value="zycie">Życie</option>
+                <option value="Thriller">Thriller</option>
                 <option value="akcja">Akcja</option>
                 <option value="edukacyjne">Edukacyjne</option>
                 <option value="scifi">Sci-Fi</option>
                 <option value="fantasy">Fantasy</option>
-                
             </select>
         </div>
 
@@ -415,13 +434,13 @@
     <div id="library-container">
 
         <section class="category-section" data-category="zycie">
-            <h2 class="section-title">zycie</h2>
+            <h2 class="section-title">Życie</h2>
             <div class="books-grid">
                 <div class="book-card" data-level="A1">
                     <div class="cover-wrapper">
                         <div class="level-badge">A1</div>
                         <img src="Toms.png" class="book-cover">
-                      <a href="szablon.html"> <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div></a> 
+                        <a href="szablon.html"> <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div></a> 
                     </div>
                     <div class="book-info"><h3 class="book-title">✅Tom's new start✅</h3><p class="book-author">J. Morgan</p></div>
                 </div>
@@ -460,13 +479,10 @@
             </div>
         </section>
 
-
-         <section class="category-section" data-category="Thriller">
+        <section class="category-section" data-category="Thriller">
             <h2 class="section-title">Thriller</h2>
             <div class="books-grid">
-
-            </div>
-            
+                </div>
         </section>
 
         <section class="category-section" data-category="akcja">
@@ -476,7 +492,7 @@
                     <div class="cover-wrapper">
                         <div class="level-badge">A1+</div>
                         <img src="bag.png" class="book-cover">
-                      <a href="TheRedBagChase.html"> <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div></a> 
+                        <a href="TheRedBagChase.html"> <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div></a> 
                     </div>
                     <div class="book-info"><h3 class="book-title">✅The Red Bag Chase✅</h3><p class="book-author">Chris Ryan</p></div>
                 </div>
@@ -642,7 +658,6 @@
                     </div>
                     <div class="book-info"><h3 class="book-title">Shadow Bound</h3><p class="book-author">Ursula Le G.</p></div>
                 </div>
-                
             </div>
         </section>
 
@@ -675,7 +690,7 @@
                     const bookLevel = book.getAttribute('data-level');
                     
                     // Sprawdzenie kryteriów podwójnego filtra
-                    const matchCategory = (selectedCat === 'all' || sectionCategory === selectedCat);
+                    const matchCategory = (selectedCat === 'all' || sectionCategory.toLowerCase() === selectedCat.toLowerCase());
                     const matchLevel = (selectedLevel === 'all' || bookLevel === selectedLevel);
 
                     if (matchCategory && matchLevel) {
