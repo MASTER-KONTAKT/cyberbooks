@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberBooks Reader Pro - Zaawansowany Czytnik</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Tematy kolorystyczne (Zmienne CSS) --- */
+        :root {
+            /* Domyślny Czarny (Dark Mode) */
+            --bg-main: #0d0e12;
+            --bg-interface: rgba(22, 24, 33, 0.85);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #e2e8f0;
+            --text-interface: #ffffff;
+            --text-muted: #9ca3af;
+            --accent: #a252fa;
+            --accent-glow: rgba(162, 82, 250, 0.3);
+            --book-bg: #0d0e12;
+            --book-text: #e2e8f0;
+            --book-font: 'Merriweather', serif;
+        }
+
+        body.theme-gray {
+            --bg-main: #2d3139;
+            --bg-interface: rgba(53, 58, 68, 0.9);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #e1e4ea;
+            --text-interface: #ffffff;
+            --text-muted: #a0a5b1;
+            --book-bg: #2d3139;
+            --book-text: #e1e4ea;
+        }
+
+        body.theme-light {
+            --bg-main: #f8fafc;
+            --bg-interface: rgba(255, 255, 255, 0.9);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --text-main: #1e293b;
+            --text-interface: #0f172a;
+            --text-muted: #64748b;
+            --book-bg: #f8fafc;
+            --book-text: #1e293b;
+        }
+
+        body.theme-sepia {
+            --bg-main: #f4edd9;
+            --bg-interface: rgba(235, 226, 204, 0.95);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --text-main: #2c2519;
+            --text-interface: #1e170c;
+            --text-muted: #7d725f;
+            --book-bg: #f4edd9;
+            --book-text: #2c2519;
+        }
+
+        /* --- Reset i bazy --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, transform 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Pasek Nawigacyjny --- */
+        header {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 0.8rem 5%;
+            background: var(--bg-interface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Przycisk akcji interfejsu */
+        .btn-nav {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-interface);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-nav:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--text-muted);
+        }
+
+        .btn-nav.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        /* Pola numeryczne stron */
+        .page-jumper {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .page-input {
+            width: 50px;
+            padding: 0.4rem;
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-interface);
+            text-align: center;
+            font-size: 0.88rem;
+            outline: none;
+        }
+
+        /* --- Panel Ochrony Wzroku (Rozwijane Menu) --- */
+        .dropdown-wrapper {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 130%;
+            right: 0;
+            background: var(--bg-interface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 0.8rem;
+            width: 260px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 150;
+        }
+
+        .dropdown-wrapper.open .dropdown-menu {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .theme-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-interface);
+            font-weight: 500;
+        }
+
+        .theme-option:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        body.theme-light .theme-option:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .theme-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .healthy-tag {
+            font-size: 0.72rem;
+            color: #2ecc71;
+            font-weight: 600;
+            margin-left: auto;
+            margin-right: 8px;
+        }
+
+        /* --- Kolumna Tekstu --- */
+        .reader-container {
+            max-width: 740px; /* Perfekcyjna szerokość do skupienia wzroku */
+            margin: 0 auto;
+            padding: 4rem 1.5rem 8rem;
+            background-color: var(--book-bg);
+        }
+
+        .book-content {
+            font-family: var(--book-font);
+            font-size: 1.25rem;
+            line-height: 1.9;
+            color: var(--book-text);
+            text-align: justify;
+        }
+
+        .book-content h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.2rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-interface);
+        }
+
+        .book-content p {
+            margin-bottom: 1.6rem;
+            text-indent: 1.5rem;
+        }
+
+        /* Separator stron */
+        .page-break {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 4rem 0;
+            position: relative;
+        }
+
+        .page-break::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: var(--border-color);
+            z-index: 1;
+        }
+
+        .page-num {
+            background: var(--bg-main);
+            padding: 0 1.5rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            z-index: 2;
+            letter-spacing: 1px;
+        }
+
+        /* --- Obsługa Aktywnego Tłumacza --- */
+        body.translator-active .book-content p span.word {
+            cursor: help;
+            border-bottom: 1px dashed var(--accent);
+            padding: 0 1px;
+        }
+
+        body.translator-active .book-content p span.word:hover {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        /* --- Okno Modalne Słownika --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--bg-interface);
+            border: 1px solid var(--border-color);
+            padding: 2.2rem;
+            border-radius: 24px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.open .modal {
+            transform: scale(1);
+        }
+
+        .modal h3 {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal .word-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-interface);
+            margin-bottom: 0.8rem;
+        }
+
+        .modal .word-translation {
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+            padding: 0.6rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-close {
+            padding: 0.6rem 1.8rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* --- Responsywność --- */
+        @media (max-width: 768px) {
+            header { padding: 0.8rem 3%; }
+            .btn-nav span { display: none; } /* Ukryj opisy tekstowe przycisków na mobile */
+            .reader-container { padding: 2rem 1rem 4rem; } /* Zanikanie marginesów bocznych */
+            .book-content { font-size: 1.15rem; line-height: 1.8; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+
+            <div class="nav-group">
+                <a href="index.html" class="btn-nav return-btn" style="text-decoration: none;">
+                    ⬅️ <span>Strona główna</span>
+                </a>
+            </div>
+            
+            <div class="nav-group">
+                <div class="page-jumper">
+                    <input type="number" id="pageInput" class="page-input" min="1" max="2" value="1">
+                    <button class="btn-nav" onclick="jumpToPage()">Idź</button>
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <div class="dropdown-wrapper" id="themeDropdown">
+                    <button class="btn-nav" onclick="toggleDropdown()">🎨 <span>Styl ekranu</span></button>
+                    <div class="dropdown-menu">
+                        <div class="theme-option" onclick="changeTheme('dark')">
+                            <span>Ciemny (Dark)</span>
+                            <div class="theme-dot" style="background: #0d0e12;"></div>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('gray')">
+                            <span>Szary (Muted)</span>
+                            <div class="theme-dot" style="background: #2d3139;"></div>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('light')">
+                            <span>Jasny (Light)</span>
+                            <div class="theme-dot" style="background: #f8fafc;"></div>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('sepia')">
+                            <span>Sepia</span>
+                            <span class="healthy-tag">(Zdrowy ✨)</span>
+                            <div class="theme-dot" style="background: #f4edd9;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-nav" id="fullscreenBtn" onclick="toggleFullscreen()">🔲 <span>Pełny ekran</span></button>
+            </div>
+
+            <div class="nav-group">
+                <button class="btn-nav" id="translatorToggle" onclick="toggleTranslatorMode()">🌐 Tłumacz słowo</button>
+            </div>
+
+        </div>
+    </header>
+
+    <div class="reader-container">
+   <article class="book-content" id="bookContent">
+            
+            <div id="page-1">
+                <h2>Chapter 1: The Small Laboratory</h2>
+                <p>Elena was an astrophysicist. She loved the stars, the planets, and the giant mysteries of outer space. She worked in a small, quiet laboratory on top of a high mountain. Every night, while the rest of the world slept, Elena sat in front of three large computer screens. She listened to the sounds of the universe using a massive satellite dish outside.</p>
+                <p>For five years, the laboratory was very quiet. The screens only showed normal cosmic noise and dead space signals. But tonight was different. At exactly 2:00 AM, the green lights on her main console started to flash violently. A strange, rhythmic sound came from her headphones. It was not a normal star. It was a real code.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-2">Strona 2</span>
+            </div>
+
+            <div id="page-2">
+                <p>Elena stood up quickly and dropped her pen. Her heart beat fast because she knew this sound was important. She checked the satellite position on her screen. The signal came from a dark area near Mars, but there were no human spaceships in that sector. "This is impossible," she whispered to herself in the dark room.</p>
+                <p>She pressed a button to record the sound. The computer analyzed the data for two minutes. Finally, a message appeared on the screen in bright white letters. It was not English, and it was not any human language. It was a geometric map made of points and lines. It looked like a message from an intelligent life form.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-3">Strona 3</span>
+            </div>
+
+            <div id="page-3">
+                <h2>Chapter 2: The Secret Map</h2>
+                <p>Elena did not sleep that night. She worked for hours to understand the geometric map. She used a special translation program that she created last year. Slowly, the points and lines changed into coordinates. The map pointed to a specific place on Earth—a remote desert in North America, thousands of miles away from her laboratory.</p>
+                <p>She called her closest friend, Leo. Leo was a mechanical engineer who fixed advanced machines and built drones. He arrived at the laboratory at dawn, holding two hot coffees. When Elena showed him the flashing data and the strange map, Leo stopped smiling. He stared at the screen with wide eyes.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-4">Strona 4</span>
+            </div>
+
+            <div id="page-4">
+                <p>"Elena, this looks like a countdown," Leo said, pointing to a small line of numbers at the bottom of the map. The numbers changed every second: 48:00:00... 47:59:59... They had exactly two days to find the location in the desert. If they stayed in the lab, they might lose the chance to discover the truth forever.</p>
+                <p>They packed their bags immediately. They took cameras, laptops, a strong tent, and Leo's best exploration drone. They drove Leo's old jeep down the mountain road. Elena looked out the window at the blue sky. She felt a mix of fear and intense excitement. Their quiet lives changed in just one night.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-5">Strona 5</span>
+            </div>
+
+            <div id="page-5">
+                <h2>Chapter 3: The Red Desert</h2>
+                <p>After a long journey by plane and jeep, they arrived at the desert coordinates. The sun was extremely hot, and the ground was covered in red dust and dry rocks. There were no trees, no water, and no signs of people. It looked like the surface of Mars. Elena held her digital compass, watching the numbers closely.</p>
+                <p>"The signal says the center is behind that big rocky hill," Elena said, shielding her eyes from the bright sun. They walked carefully through the deep sand. Leo prepared his drone. The drone flew high into the air, sending video to Leo’s tablet. Suddenly, the drone's video screen became static, and the drone fell into the sand.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-6">Strona 6</span>
+            </div>
+
+            <div id="page-6">
+                <p>"There is a strong magnetic field here," Leo explained as he picked up the broken drone. "My electronic tools are acting crazy." Elena checked her digital watch, but the screen was completely black. However, something else caught her attention. In the shadow of the hill, the air looked different. It moved like hot water, bending the light.</p>
+                <p>They walked closer to the strange shadow. Suddenly, the red ground beneath their boots began to shake softly. A hidden metal door opened automatically in the side of the rocky hill. It was completely silent, covered in ancient dust, but the technology inside looked incredibly advanced. Blue neon lines illuminated a long hallway that went deep underground.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-7">Strona 7</span>
+            </div>
+
+            <div id="page-7">
+                <h2>Chapter 4: Inside the Bunker</h2>
+                <p>They entered the underground structure with flashlights in their hands. The walls were made of a strange, smooth material that felt cold like ice, but looked like dark metal. As they walked deeper, the doors behind them closed with a heavy sound. They could not go back now, so they walked forward into the blue light.</p>
+                <p>At the end of the hallway, they found a giant spherical room. In the center of the room, a large crystal object floated in the air without any support. It emitted a soft hum, the exact same sound Elena heard in her headphones at the laboratory. The countdown on the walls of the room showed only ten minutes left.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-8">Strona 8</span>
+            </div>
+
+            <div id="page-8">
+                <p>Suddenly, a holographic display activated above the floating crystal. A large image of Earth appeared, surrounded by strange symbols. Elena realized that this place was an ancient communication station, built thousands of years ago by travelers from another star. It waited for humanity to reach a specific level of technology to unlock its secrets.</p>
+                <p>"Look at the console, Elena! It needs a password," Leo shouted, pointing at a touch screen with geometric symbols. The countdown was at 02:00. If the timer reached zero, the station might lock itself forever, or worse, destroy the mountain. Elena looked at the symbols. They matched the map from the laboratory.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-9">Strona 9</span>
+            </div>
+
+            <div id="page-9">
+                <p>Using her memory, Elena quickly touched the symbols on the glass console. She connected the lines to recreate the map of points. 00:30... 00:10... Her hands shook, but she pressed the final symbol just in time. The red countdown disappeared, and the large crystal began to glow with a beautiful, bright white light.</p>
+                <p>The holographic display changed. Millions of data files about distant galaxies, new energy sources, and history began to copy directly into Elena's laptop. It was a gift of knowledge from the stars. The ancient station completed its long mission, and the blue neon lights slowly turned off, leaving only the desert sun above.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-10">Strona 10</span>
+            </div>
+
+            <div id="page-10">
+                <h2>Chapter 5: A New Beginning</h2>
+                <p>An hour later, Elena and Leo sat outside on the desert sand, breathing the fresh air. The metal doors vanished into the rock again, hidden from the world. They were tired and dirty, but they smiled. Elena held her laptop tightly in her arms. Inside that small computer, they had the secrets of the universe.</p>
+                <p>"What do we do now?" Leo asked, looking at the endless desert sky. Elena looked at the stars that started to appear in the evening. "We change the world, Leo," she answered. They started the jeep and drove back home, ready to share the cosmic discovery with humanity. The future began today.</p>
+            </div>
+
+     </article>
+    </div>
+
+    <div class="modal-overlay" id="translateModal" onclick="closeModal(event)">
+        <div class="modal">
+            <h3>Lokalny Słownik</h3>
+            <div class="word-title" id="modalWord">Słowo</div>
+            <div class="word-translation" id="modalTranslation">Tłumaczenie</div>
+            <button class="btn-close" onclick="document.getElementById('translateModal').classList.remove('open')">Zamknij</button>
+        </div>
+    </div>
+
+    <script>
+
+      const localDictionary = {
+
+    
+    "a": "przedimek nieokreślony (oznacza 'jakiś jeden')",
+    "about": "o / na temat",
+    "above": "nad / powyżej",
+    "across": "przez / w poprzek",
+    "acting": "działający / zachowujący się (np. acting crazy - szalejący)",
+    "activated": "aktywował się / został aktywowany",
+    "acts": "działa",
+    "advanced": "zaawansowany",
+    "after": "po",
+    "again": "znowu / ponownie",
+    "ago": "temu (np. thousands of years ago - tysiące lat temu)",
+    "air": "powietrze",
+    "all": "wszystko / wszyscy",
+    "alone": "sam / samotnie",
+    "already": "już",
+    "also": "także / również",
+    "am": "rano (przy podawaniu godzin, np. 2:00 AM)",
+    "an": "przedimek nieokreślony (używany przed samogłoskami, np. an astrophysicist)",
+    "analyzed": "analizował / przeanalizował",
+    "ancient": "starożytny",
+    "and": "i / oraz",
+    "another": "inny / kolejny",
+    "answered": "odpowiedział",
+    "any": "żaden / jakikolwiek",
+    "appeared": "pojawił się",
+    "area": "obszar / strefa",
+    "arms": "ramiona",
+    "arrived": "przybył / przybyli",
+    "as": "gdy / jako / tak jak",
+    "asked": "zapytał",
+    "astrophysicist": "astrofizyk",
+    "at": "o / w / na (np. o konkretnej godzinie)",
+    "attention": "uwaga",
+    "automatically": "automatycznie",
+    "away": "daleko / stąd",
+    "back": "z powrotem / tył",
+    "bags": "torby / bagaże",
+    "be": "być",
+    "beautiful": "piękny",
+    "became": "stał się / stała się",
+    "because": "ponieważ / bo",
+    "bed": "łóżko",
+    "beginning": "początek",
+    "began": "zaczął / zaczęła / zaczęli",
+    "behind": "za / z tyłu",
+    "bending": "zaginający / uginający",
+    "beneath": "pod / poniżej",
+    "best": "najlepszy",
+    "best-friend": "najlepszy przyjaciel",
+    "big": "duży / wielki",
+    "black": "czarny",
+    "blue": "niebieski",
+    "books": "książki",
+    "boots": "buty / ciężkie buty",
+    "bottom": "dół / dno",
+    "breathing": "oddychanie / oddychający",
+    "bright": "jasny / lśniący",
+    "broken": "zepsuty / rozbity",
+    "built": "zbudowany / zbudował",
+    "bunker": "bunkier",
+    "busy": "zajęty / ruchliwy",
+    "but": "ale",
+    "button": "przycisk / guzik",
+    "by": "przez / obok (np. by plane - samolotem)",
+    "called": "zadzwonił / nazwany",
+    "cameras": "aparaty / kamery",
+    "came": "przyszedł / pochodził",
+    "can": "móc / potrafić",
+    "carefully": "uważnie / ostrożnie",
+    "cars": "samochody",
+    "cat": "kot",
+    "caught": "złapał / przyciągnął (np. caught her attention)",
+    "center": "centrum / środek",
+    "chance": "szansa",
+    "changed": "zmienił / zmieniła / zmieniły",
+    "chapter": "rozdział",
+    "checked": "sprawdził / sprawdziła",
+    "city": "miasto",
+    "clean": "czysty",
+    "clear": "jasny / wyraźny",
+    "close": "blisko / zamknąć",
+    "closed": "zamknięty / zamknął",
+    "closely": "uważnie / z bliska",
+    "closest": "najbliższy",
+    "code": "kod",
+    "coffees": "kawy",
+    "cold": "zimny",
+    "communication": "komunikacyjny",
+    "compass": "kompas",
+    "completed": "ukończył / zakończył",
+    "completely": "całkowicie / zupełnie",
+    "computer": "komputer / komputerowy",
+    "connected": "połączył / połączyła",
+    "console": "konsola / panel sterowania",
+    "contained": "zawierał",
+    "coordinates": "współrzędne",
+    "copy": "kopiować / kopiowały",
+    "cosmic": "kosmiczny",
+    "countdown": "odliczanie",
+    "covered": "pokryty / zakryty",
+    "crazy": "szalony",
+    "created": "stworzył / stworzyła",
+    "crystal": "kryształ / kryształowy",
+    "dark": "ciemny / ciemność",
+    "data": "dane / informacje",
+    "dawn": "świt",
+    "days": "dni",
+    "dead": "martwy",
+    "deep": "głęboki",
+    "desert": "pustynia",
+    "destroy": "zniszczyć",
+    "did": "czasownik posiłkowy czasu przeszłego (użyty w 'did not sleep')",
+    "different": "inny / różny",
+    "digital": "cyfrowy",
+    "dirty": "brudny",
+    "disappeared": "zniknął / zniknęła",
+    "discover": "odkryć",
+    "discovery": "odkrycie",
+    "display": "wyświetlacz / ekran",
+    "distant": "odległy",
+    "do": "robić",
+    "door": "drzwi",
+    "doors": "drzwi (liczba mnoga)",
+    "down": "w dół",
+    "drank": "wypił",
+    "drove": "jechał / pojechał (samochodem)",
+    "drone": "dron",
+    "dry": "suchy",
+    "dust": "kurz / pył",
+    "each": "każdy",
+    "earth": "ziemia",
+    "electronic": "elektroniczny",
+    "elena": "Elena (imię bohaterki)",
+    "emitted": "emitował / wydawał",
+    "empty": "pusty",
+    "end": "koniec",
+    "endless": "nieskończony / bezkresny",
+    "energy": "energia",
+    "engineer": "inżynier",
+    "english": "język angielski / angielski",
+    "entered": "wszedł / weszli",
+    "evening": "wieczór",
+    "every": "każdy",
+    "exactly": "dokładnie",
+    "excitement": "ekscytacja / podekscytowanie",
+    "explained": "wyjaśnił",
+    "exploration": "eksploracja / badanie",
+    "extremely": "niezwykle / skrajnie",
+    "face": "twarz",
+    "falling": "spadający",
+    "falls": "spada",
+    "fast": "szybko",
+    "fear": "strach",
+    "feel": "czuć",
+    "felt": "czuł / czuła / czuli",
+    "field": "pole",
+    "files": "pliki",
+    "final": "końcowy / ostateczny",
+    "finally": "w końcu / ostatecznie",
+    "find": "znaleźć",
+    "five": "pięć",
+    "fixed": "naprawił",
+    "flash": "migać",
+    "flashing": "migający",
+    "floating": "unoszący się / dryfujący",
+    "flew": "poleciał / leciał",
+    "floor": "podłoga",
+    "flying": "latający",
+    "for": "dla / przez (np. przez pięć lat)",
+    "forever": "na zawsze",
+    "form": "forma",
+    "forward": "naprzód",
+    "found": "znalazł / znaleźli",
+    "fresh": "świeże",
+    "friend": "przyjaciel",
+    "from": "z / od",
+    "future": "przyszłość",
+    "galaxies": "galaktyki",
+    "geometric": "geometryczny",
+    "gift": "prezent / dar",
+    "giant": "gigantyczny / olbrzymi",
+    "glass": "szkło / szklany",
+    "glow": "świecić",
+    "go": "iść",
+    "good": "dobry",
+    "government": "rząd / rządowy",
+    "green": "zielony",
+    "ground": "ziemia / podłoże",
+    "hallway": "korytarz",
+    "hands": "ręce",
+    "headphones": "słuchawki",
+    "heart": "serce",
+    "heavy": "ciężki",
+    "held": "trzymał / trzymała",
+    "help": "pomoc / pomóc",
+    "her": "jej",
+    "here": "tutaj",
+    "hidden": "ukryty",
+    "high": "wysoki / wysoko",
+    "hill": "wzgórze / pagórek",
+    "him": "go / jemu",
+    "himself": "siebie samego",
+    "his": "jego",
+    "history": "historia",
+    "holding": "trzymający",
+    "holographic": "holograficzny",
+    "home": "dom / do domu",
+    "hot": "gorący",
+    "hours": "godziny",
+    "house": "dom",
+    "how": "jak",
+    "however": "jednak / jednakże",
+    "hum": "buczenie / szum",
+    "human": "ludzki",
+    "humanity": "ludzkość",
+    "ice": "lód",
+    "if": "jeśli / jeżeli",
+    "illuminated": "oświetlił / oświetlony",
+    "image": "obraz",
+    "immediately": "natychmiast",
+    "important": "ważny",
+    "impossible": "niemożliwy",
+    "in": "w / w środku",
+    "incredibly": "niesamowicie / niewiarygodnie",
+    "inside": "wewnątrz / w środku",
+    "intelligent": "inteligentny",
+    "intense": "intensywny",
+    "international": "międzynarodowy",
+    "into": "w / do środka",
+    "is": "jest",
+    "it": "to / ono",
+    "jeep": "jeep (samochód)",
+    "journey": "podróż",
+    "just": "tylko / właśnie (np. just in time - w samą porę)",
+    "knew": "wiedział / wiedziała",
+    "knows": "wie / zna",
+    "knowledge": "wiedza",
+    "lab": "laboratorium (skrót od laboratory)",
+    "laboratory": "laboratorium",
+    "language": "język",
+    "laptops": "laptopy",
+    "laptop": "laptop",
+    "large": "duży / wielki",
+    "last": "zeszły / ostatni",
+    "leaving": "zostawiający / opuszczający",
+    "left": "zostało (np. ten minutes left) / lewy",
+    "leo": "Leo (imię bohatera)",
+    "level": "poziom",
+    "life": "życie",
+    "light": "światło",
+    "lights": "światła",
+    "lines": "linie",
+    "line": "linia",
+    "listened": "słuchał / słuchała",
+    "little": "mały / trochę",
+    "location": "lokalizacja / miejsce",
+    "lock": "zablokować / zamknąć",
+    "long": "długi",
+    "look": "patrzeć / wyglądać",
+    "looked": "patrzył / wyglądał",
+    "looks": "patrzy / wygląda",
+    "lose": "stracić / zgubić",
+    "lost": "zagubiony / stracony",
+    "loud": "głośny",
+    "love": "kochać",
+    "loved": "kochał / kochała",
+    "magnetic": "magnetyczne",
+    "main": "główny",
+    "make": "robić",
+    "man": "mężczyzna",
+    "many": "wiele / dużo",
+    "map": "mapa",
+    "mars": "Mars (planeta)",
+    "massive": "potężny / ogromny",
+    "matched": "pasowały / zgadzały się",
+    "material": "materiał",
+    "mechanical": "mechaniczny",
+    "memory": "pamięć",
+    "message": "wiadomość",
+    "metal": "metal / metalowy",
+    "meters": "metry",
+    "might": "może / mógłby (wyraża prawdopodobieństwo)",
+    "miles": "mile",
+    "millions": "miliony",
+    "minutes": "minuty",
+    "missing": "zaginiony",
+    "mission": "misja",
+    "mix": "mieszanka",
+    "months": "miesiące",
+    "morning": "poranek / rano",
+    "mountain": "góra / górski",
+    "moved": "poruszył się / poruszał",
+    "movement": "ruch",
+    "moving": "ruszający się",
+    "must": "musi",
+    "mysteries": "tajemnice",
+    "name": "imię / nazwa",
+    "near": "blisko / obok",
+    "neon": "neonowy",
+    "never": "nigdy",
+    "new": "nowy",
+    "next": "następny",
+    "night": "noc",
+    "no": "nie / żaden",
+    "noise": "hałas / szum",
+    "normal": "normalny",
+    "north": "północ (kierunek geograficzny)",
+    "not": "nie",
+    "nothing": "nic",
+    "now": "teraz",
+    "numbers": "liczby / numery",
+    "object": "obiekt / przedmiot",
+    "of": "słowo łączące (oznacza przynależność)",
+    "off": "wyłączony (np. turned off - wyłączyły się)",
+    "officers": "oficerowie / policjanci",
+    "old": "stary",
+    "on": "na",
+    "one": "jeden / jedna",
+    "only": "tylko",
+    "open": "otworzyć / otwarty",
+    "opened": "otworzył się / otworzyła",
+    "organization": "organizacja",
+    "other": "inny",
+    "our": "nasz / nasza",
+    "out": "na zewnątrz",
+    "outer": "zewnętrzny (outer space - przestrzeń kosmiczna)",
+    "outside": "na zewnątrz",
+    "over": "nad / przez",
+    "packed": "spakowali",
+    "page": "strona",
+    "password": "hasło",
+    "past": "obok / mijać",
+    "pen": "długopis",
+    "people": "ludzie",
+    "picked": "podniósł (np. picked up)",
+    "place": "miejsce",
+    "planets": "planety",
+    "point": "punkt",
+    "pointed": "wskazywał / celował",
+    "points": "punkty",
+    "police": "policja",
+    "position": "pozycja",
+    "prepared": "przygotował",
+    "pressed": "nacisnął / nacisnęła",
+    "program": "program",
+    "quiet": "cichy / cicho",
+    "quickly": "szybko",
+    "recreate": "odtworzyć",
+    "reached": "osiągnął / dotarł",
+    "read": "czytać / czytał",
+    "ready": "gotowy",
+    "real": "prawdziwy",
+    "realized": "zdał sobie sprawę / zrozumiała",
+    "record": "nagrać / zapis",
+    "red": "czerwony",
+    "remote": "odległy / odosobniony",
+    "rest": "reszta / odpoczynek",
+    "rhythmic": "rytmiczny",
+    "right": "właśnie / prawo (np. right now - właśnie teraz)",
+    "road": "droga",
+    "rock": "skała",
+    "rocks": "skały",
+    "rocky": "skalisty",
+    "room": "pokój / sala",
+    "safe": "bezpieczny",
+    "satellite": "satelita / satelitarny",
+    "sat": "siedział / siedziała",
+    "savior": "wybawca",
+    "scared": "przestraszony",
+    "scary": "straszny",
+    "scientist": "naukowiec",
+    "screamed": "krzyknął",
+    "screens": "ekrany",
+    "screen": "ekran",
+    "secret": "sekret / tajny",
+    "sector": "sektor",
+    "see": "widzieć",
+    "sees": "widzi",
+    "sending": "wysyłający",
+    "sensation": "uczucie / doznanie",
+    "shadow": "cień",
+    "shake": "trząść się",
+    "shook": "trzęsły się (czas przeszły od shake)",
+    "share": "dzielić się / udostępniać",
+    "shielding": "osłanianie",
+    "shouted": "krzyknął / krzyknęli",
+    "showed": "pokazał / pokazała",
+    "side": "strona / bok",
+    "signals": "sygnały",
+    "signal": "sygnał",
+    "silence": "cisza",
+    "silent": "cichy",
+    "silver": "srebrny",
+    "symbols": "symbole",
+    "symbol": "symbol",
+    "slowly": "powoli",
+    "small": "mały",
+    "smiled": "uśmiechnął się / uśmiechnęła",
+    "smiling": "uśmiechający się",
+    "smooth": "gładki",
+    "softly": "cicho / łagodnie",
+    "soft": "miękki / cichy",
+    "some": "trochę / jakieś",
+    "something": "coś",
+    "sounds": "dźwięki",
+    "sound": "dźwięk",
+    "sources": "źródła",
+    "space": "przestrzeń / kosmos",
+    "spaceships": "statki kosmiczne",
+    "speak": "mówić",
+    "special": "specjalny",
+    "specific": "konkretny / określony",
+    "spherical": "kulisty",
+    "spoke": "mówił",
+    "spots": "zauważa",
+    "stared": "wpatrywał się / wpatrywała",
+    "stars": "gwiazdy",
+    "star": "gwiazda",
+    "started": "zaczął / zaczęła / zaczęli",
+    "static": "zakłócenia (na ekranie)",
+    "station": "stacja",
+    "stayed": "zostali / został",
+    "stood": "stanął / stanęła (stood up - wstała)",
+    "stop": "zatrzymać się",
+    "stopped": "zatrzymał się / przestał",
+    "strange": "dziwny",
+    "strong": "silny / mocny",
+    "structure": "struktura / budowla",
+    "suddenly": "nagle",
+    "suit": "garnitur / skafander",
+    "sun": "słońce",
+    "support": "podparcie / wsparcie",
+    "surface": "powierzchnia",
+    "surrounded": "otoczony",
+    "survival": "przetrwanie",
+    "tablet": "tablet",
+    "take": "brać",
+    "taken": "wzięty",
+    "talk": "rozmawiać",
+    "tall": "wysoki",
+    "team": "zespół",
+    "technology": "technologia",
+    "telescope": "teleskop",
+    "ten": "dziesięć",
+    "tent": "namiot",
+    "terror": "przerażenie",
+    "than": "niż",
+    "that": "tamten / że / który",
+    "the": "przedimek określony",
+    "their": "ich",
+    "them": "ich / im",
+    "themselves": "siebie samych",
+    "then": "wtedy / potem",
+    "there": "tam (there was/were - był / były)",
+    "these": "te / ci",
+    "they": "oni",
+    "thief": "złodziej",
+    "thin": "cienki",
+    "thing": "rzecz",
+    "think": "myśleć",
+    "this": "ten / to / ta",
+    "thousands": "tysiące",
+    "three": "trzy",
+    "through": "przez",
+    "tightly": "mocno / ciasno",
+    "time": "czas / raz",
+    "timer": "stoper / licznik",
+    "to": "do / aby",
+    "today": "dzisiaj",
+    "together": "razem",
+    "tonight": "dziś wieczorem",
+    "took": "wziął / wzięła / wzięli",
+    "tools": "narzędzia",
+    "top": "góra / szczyt",
+    "touch": "dotyk / dotknąć",
+    "touched": "dotknął / dotknęła",
+    "towards": "w kierunku",
+    "town": "miasteczko",
+    "train": "pociąg",
+    "translation": "tłumaczenie",
+    "travelers": "podróżnicy",
+    "trees": "drzewa",
+    "trucks": "ciężarówki",
+    "true": "prawdziwy",
+    "trust": "zaufać / ufność",
+    "truth": "prawda",
+    "turned": "obrócił się / zmienił (turned off - wyłączyły się)",
+    "turns": "zmienia się / skręca",
+    "two": "dwa",
+    "under": "pod",
+    "underground": "podziemny",
+    "understand": "zrozumieć",
+    "undamaged": "nieuszkodzony",
+    "universe": "wszechświat",
+    "until": "dopóki / aż do",
+    "up": "w górę",
+    "upon": "na / na podstawie",
+    "us": "nas",
+    "use": "używać",
+    "used": "użył / użyła / używany",
+    "using": "używając",
+    "vanished": "zniknął / zniknęła",
+    "very": "bardzo",
+    "video": "wideo / film",
+    "violently": "gwałtownie",
+    "voice": "głos",
+    "waited": "czekał",
+    "waiting": "czekający",
+    "walk": "iść / spacerować",
+    "walked": "szedł / szła / szli",
+    "walls": "ściany",
+    "wall": "ściana",
+    "want": "chcieć",
+    "wanted": "chciał / chciała",
+    "warm": "ciepły",
+    "was": "był / była",
+    "watching": "oglądający / obserwujący",
+    "watch": "zegarek / oglądać",
+    "water": "woda",
+    "wave": "fala",
+    "way": "droga / sposób",
+    "we": "my",
+    "wear": "nosić (ubranie)",
+    "wears": "nosi",
+    "week": "tydzień",
+    "weight": "waga",
+    "were": "byli / były",
+    "west": "zachód",
+    "what": "co / jaki",
+    "when": "kiedy",
+    "where": "gdzie",
+    "while": "podczas gdy / podczas",
+    "whispered": "szepnął / szepnęła",
+    "white": "biały",
+    "who": "kto / który",
+    "whole": "cały",
+    "why": "dlaczego",
+    "wide": "szeroki (wide eyes - szeroko otwarte oczy)",
+    "will": "czasownik posiłkowy czasu przyszłego",
+    "window": "okno",
+    "wind": "wiatr",
+    "wires": "druty / kable",
+    "with": "z",
+    "without": "bez",
+    "woman": "kobieta",
+    "wonder": "zastanawiać się / cud",
+    "words": "słowa",
+    "worked": "pracował / pracowała / pracowali",
+    "world": "świat",
+    "worse": "gorzej / gorszy",
+    "wrist": "nadgarstek",
+    "writing": "pisanie",
+    "written": "napisany",
+    "wrong": "zły / błędny",
+    "year": "rok",
+    "years": "lata",
+    "yelled": "krzyknął",
+    "yellow": "żółty",
+    "you": "ty",
+    "young": "młody",
+    "your": "twój / wasz",
+    "zero": "zero",
+    "zipper": "zamek błyskawiczny",
+    "zone": "strefa"
+};
+
+      
+
+// Przygotowanie tekstu - pakowanie każdego słowa w tagi span.word
+function initWordTokenization() {
+    const paragraphs = document.querySelectorAll('.book-content p');
+    paragraphs.forEach(p => {
+        const text = p.innerText;
+        const tokens = text.split(/(\s+)/);
+        
+        const processedTokens = tokens.map(token => {
+            if (/[a-zA-Z]/.test(token)) {
+                // Wyciągamy litery i apostrofy, usuwamy resztę interpunkcji dookoła
+                const cleanWord = token.replace(/[^a-zA-Z']/g, '');
+                const punctuation = token.replace(/[a-zA-Z']/g, '');
+                
+                return `<span class="word" onclick="handleWordClick('${cleanWord}')">${cleanWord}</span>${punctuation}`;
+            }
+            return token;
+        });
+        p.innerHTML = processedTokens.join('');
+    });
+}
+
+// Uruchomienie tokenizacji słów
+initWordTokenization();
+
+// ==========================================
+// 2. INTERAKTYWNY SYSTEM TŁUMACZENIA NA STRONIE
+// ==========================================
+let isTranslatorActive = false;
+
+function toggleTranslatorMode() {
+    isTranslatorActive = !isTranslatorActive;
+    const btn = document.getElementById('translatorToggle');
+    if (isTranslatorActive) {
+        document.body.classList.add('translator-active');
+        btn.classList.add('active');
+    } else {
+        document.body.classList.remove('translator-active');
+        btn.classList.remove('active');
+    }
+}
+
+function handleWordClick(word) {
+    if (!isTranslatorActive) return;
+
+    // Standaryzacja słowa: małe litery i usunięcie dziwnych znaków niebędących literami
+    let searchWord = word.toLowerCase().replace(/[^a-z]/g, '').trim();
+    // Odcięcie ewentualnego apostrofu (np. tom's -> tom)
+    let fallbackWord = word.toLowerCase().split("'")[0].replace(/[^a-z]/g, '').trim();
+
+    let translation = null;
+
+    // Szukamy w naszym słowniku
+    if (localDictionary[searchWord]) {
+        translation = localDictionary[searchWord];
+    } else if (localDictionary[fallbackWord]) {
+        translation = localDictionary[fallbackWord];
+    }
+
+    // Pobieramy elementy okienka modalnego ze strony
+    const modalWord = document.getElementById('modalWord');
+    const modalTranslation = document.getElementById('modalTranslation');
+    const modalOverlay = document.getElementById('translateModal');
+
+    // Ustawiamy nagłówek okienka na kliknięte słowo
+    modalWord.innerText = word;
+
+    // Generujemy uniwersalny link do Google Translate dla klikniętego słowa
+    const googleUrl = `https://translate.google.com/?sl=en&tl=pl&text=${encodeURIComponent(word)}&op=translate`;
+
+    // Opcja A: Słowo JEST w bazie danych
+    if (translation) {
+        modalTranslation.innerHTML = `
+            <div style="color: #2ecc71; font-weight: 500; margin-bottom: 15px;">
+                ${translation}
+            </div>
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 12px;">
+            <a href="${googleUrl}" target="_blank" style="display: inline-block; font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 600; padding: 4px 10px; background: rgba(162, 82, 250, 0.1); border-radius: 6px;">
+                🔍 Pełne tłumaczenie w Google
+            </a>
+        `;
+    } 
+    // Opcja B: Słowa NIE MA w bazie danych
+    else {
+        modalTranslation.innerHTML = `
+            <div style="font-size: 0.95rem; color: #e74c3c; margin-bottom: 12px; background: rgba(231, 76, 60, 0.1); padding: 8px; border-radius: 8px;">
+                Brak tłumaczenia w bazie podręcznej
+            </div>
+            <a href="${googleUrl}" target="_blank" style="display: inline-block; font-size: 0.9rem; color: var(--accent); text-decoration: underline; font-weight: 600; margin-top: 5px;">
+                🔍 Sprawdź w Google Translate
+            </a>
+        `;
+    }
+
+    // Otwieramy okienko na ekranie
+    modalOverlay.classList.add('open');
+}
+
+function closeModal(e) {
+    if (e.target.id === 'translateModal') {
+        document.getElementById('translateModal').classList.remove('open');
+    }
+}
+
+// ==========================================
+// 3. ROZWIJALNY PANEL OCHRONY WZROKU
+// ==========================================
+function toggleDropdown() {
+    document.getElementById('themeDropdown').classList.toggle('open');
+}
+
+function changeTheme(themeName) {
+    document.body.classList.remove('theme-dark', 'theme-gray', 'theme-light', 'theme-sepia');
+    
+    if (themeName !== 'dark') {
+        document.body.classList.add(`theme-${themeName}`);
+    }
+    
+    document.getElementById('themeDropdown').classList.remove('open');
+}
+
+window.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('themeDropdown');
+    if (dropdown && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('open');
+    }
+});
+
+// ==========================================
+// 4. TRYB PEŁNOEKRANOWY (FULLSCREEN)
+// ==========================================
+function toggleFullscreen() {
+    const btn = document.getElementById('fullscreenBtn');
+    
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+            btn.classList.add('active');
+            btn.innerHTML = `🔲 <span>Zamknij pełny ekran</span>`;
+        }).catch(err => {
+            console.error(`Błąd Fullscreen: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen().then(() => {
+            btn.classList.remove('active');
+            btn.innerHTML = `🔲 <span>Pełny ekran</span>`;
+        });
+    }
+}
+
+// Skok do podanej strony
+function jumpToPage() {
+    const pageNum = document.getElementById('pageInput').value;
+    if (pageNum == 1) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+        const marker = document.getElementById(`page-marker-${pageNum}`);
+        if (marker) marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+    </script>
+</body>
+</html>
