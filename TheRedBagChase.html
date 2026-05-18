@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberBooks Reader Pro - Zaawansowany Czytnik</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Tematy kolorystyczne (Zmienne CSS) --- */
+        :root {
+            /* Domyślny Czarny (Dark Mode) */
+            --bg-main: #0d0e12;
+            --bg-interface: rgba(22, 24, 33, 0.85);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #e2e8f0;
+            --text-interface: #ffffff;
+            --text-muted: #9ca3af;
+            --accent: #a252fa;
+            --accent-glow: rgba(162, 82, 250, 0.3);
+            --book-bg: #0d0e12;
+            --book-text: #e2e8f0;
+            --book-font: 'Merriweather', serif;
+        }
+
+        body.theme-gray {
+            --bg-main: #2d3139;
+            --bg-interface: rgba(53, 58, 68, 0.9);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #e1e4ea;
+            --text-interface: #ffffff;
+            --text-muted: #a0a5b1;
+            --book-bg: #2d3139;
+            --book-text: #e1e4ea;
+        }
+
+        body.theme-light {
+            --bg-main: #f8fafc;
+            --bg-interface: rgba(255, 255, 255, 0.9);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --text-main: #1e293b;
+            --text-interface: #0f172a;
+            --text-muted: #64748b;
+            --book-bg: #f8fafc;
+            --book-text: #1e293b;
+        }
+
+        body.theme-sepia {
+            --bg-main: #f4edd9;
+            --bg-interface: rgba(235, 226, 204, 0.95);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --text-main: #2c2519;
+            --text-interface: #1e170c;
+            --text-muted: #7d725f;
+            --book-bg: #f4edd9;
+            --book-text: #2c2519;
+        }
+
+        /* --- Reset i bazy --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, transform 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Pasek Nawigacyjny --- */
+        header {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 0.8rem 5%;
+            background: var(--bg-interface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Przycisk akcji interfejsu */
+        .btn-nav {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-interface);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-nav:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--text-muted);
+        }
+
+        .btn-nav.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        /* Pola numeryczne stron */
+        .page-jumper {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .page-input {
+            width: 50px;
+            padding: 0.4rem;
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-interface);
+            text-align: center;
+            font-size: 0.88rem;
+            outline: none;
+        }
+
+        /* --- Panel Ochrony Wzroku (Rozwijane Menu) --- */
+        .dropdown-wrapper {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 130%;
+            right: 0;
+            background: var(--bg-interface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 0.8rem;
+            width: 260px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 150;
+        }
+
+        .dropdown-wrapper.open .dropdown-menu {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .theme-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-interface);
+            font-weight: 500;
+        }
+
+        .theme-option:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        body.theme-light .theme-option:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .theme-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .healthy-tag {
+            font-size: 0.72rem;
+            color: #2ecc71;
+            font-weight: 600;
+            margin-left: auto;
+            margin-right: 8px;
+        }
+
+        /* --- Kolumna Tekstu --- */
+        .reader-container {
+            max-width: 740px; /* Perfekcyjna szerokość do skupienia wzroku */
+            margin: 0 auto;
+            padding: 4rem 1.5rem 8rem;
+            background-color: var(--book-bg);
+        }
+
+        .book-content {
+            font-family: var(--book-font);
+            font-size: 1.25rem;
+            line-height: 1.9;
+            color: var(--book-text);
+            text-align: justify;
+        }
+
+        .book-content h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.2rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-interface);
+        }
+
+        .book-content p {
+            margin-bottom: 1.6rem;
+            text-indent: 1.5rem;
+        }
+
+        /* Separator stron */
+        .page-break {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 4rem 0;
+            position: relative;
+        }
+
+        .page-break::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: var(--border-color);
+            z-index: 1;
+        }
+
+        .page-num {
+            background: var(--bg-main);
+            padding: 0 1.5rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            z-index: 2;
+            letter-spacing: 1px;
+        }
+
+        /* --- Obsługa Aktywnego Tłumacza --- */
+        body.translator-active .book-content p span.word {
+            cursor: help;
+            border-bottom: 1px dashed var(--accent);
+            padding: 0 1px;
+        }
+
+        body.translator-active .book-content p span.word:hover {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        /* --- Okno Modalne Słownika --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--bg-interface);
+            border: 1px solid var(--border-color);
+            padding: 2.2rem;
+            border-radius: 24px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.open .modal {
+            transform: scale(1);
+        }
+
+        .modal h3 {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal .word-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-interface);
+            margin-bottom: 0.8rem;
+        }
+
+        .modal .word-translation {
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+            padding: 0.6rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-close {
+            padding: 0.6rem 1.8rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* --- Responsywność --- */
+        @media (max-width: 768px) {
+            header { padding: 0.8rem 3%; }
+            .btn-nav span { display: none; } /* Ukryj opisy tekstowe przycisków na mobile */
+            .reader-container { padding: 2rem 1rem 4rem; } /* Zanikanie marginesów bocznych */
+            .book-content { font-size: 1.15rem; line-height: 1.8; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+
+            <div class="nav-group">
+                <a href="sdfdsf.html" class="btn-nav return-btn" style="text-decoration: none;">
+                    ⬅️ <span>Strona główna</span>
+                </a>
+            </div>
+            
+            <div class="nav-group">
+                <div class="page-jumper">
+                    <input type="number" id="pageInput" class="page-input" min="1" max="2" value="1">
+                    <button class="btn-nav" onclick="jumpToPage()">Idź</button>
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <div class="dropdown-wrapper" id="themeDropdown">
+                    <button class="btn-nav" onclick="toggleDropdown()">🎨 <span>Styl ekranu</span></button>
+                    <div class="dropdown-menu">
+                        <div class="theme-option" onclick="changeTheme('dark')">
+                            <span>Ciemny (Dark)</span>
+                            <div class="theme-dot" style="background: #0d0e12;"></div>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('gray')">
+                            <span>Szary (Muted)</span>
+                            <div class="theme-dot" style="background: #2d3139;"></div>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('light')">
+                            <span>Jasny (Light)</span>
+                            <div class="theme-dot" style="background: #f8fafc;"></div>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('sepia')">
+                            <span>Sepia</span>
+                            <span class="healthy-tag">(Zdrowy ✨)</span>
+                            <div class="theme-dot" style="background: #f4edd9;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-nav" id="fullscreenBtn" onclick="toggleFullscreen()">🔲 <span>Pełny ekran</span></button>
+            </div>
+
+            <div class="nav-group">
+                <button class="btn-nav" id="translatorToggle" onclick="toggleTranslatorMode()">🌐 Tłumacz słowo</button>
+            </div>
+
+        </div>
+    </header>
+
+    <div class="reader-container">
+      <article class="book-content" id="bookContent">
+            
+            <div id="page-1">
+                <h2>Chapter 1: <br> The Missing Bag</h2>
+                <p>Max is a secret agent. He works for a top-secret government organization. He is tall, strong, and he has quick brown eyes that see everything. Today, Max is at the big international airport. The airport is very busy. There are thousands of people from different countries, loud announcements about flights, and heavy bags everywhere. Max wears a dark blue jacket, black sunglasses, and a special silver watch with a hidden communicator inside. He is not here to fly to another country; he is here for a very important and dangerous mission.</p>
+                <p>He stands near a busy coffee shop and looks around carefully. He spots a man sitting alone at a small table. This man has a large silver suitcase and a small red bag. Inside that small red bag, there is a dangerous computer chip. The chip contains secret data that can harm the whole city. Max watches the man closely. Suddenly, a strange person in a long grey coat walks very fast past the table. In one fast second, the grey coat grabs the red bag from the chair and runs quickly towards the exit doors. The silent airport turns into a dangerous zone. Max throws his coffee away. The chase begins now.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-2">Strona 2</span>
+            </div>
+
+            <div id="page-2">
+                <p>Max acts immediately. He has excellent reflexes. He touches the main button on his silver watch to activate his backup team. "The target is running fast to the main exit door. He has the red bag," Max speaks softly but clearly into his wrist. He jumps over a long row of blue airport chairs to save time. People shout in surprise, and a woman drops her fashion magazine on the floor. Max does not look back at them; his eyes are locked on the grey coat in front of him. He runs like a professional athlete through the crowd.</p>
+                <p>The thief runs out of the big glass airport doors and enters the warm morning sun. Max is fast, so he is only ten meters behind him now. The thief looks back, sees Max, and looks very scared. The thief runs directly into a busy city street. The street is full of yellow taxis, big delivery trucks, and red buses. Horns blow loudly as the thief dodges the fast traffic. Max takes a deep breath, ignores the danger, and runs into the busy street after him. He wants to save the city, so he cannot stop now.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-3">Strona 3</span>
+            </div>
+
+            <div id="page-3">
+                <p>A yellow taxi stops very fast with a loud, terrible screech of its tires. The driver opens his window and yells angrily, but Max is already on the other side of the dangerous road. The thief looks desperate. He turns left into a narrow, dark alley between two tall brick buildings. Max smiles because he knows this part of the city very well. This specific alley is a trap for people who do not know the area. It is a dead end with a very tall wooden fence at the very back. There is no way out.</p>
+                <p>Max arrives at the entrance of the dark alley. He stops running and walks slowly and quietly now. He listens to the sounds around him very carefully. He hears a heavy breathing sound coming from behind some big black rubbish bins. "Stop right there," Max says with a strong, calm voice. "Give me the red bag now, and nobody gets hurt. The game is over." The alley is completely quiet for one long second, and Max prepares his body for action. Then, he hears a sudden, violent movement behind the bins.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-4">Strona 4</span>
+            </div>
+
+            <div id="page-4">
+                <h2>Chapter 2:<br>  The Rooftop Chase</h2>
+                <p>The thief does not surrender to Max. Instead, he throws a heavy metal bin lid directly at Max's head. Max ducks his head quickly, and the heavy lid hits the brick wall with a loud bang. The thief uses this short second to climb an old iron fire escape ladder on the side of the tall building. He moves very fast because he is full of adrenaline, climbing up towards the roof. Max runs to the ladder, grabs the cold iron bars, and starts to climb up behind him immediately. He is not afraid of heights.</p>
+                <p>The iron ladder shakes violently under Max's heavy boots. Suddenly, one old step breaks with a loud noise, but Max catches himself with his strong hands. He climbs higher and higher, looking only up. Finally, he reaches the flat roof of the tall building. The wind is very strong up here, blowing his hair across his face. The thief is already running across the roof. He jumps over big ventilation pipes and old television wires, heading fast towards the next building. Max runs after him with maximum speed.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-5">Strona 5</span>
+            </div>
+
+            <div id="page-5">
+                <p>The distance between the two tall buildings is about two meters. It is a very dangerous jump, high above the hard concrete of the city streets. The thief does not stop to think. He runs fast, jumps with all his power, and lands hard on the next roof. He rolls on the small stones to protect his body, stands up quickly, and continues running. The red bag is tight in his right hand. Max arrives at the edge of the roof and looks down for one short microsecond. He sees the tiny cars moving below like toys.</p>
+                <p>Max does not feel any fear; he only feels focus and adrenaline. He runs back three steps to get a good start. Then, he runs forward with max power and flies through the air like a bird. He lands perfectly on his feet on the next building's roof. He does not stop his movement for a second. He runs faster now, closing the distance between himself and the running thief. "Stop!" Max yells, but the thief keeps running across the gravel roof toward a small door.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-6">Strona 6</span>
+            </div>
+
+            <div id="page-6">
+                <p>The thief looks back again and cannot believe his eyes. Max is incredibly close now. The thief runs to a heavy metal roof door, pushes it open with his shoulder, and enters the building. He runs down a dark, steep flight of concrete stairs inside. Max follows him into the complete darkness immediately. The only sound in the building is the loud, heavy echo of their running boots on the hard steps. It feels like a dark labyrinth with no end, and they are moving down very fast.</p>
+                <p>They go down one floor, two floors, then three floors. Max can hear the thief's boots below him. Suddenly, the thief opens a heavy wooden door on the third floor and enters a large, old clothing factory. The factory is empty today because it is Sunday. There are long rows of white sewing machines, boxes of colorful fabric, and large cutting tables everywhere. It is a perfect place to hide from someone, and Max knows he must be very careful now. He slows down his steps.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-7">Strona 7</span>
+            </div>
+
+            <div id="page-7">
+                <h2>Chapter 3: <br> The Empty Factory</h2>
+                <p>The inside of the factory is dark because the big windows are very dirty. Dark shadows are everywhere. Max walks inside quietly, and the heavy wooden door closes behind him with a loud click. He takes a small blue laser torch from his jacket pocket. The thin blue light cuts through the dust in the air. Max moves slowly between the rows of old tables. He stops and listens, but he does not hear any footsteps now. The thief is hiding somewhere in this big room.</p>
+                <p>"I know you are here," Max says loudly. His strong voice echoes in the big, empty factory room. He looks under the long tables and behind the big wooden boxes of fabric. Suddenly, a heavy box of red cloth falls from a high shelf on his left side. Max jumps back quickly as the box hits the floor with a massive boom. It is a distraction! Max looks toward the windows and sees the thief running out from behind a large green curtain.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-8">Strona 8</span>
+            </div>
+
+            <div id="page-8">
+                <p>The big window at the back of the factory is broken now, and it leads to an old wooden balcony. The thief breaks the remaining glass with a heavy wooden chair and jumps outside onto the balcony. Max runs to the broken window, careful not to touch the sharp glass with his hands. He looks out. The thief is on the old balcony, but the wood is very old and weak. Max suddenly hears a loud, scary cracking sound from the structure. The balcony is breaking apart under the thief's weight!</p>
+                <p>The thief screams in terror as the wooden floor completely disappears under his feet. He falls, but his hands desperately catch the old iron railing of the balcony. He is now hanging in the air, three floors above the hard ground. The red bag is stuck on a broken piece of wood near his feet, dangling dangerousy. The thief cannot hold the iron railing for long because his hands are sweaty and slipping. He forgets about the escape. He needs help to survive.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-9">Strona 9</span>
+            </div>
+
+            <div id="page-9">
+                <p>Max acts like a true hero. He does not hesitate to save a life, even a thief's life. He climbs out of the broken window onto the remaining solid concrete part of the building. He lies down flat on his stomach and extends his strong right arm down towards the hanging man. "Take my hand now!" Max yells loudly over the sound of the strong wind. The thief looks up at Max with pure terror in his eyes. He leaves the railing and reaches up with his left hand to catch Max.</p>
+                <p>Max catches the thief's wrist with a very tight, professional grip. With a great physical effort, Max pulls the heavy man up onto the safe, solid concrete window ledge. The thief is safe now, but he is completely exhausted, shocked, and sits on the floor, breathing heavily. Max does not waste time. He quickly reaches down and grabs the red bag from the broken piece of wood. He opens the black zipper carefully and checks the contents inside.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-10">Strona 10</span>
+            </div>
+
+            <div id="page-10">
+                <h2>Chapter 4:<br>  Safe Data</h2>
+                <p>Inside the red bag, the small black computer chip is completely safe and undamaged. Max closes the bag, takes a deep breath, and smiles happily. He looks at his silver watch and presses the main button again to call his office. "Mission success. I have the secret chip and the target is secure. Send the backup team to the old factory building on 5th Street immediately," Max says. A friendly voice answers from the watch speaker: "Good job, Max. The team is coming to your location right now."</p>
+                <p>Ten minutes later, two black police cars arrive outside the old building with flashing blue lights and loud sirens. Two strong officers walk up to the third floor of the factory and take the thief away in handcuffs. Max stands by the window and watches the police cars leave the area. He feels very tired from the long chase, but he is extremely happy. His beautiful city is safe again tonight. He takes the red bag with the chip, walks downstairs, and enters his car to go home and rest.</p>
+            </div>
+
+     </article>
+    </div>
+
+    <div class="modal-overlay" id="translateModal" onclick="closeModal(event)">
+        <div class="modal">
+            <h3>Lokalny Słownik</h3>
+            <div class="word-title" id="modalWord">Słowo</div>
+            <div class="word-translation" id="modalTranslation">Tłumaczenie</div>
+            <button class="btn-close" onclick="document.getElementById('translateModal').classList.remove('open')">Zamknij</button>
+        </div>
+    </div>
+
+    <script>
+
+const localDictionary = {
+    "max": "Max (imię głównego bohatera)",
+    "is": "jest",
+    "a": "Przedimek nieokreślony (oznacza 'jakiś jeden', używany przed rzeczownikami)",
+    "secret": "tajny / sekretny",
+    "agent": "agent",
+    "he": "on",
+    "works": "pracuje",
+    "for": "dla / za",
+    "top-secret": "ściśle tajny",
+    "government": "rząd / rządowy",
+    "organization": "organizacja",
+    "tall": "wysoki",
+    "strong": "silny / mocny",
+    "and": "i / oraz",
+    "has": "ma",
+    "quick": "szybki / bystry",
+    "brown": "brązowe",
+    "eyes": "oczy",
+    "that": "które / to / tamto",
+    "see": "widzą / widzieć",
+    "everything": "wszystko",
+    "today": "dzisiaj",
+    "at": "na / w (np. o godzinie lub konkretnym miejscu)",
+    "the": "Przedimek określony (wskazuje na konkretną rzecz, nie tłumaczy się bezpośrednio)",
+    "big": "duży / wielki",
+    "international": "międzynarodowy",
+    "airport": "lotnisko",
+    "very": "bardzo",
+    "busy": "ruchliwe / zajęte",
+    "there": "tam (w konstrukcji 'there are' oznacza: znajdują się / są)",
+    "are": "są / jesteście",
+    "thousands": "tysiące",
+    "of": "Słowo łączące, oznacza przynależność (czegoś do czegoś) – np. 'rows of white sewing machines'",
+    "people": "ludzie",
+    "from": "z / od",
+    "different": "różne / inny",
+    "countries": "kraje / państwa",
+    "loud": "głośne / głośno",
+    "announcements": "ogłoszenia / komunikaty",
+    "about": "o / na temat",
+    "flights": "loty",
+    "heavy": "ciężkie / ulewne / mocne",
+    "bags": "torby / bagaże",
+    "everywhere": "wszędzie",
+    "wears": "nosi na sobie (ubranie)",
+    "blue": "niebieski / błękitny",
+    "jacket": "kurtka / marynarka",
+    "black": "czarny",
+    "sunglasses": "okulary przeciwsłoneczne",
+    "special": "specjalny",
+    "silver": "srebrny",
+    "watch": "zegarek na rękę",
+    "with": "z / ze",
+    "hidden": "ukryty",
+    "communicator": "komunikator",
+    "inside": "w środku / wewnątrz",
+    "not": "nie",
+    "here": "tutaj / oto",
+    "to": "do / aby (wskazuje cel lub kierunek)",
+    "fly": "lecieć (samolotem)",
+    "another": "kolejny / inny (jeden dodatkowy element)",
+    "country": "kraj / państwo",
+    "important": "ważny",
+    "dangerous": "niebezpieczny",
+    "mission": "misja",
+    "stands": "stoi",
+    "near": "blisko / obok",
+    "coffee": "kawa",
+    "shop": "sklep",
+    "looks": "patrzy / zerka",
+    "around": "wokół / dookoła",
+    "carefully": "uważnie / ostrożnie",
+    "spots": "zauważa / dostrzega",
+    "man": "mężczyzna",
+    "sitting": "siedzący / siedzi",
+    "alone": "sam / samotnie",
+    "small": "mały / mała",
+    "table": "stolik / stół",
+    "this": "ten / to / ta",
+    "large": "duża / wielka",
+    "suitcase": "walizka",
+    "red": "czerwona / czerwone",
+    "bag": "torba",
+    "computer": "komputerowy",
+    "chip": "chip / karta z danymi",
+    "contains": "zawiera",
+    "data": "dane / informacje",
+    "can": "może / potrafi",
+    "harm": "skrzywdzić / zaszkodzić",
+    "whole": "całe / cały",
+    "city": "miasto",
+    "watches": "obserwuje / patrzy na",
+    "closely": "uważnie / z bliska",
+    "suddenly": "nagle",
+    "strange": "dziwny / nieznajomy",
+    "person": "osoba",
+    "in": "w / w środku",
+    "long": "długi",
+    "grey": "szary",
+    "coat": "płaszcz",
+    "walks": "idzie / spaceruje",
+    "fast": "szybko",
+    "past": "obok / mijać",
+    "one": "jeden / jedna",
+    "second": "sekunda",
+    "grabs": "chwyta / porywa",
+    "chair": "krzesło",
+    "runs": "biegnie",
+    "quickly": "szybko",
+    "towards": "w kierunku / w stronę",
+    "exit": "wyjście",
+    "doors": "drzwi",
+    "silent": "ciche / spokojne",
+    "turns": "zmienia się / skręca",
+    "into": "w / do środka czegoś",
+    "zone": "strefa",
+    "throws": "rzuca",
+    "his": "jego",
+    "away": "stąd / daleko (np. rzuca w dal / wyrzuca)",
+    "chase": "pościg",
+    "begins": "zaczyna się",
+    "now": "teraz",
+    "acts": "działa / reaguje",
+    "immediately": "natychmiast",
+    "excellent": "doskonały / znakomity",
+    "reflexes": "refleks",
+    "touches": "dotyka",
+    "main": "główny",
+    "button": "guzik / przycisk",
+    "on": "na",
+    "activate": "aktywować",
+    "backup": "wsparcie / rezerwa",
+    "team": "zespół / drużyna",
+    "running": "biegnący / biegać",
+    "speaks": "mówi",
+    "softly": "cicho / łagodnie",
+    "but": "ale",
+    "clearly": "jasno / wyraźnie",
+    "wrist": "nadgarstek",
+    "jumps": "wyskakuje / przeskakuje",
+    "over": "nad / przez / przez telefon",
+    "row": "rząd (np. krzeseł)",
+    "shout": "krzyczą / krzyczeć",
+    "surprise": "zaskoczenie / niespodzianka",
+    "woman": "kobieta",
+    "drops": "upuszcza / krople",
+    "her": "jej",
+    "fashion": "moda / modowy",
+    "magazine": "magazyn / czasopismo",
+    "floor": "podłoga / piętro",
+    "does": "Czasownik posiłkowy (użyty do przeczenia 'does not look' - nie patrzy)",
+    "look": "patrzeć / wyglądać",
+    "back": "z powrotem / w tył",
+    "them": "ich / im",
+    "locked": "skupione / zablokowane",
+    "front": "przód / przed",
+    "like": "jak / lubić",
+    "professional": "profesjonalny",
+    "athlete": "sportowiec / atleta",
+    "through": "przez",
+    "crowd": "tłum",
+    "thief": "złodziej",
+    "glass": "szklane / szkło",
+    "enters": "wchodzi do / wkracza",
+    "warm": "ciepłe",
+    "morning": "poranek / rano",
+    "sun": "słońce",
+    "so": "więc / tak bardzo",
+    "only": "tylko",
+    "ten": "dziesięć",
+    "meters": "metry",
+    "behind": "za / z tyłu",
+    "him": "niego / jemu",
+    "sees": "widzi",
+    "scared": "przestraszony",
+    "directly": "bezpośrednio / prosto",
+    "street": "ulica",
+    "full": "pełna",
+    "yellow": "żółte",
+    "taxis": "taksówki",
+    "delivery": "dostawcze",
+    "trucks": "ciężarówki",
+    "buses": "autobusy",
+    "horns": "klaksony",
+    "blow": "trąbią / wieją",
+    "loudly": "głośno",
+    "as": "gdy / jako / tak jak",
+    "dodges": "unika / omija sprytnie",
+    "traffic": "ruch uliczny",
+    "takes": "bierze / robi (np. bierze oddech)",
+    "deep": "głęboki",
+    "breath": "oddech",
+    "ignores": "ignoruje",
+    "danger": "niebezpieczeństwo",
+    "after": "za / po",
+    "wants": "chce",
+    "save": "uratować / ocalić",
+    "cannot": "nie może / nie potrafi",
+    "stop": "zatrzymać się / przystanek",
+    "taxi": "taksówka",
+    "stops": "zatrzymuje się",
+    "screech": "pisk",
+    "its": "jego / swój (w odniesieniu do rzeczy/zwierząt, np. its tires - jego opony)",
+    "tires": "opony",
+    "driver": "kierowca",
+    "opens": "otwiera",
+    "yells": "krzyczy / wrzeszczy",
+    "angrily": "ze złością / gniewnie",
+    "already": "już",
+    "other": "druga / inna",
+    "side": "strona",
+    "road": "droga",
+    "desperate": "zdesperowany",
+    "turn": "skręca / obrót",
+    "left": "w lewo / opuścił",
+    "narrow": "wąską",
+    "dark": "ciemną / ciemno",
+    "alley": "alejka / uliczka",
+    "between": "pomiędzy",
+    "brick": "ceglany / cegła",
+    "buildings": "budynki",
+    "smiles": "uśmiecha się",
+    "because": "ponieważ / bo",
+    "knows": "zna / wie",
+    "part": "część",
+    "well": "dobrze",
+    "specific": "konkretna / określona",
+    "trap": "pułapka",
+    "pieces": "kawałki",
+    "area": "obszar / teren",
+    "it": "to / ono",
+    "dead end": "ślepy zaułek",
+    "fence": "płot / ogrodzenie",
+    "no": "nie / żadna",
+    "way": "droga / wyjście / sposób",
+    "out": "na zewnątrz / z",
+    "arrival": "przybycie",
+    "arrives": "dociera / przybywa",
+    "entrance": "wejście",
+    "walks": "idzie / kroczy",
+    "slowly": "powoli",
+    "listens": "słucha",
+    "sounds": "dźwięki",
+    "heavy": "ciężki",
+    "breathing": "oddech / oddychanie",
+    "sound": "dźwięk",
+    "coming": "nadchodzi / dobiegający",
+    "rubbish": "śmieci",
+    "bins": "kosze na śmieci",
+    "right": "właśnie / prawo / właściwy (np. right there - właśnie tam)",
+    "there": "tam",
+    "says": "mówi",
+    "calm": "spokojny",
+    "voice": "głos",
+    "give": "daj / oddaj",
+    "me": "mnie / mi",
+    "nobody": "nikt",
+    "gets": "dostaje / staje się",
+    "hurt": "ranny / skrzywdzony",
+    "game": "gra",
+    "completely": "całkowicie / zupełnie",
+    "quiet": "cichy / cicho",
+    "prepares": "przygotowuje",
+    "body": "ciało",
+    "action": "akcja / działanie",
+    "then": "wtedy / potem",
+    "hears": "słyszy",
+    "sudden": "nagły",
+    "violent": "gwałtowny / silny",
+    "movement": "ruch",
+    "surrender": "poddać się",
+    "instead": "zamiast tego",
+    "metal": "metalowy",
+    "bin": "kosz",
+    "lid": "pokrywa / wieczko",
+    "head": "głowa / głowę",
+    "ducks": "uchyla się / robi unik",
+    "hits": "uderza w",
+    "wall": "ściana / ścianę",
+    "bang": "huk / trzask",
+    "uses": "używa",
+    "short": "krótki",
+    "climb": "wspinać się",
+    "iron": "żelazny / żelazo",
+    "fire": "ogień / pożar",
+    "escape": "ucieczka / ewakuacyjny (fire escape - schody ewakuacyjne)",
+    "ladder": "drabina / drabinę",
+    "moves": "porusza się",
+    "adrenaline": "adrenalina",
+    "climbing": "wspinanie się / wspinający się",
+    "up": "w górę",
+    "roof": "dach",
+    "bars": "szczeble / pręty",
+    "starts": "zaczyna",
+    "afraid": "przestraszony / bojący się",
+    "heights": "wysokości",
+    "shakes": "trzęsie się",
+    "violently": "gwałtownie / silnie",
+    "under": "pod",
+    "boots": "buty / ciężkie buty",
+    "step": "krok / szczebel",
+    "breaks": "łamie się",
+    "noise": "hałas",
+    "catches": "łapie / chwyta",
+    "himself": "siebie samego ('catches himself' - łapie równowagę / ratuje się przed upadkiem)",
+    "hands": "ręce / dłonie",
+    "higher": "wyżej",
+    "looking": "patrzący / patrzy",
+    "finally": "w końcu / ostatecznie",
+    "reaches": "dociera do / osiąga",
+    "flat": "płaski",
+    "wind": "wiatr",
+    "blowing": "wieje / wiejący",
+    "hair": "włosy",
+    "across": "przez / w poprzek",
+    "face": "twarz",
+    "ventilation": "wentylacyjne",
+    "pipes": "rury",
+    "old": "stare",
+    "television": "telewizyjne",
+    "wires": "druty / kable",
+    "heading": "kierując się",
+    "speed": "prędkość",
+    "distance": "odległość / dystans",
+    "about": "około",
+    "two": "dwa",
+    "high": "wysoko",
+    "concrete": "beton",
+    "think": "myśleć",
+    "all": "cała / całą / wszyscy",
+    "power": "moc / siła",
+    "lands": "ląduje",
+    "hard": "ciężko / twardo / mocno",
+    "next": "następny",
+    "rolls": "turla się / robi przewrót",
+    "stones": "kamienie",
+    "protect": "chronić",
+    "continues": "kontynuuje",
+    "tight": "mocno / ciasno",
+    "right": "prawa (np. right hand - prawa ręka)",
+    "edge": "krawędź",
+    "microsecond": "mikrosekunda",
+    "tiny": "malutkie",
+    "cars": "samochody",
+    "moving": "ruszają się / jadące",
+    "below": "poniżej / na dole",
+    "toys": "zabawki",
+    "feel": "czuć",
+    "any": "żaden / jakikolwiek",
+    "fear": "strach",
+    "focus": "skupienie",
+    "three": "trzy",
+    "steps": "kroki",
+    "get": "dostać / zyskać",
+    "good": "dobry",
+    "forward": "naprzód",
+    "max": "maksymalna (skrót od maximum)",
+    "flies": "leci",
+    "air": "powietrze",
+    "bird": "ptak",
+    "perfectly": "idealnie",
+    "feet": "stopy (liczba mnoga od foot)",
+    "building's": "budynku (forma dzierżawcza)",
+    "movement": "ruch",
+    "closing": "zmniejszanie / doganianie",
+    "between": "pomiędzy",
+    "yells": "krzyczy",
+    "keeps": "kontynuuje / trzyma",
+    "gravel": "żwir / żwirowy",
+    "door": "drzwi",
+    "incredibly": "niewiarygodnie / niesamowicie",
+    "close": "blisko",
+    "shoulder": "ramię / bark",
+    "open": "otwarte / otworzyć",
+    "steep": "stromy / strome",
+    "flight": "seria (np. flight of stairs - bieg schodów)",
+    "stairs": "schody",
+    "follows": "idzie za / śledzi",
+    "darkness": "ciemność",
+    "echo": "echo",
+    "labyrinth": "labirynt",
+    "end": "koniec",
+    "down": "w dół",
+    "floor": "piętro",
+    "floors": "piętra",
+    "hear": "słyszeć",
+    "wooden": "drewniane",
+    "clothing": "odzieżowa",
+    "factory": "fabryka",
+    "empty": "pusta",
+    "sunday": "niedziela",
+    "rows": "rzędy",
+    "white": "białe",
+    "sewing": "szycia (sewing machines - maszyny do szycia)",
+    "machines": "maszyny",
+    "boxes": "pudła / skrzynie",
+    "colorful": "kolorowy",
+    "fabric": "materiał / tkanina",
+    "cutting": "do krojenia (cutting tables - stoły krawieckie)",
+    "tables": "stoły",
+    "hide": "schować się",
+    "someone": "ktoś",
+    "must": "musi",
+    "be": "być",
+    "careful": "ostrożny",
+    "slows": "zwalnia",
+    "dirty": "brudne",
+    "shadows": "cienie",
+    "quietly": "cicho",
+    "closes": "zamyka się",
+    "click": "kliknięcie / trzask",
+    "laser": "laserowy",
+    "torch": "latarka",
+    "pocket": "kieszeń",
+    "thin": "cienka",
+    "light": "światło",
+    "cuts": "tnie / przecina",
+    "dust": "kurz",
+    "stops": "zatrzymuje się",
+    "footsteps": "kroki / odgłos kroków",
+    "hiding": "chowa się / ukrywa",
+    "somewhere": "gdzieś",
+    "room": "pokój / sala",
+    "loudly": "głośno",
+    "voice": "głos",
+    "echoes": "odbija się echem",
+    "cloth": "tkanina / materiał",
+    "falls": "spada",
+    "shelf": "półka",
+    "massive": "potężny / ogłuszający",
+    "boom": "huk / trzask",
+    "distraction": "odwrócenie uwagi",
+    "window": "okno",
+    "green": "zielona",
+    "curtain": "zasłona",
+    "broken": "rozbite / złamane",
+    "leads": "prowadzi",
+    "balcony": "balkon",
+    "remaining": "pozostałe / resztki",
+    "glass": "szkło",
+    "chair": "krzesło",
+    "outside": "na zewnątrz",
+    "sharp": "ostre",
+    "weak": "słabe",
+    "scary": "przerażający / straszny",
+    "cracking": "pękanie / trzeszczenie",
+    "structure": "struktura / konstrukcja",
+    "apart": "na części (breaking apart - rozpada się)",
+    "weight": "waga / ciężar",
+    "screams": "krzyczy (ze strachu)",
+    "terror": "przerażenie",
+    "disappears": "znika",
+    "desperately": "rozpaczliwie",
+    "railing": "poręcz / barierka",
+    "hanging": "wiszący",
+    "stuck": "utknięty / zaklinowany",
+    "piece": "kawałek",
+    "wood": "drewno",
+    "dangling": "wiszący / dyndający",
+    "dangerously": "niebezpiecznie",
+    "hold": "trzymać",
+    "sweaty": "spocone",
+    "slipping": "ślizgające się",
+    "forgets": "zapomina",
+    "survive": "przeżyć",
+    "hero": "bohater",
+    "hesitate": "wahać się",
+    "life": "życie",
+    "even": "nawet",
+    "thief's": "złodzieja (forma dzierżawcza)",
+    "climbs": "wspina się / wychodzi",
+    "solid": "solidny / twardy",
+    "lies": "kładzie się (lies down - kładzie się płasko)",
+    "flat": "płasko",
+    "stomach": "brzuch",
+    "extends": "wyciąga",
+    "arm": "ramię / ręka",
+    "man": "człowiek / mężczyzna",
+    "pure": "czysty (np. pure terror - czyste przerażenie)",
+    "left": "lewa (np. left hand - lewa ręka)",
+    "catch": "złapać",
+    "wrist": "nadgarstek",
+    "tight": "uścisk / mocny",
+    "grip": "uścisk",
+    "physical": "fizyczny",
+    "effort": "wysiłek",
+    "pulls": "ciągnie / wyciąga",
+    "safe": "bezpieczny",
+    "ledge": "gzyms / występ ścienny",
+    "exhausted": "wykończony",
+    "shocked": "w szoku",
+    "sits": "siada",
+    "waste": "marnować",
+    "grabs": "chwyta",
+    "zipper": "zamek błyskawiczny",
+    "checks": "sprawdza",
+    "contents": "zawartość",
+    "undamaged": "nieuszkodzony",
+    "closes": "zamyka",
+    "happily": "szczęśliwie / z radością",
+    "presses": "naciska",
+    "call": "zadzwonić / wezwać",
+    "office": "biuro",
+    "success": "sukces",
+    "secure": "zabezpieczony / bezpieczny",
+    "send": "wyślij",
+    "building": "budynek",
+    "5th": "piąta (nazwa ulicy: 5th Street)",
+    "friendly": "przyjazny",
+    "answers": "odpowiada",
+    "speaker": "głośnik",
+    "job": "praca / robota",
+    "location": "lokalizacja / miejsce",
+    "minutes": "minuty",
+    "later": "później",
+    "police": "policja / policyjne",
+    "cars": "samochody",
+    "flashing": "migające",
+    "sirens": "syreny",
+    "officers": "policjanci / oficerowie",
+    "walk": "idą / wchodzą",
+    "third": "trzecie (piętro)",
+    "take": "biorą / zabierają",
+    "handcuffs": "kajdanki",
+    "stands": "stoi",
+    "by": "przy / obok",
+    "leave": "odjeżdżać / opuszczać",
+    "feels": "czuje się",
+    "tired": "zmęczony",
+    "extremely": "niezmiernie / niezwykle",
+    "happy": "szczęśliwy",
+    "beautiful": "piękne",
+    "tonight": "dziś wieczorem",
+    "downstairs": "na dół",
+    "enters": "wchodzi do (np. wsiada do auta)",
+    "car": "samochód",
+    "rest": "odpocząć",
+    
+    // WYRAŻENIA ZŁOŻONE (IDIOMY/GRAMATYKA)
+    "dead end": "Używane jako jedno określenie: 'ślepy zaułek'.",
+    "fire escape": "Schody ewakuacyjne (przeciwpożarowe) na zewnątrz budynku.",
+    "sewing machines": "Maszyny do szycia.",
+    "just in time": "Idiom oznaczający 'w samą porę' / 'w ostatniej chwili'.",
+    "look forward to": "Wyrażenie oznaczające 'wyczekiwać czegoś z niecierpliwością'.",
+    "going to": "Konstrukcja gramatyczna używana do wyrażania przyszłości (np. coś się wydarzy)."
+};
+
+      
+
+// Przygotowanie tekstu - pakowanie każdego słowa w tagi span.word
+function initWordTokenization() {
+    const paragraphs = document.querySelectorAll('.book-content p');
+    paragraphs.forEach(p => {
+        const text = p.innerText;
+        const tokens = text.split(/(\s+)/);
+        
+        const processedTokens = tokens.map(token => {
+            if (/[a-zA-Z]/.test(token)) {
+                // Wyciągamy litery i apostrofy, usuwamy resztę interpunkcji dookoła
+                const cleanWord = token.replace(/[^a-zA-Z']/g, '');
+                const punctuation = token.replace(/[a-zA-Z']/g, '');
+                
+                return `<span class="word" onclick="handleWordClick('${cleanWord}')">${cleanWord}</span>${punctuation}`;
+            }
+            return token;
+        });
+        p.innerHTML = processedTokens.join('');
+    });
+}
+
+// Uruchomienie tokenizacji słów
+initWordTokenization();
+
+// ==========================================
+// 2. INTERAKTYWNY SYSTEM TŁUMACZENIA NA STRONIE
+// ==========================================
+let isTranslatorActive = false;
+
+function toggleTranslatorMode() {
+    isTranslatorActive = !isTranslatorActive;
+    const btn = document.getElementById('translatorToggle');
+    if (isTranslatorActive) {
+        document.body.classList.add('translator-active');
+        btn.classList.add('active');
+    } else {
+        document.body.classList.remove('translator-active');
+        btn.classList.remove('active');
+    }
+}
+
+function handleWordClick(word) {
+    if (!isTranslatorActive) return;
+
+    // Standaryzacja słowa: małe litery i usunięcie dziwnych znaków niebędących literami
+    let searchWord = word.toLowerCase().replace(/[^a-z]/g, '').trim();
+    // Odcięcie ewentualnego apostrofu (np. tom's -> tom)
+    let fallbackWord = word.toLowerCase().split("'")[0].replace(/[^a-z]/g, '').trim();
+
+    let translation = null;
+
+    // Szukamy w naszym słowniku
+    if (localDictionary[searchWord]) {
+        translation = localDictionary[searchWord];
+    } else if (localDictionary[fallbackWord]) {
+        translation = localDictionary[fallbackWord];
+    }
+
+    // Pobieramy elementy okienka modalnego ze strony
+    const modalWord = document.getElementById('modalWord');
+    const modalTranslation = document.getElementById('modalTranslation');
+    const modalOverlay = document.getElementById('translateModal');
+
+    // Ustawiamy nagłówek okienka na kliknięte słowo
+    modalWord.innerText = word;
+
+    // Generujemy uniwersalny link do Google Translate dla klikniętego słowa
+    const googleUrl = `https://translate.google.com/?sl=en&tl=pl&text=${encodeURIComponent(word)}&op=translate`;
+
+    // Opcja A: Słowo JEST w bazie danych
+    if (translation) {
+        modalTranslation.innerHTML = `
+            <div style="color: #2ecc71; font-weight: 500; margin-bottom: 15px;">
+                ${translation}
+            </div>
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 12px;">
+            <a href="${googleUrl}" target="_blank" style="display: inline-block; font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 600; padding: 4px 10px; background: rgba(162, 82, 250, 0.1); border-radius: 6px;">
+                🔍 Pełne tłumaczenie w Google
+            </a>
+        `;
+    } 
+    // Opcja B: Słowa NIE MA w bazie danych
+    else {
+        modalTranslation.innerHTML = `
+            <div style="font-size: 0.95rem; color: #e74c3c; margin-bottom: 12px; background: rgba(231, 76, 60, 0.1); padding: 8px; border-radius: 8px;">
+                Brak tłumaczenia w bazie podręcznej
+            </div>
+            <a href="${googleUrl}" target="_blank" style="display: inline-block; font-size: 0.9rem; color: var(--accent); text-decoration: underline; font-weight: 600; margin-top: 5px;">
+                🔍 Sprawdź w Google Translate
+            </a>
+        `;
+    }
+
+    // Otwieramy okienko na ekranie
+    modalOverlay.classList.add('open');
+}
+
+function closeModal(e) {
+    if (e.target.id === 'translateModal') {
+        document.getElementById('translateModal').classList.remove('open');
+    }
+}
+
+// ==========================================
+// 3. ROZWIJALNY PANEL OCHRONY WZROKU
+// ==========================================
+function toggleDropdown() {
+    document.getElementById('themeDropdown').classList.toggle('open');
+}
+
+function changeTheme(themeName) {
+    document.body.classList.remove('theme-dark', 'theme-gray', 'theme-light', 'theme-sepia');
+    
+    if (themeName !== 'dark') {
+        document.body.classList.add(`theme-${themeName}`);
+    }
+    
+    document.getElementById('themeDropdown').classList.remove('open');
+}
+
+window.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('themeDropdown');
+    if (dropdown && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('open');
+    }
+});
+
+// ==========================================
+// 4. TRYB PEŁNOEKRANOWY (FULLSCREEN)
+// ==========================================
+function toggleFullscreen() {
+    const btn = document.getElementById('fullscreenBtn');
+    
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+            btn.classList.add('active');
+            btn.innerHTML = `🔲 <span>Zamknij pełny ekran</span>`;
+        }).catch(err => {
+            console.error(`Błąd Fullscreen: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen().then(() => {
+            btn.classList.remove('active');
+            btn.innerHTML = `🔲 <span>Pełny ekran</span>`;
+        });
+    }
+}
+
+// Skok do podanej strony
+function jumpToPage() {
+    const pageNum = document.getElementById('pageInput').value;
+    if (pageNum == 1) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+        const marker = document.getElementById(`page-marker-${pageNum}`);
+        if (marker) marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+    </script>
+</body>
+</html>
