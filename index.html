@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberBooks - Darmowa Platforma E-booków</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Zmienne globalne --- */
+        :root {
+            --bg-main: #0d0e12;
+            --bg-card: rgba(22, 24, 33, 0.7);
+            --bg-navbar: rgba(13, 14, 18, 0.8);
+            --accent-primary: #a252fa;
+            --accent-secondary: #646cff;
+            --accent-gradient: linear-gradient(135deg, #646cff 0%, #f355da 100%);
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --neon-glow: rgba(162, 82, 250, 0.3);
+        }
+
+        /* --- Reset i style bazowe --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Nawigacja (Sticky Glassmorphism) --- */
+        header {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 1.2rem 5%;
+            background: var(--bg-navbar);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        header.scrolled {
+            padding: 0.9rem 5%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--text-main);
+            text-shadow: 0 0 10px var(--neon-glow);
+        }
+
+        /* --- Sekcja Hero --- */
+        .hero {
+            padding: 6rem 5% 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            text-align: center;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .hero h1 {
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 span {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 650px;
+            margin: 0 auto 2rem;
+        }
+
+        /* --- Panel Filtrowania --- */
+        .filter-panel {
+            max-width: 1400px;
+            margin: 0 auto 3rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .filter-select {
+            padding: 0.8rem 2rem 0.8rem 1.2rem;
+            background: #161821;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+        }
+
+        .filter-select:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px rgba(162, 82, 250, 0.3);
+        }
+
+        /* --- Sekcje Kategorii --- */
+        .category-section {
+            max-width: 1400px;
+            margin: 0 auto 4rem;
+            padding: 0 5%;
+            transition: all 0.5s ease;
+        }
+
+        .category-section.hidden {
+            display: none;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--accent-gradient);
+            border-radius: 2px;
+        }
+
+        /* --- Siatka i Karty E-booków --- */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 2rem;
+        }
+
+        .book-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), 
+                        border-color 0.4s ease, 
+                        box-shadow 0.4s ease, 
+                        opacity 0.4s ease, 
+                        scale 0.4s ease;
+            transform-origin: center;
+        }
+
+        /* Klasa usugująca płynnie odfiltrowane karty */
+        .book-card.hidden {
+            opacity: 0;
+            scale: 0.8;
+            position: absolute;
+            pointer-events: none;
+            width: 0;
+            height: 0;
+            padding: 0;
+            margin: 0;
+            border: none;
+            overflow: hidden;
+        }
+
+        .book-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(100, 108, 255, 0.4);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(100, 108, 255, 0.15);
+        }
+
+        /* Okładka */
+        .cover-wrapper {
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .book-card:hover .book-cover {
+            transform: scale(1.05);
+        }
+
+        /* Plakietka poziomu językowego (Glassmorphism) */
+        .level-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(13, 14, 18, 0.6);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-main);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 3;
+        }
+
+        /* Przycisk wysuwany typu Hover */
+        .hover-action {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 88%;
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.165, 0.84, 0.44, 1);
+            z-index: 2;
+        }
+
+        .book-card:hover .hover-action {
+            bottom: 1rem;
+            opacity: 1;
+        }
+
+        .btn-read {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--text-main);
+            color: var(--bg-main);
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-read:hover {
+            background: var(--accent-primary);
+            color: var(--text-main);
+            box-shadow: 0 0 15px var(--accent-primary);
+        }
+
+        /* Informacje dolne */
+        .book-info {
+            display: flex;
+            flex-direction: column;
+            transition: opacity 0.3s ease;
+        }
+
+        .book-card:hover .book-info {
+            opacity: 0.1;
+        }
+
+        .book-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.2rem;
+        }
+
+        .book-author {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* --- Responsywność --- */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero h1 { font-size: 2.3rem; }
+            .filter-panel { flex-direction: column; align-items: stretch; }
+            .books-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header id="main-header">
+        <div class="navbar">
+            <a href="#" class="logo">CyberBooks</a>
+            <ul class="nav-links">
+                <li><a href="#" class="active">Platforma</a></li>
+                <li><a href="#kategorie">Kategorie</a></li>
+                <li><a href="nowosci.html">nowosci</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>Darmowa Biblioteka Językowa <span>CyberBooks</span></h1>
+        <p>Wybierz interesującą Cię kategorię, dopasuj poziom zaawansowania angielskiego i czytaj całkowicie za darmo bez limitów.</p>
+    </section>
+
+    <div class="filter-panel" id="kategorie">
+        <div class="filter-group">
+            <label for="categorySelect">Kategoria</label>
+            <select id="categorySelect" class="filter-select" onchange="runFilter()">
+                <option value="all">Wszystkie kategorie</option>
+                <option value="zycie">Zycie</option>
+                <option value="thriller">Thriller</option>
+                <option value="akcja">Akcja</option>
+                <option value="edukacyjne">Edukacyjne</option>
+                <option value="scifi">Sci-Fi</option>
+                <option value="fantasy">Fantasy</option>
+                
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="levelSelect">Poziom Angielskiego</label>
+            <select id="levelSelect" class="filter-select" onchange="runFilter()">
+                <option value="all">Wszystkie poziomy</option>
+                <option value="A1">A1 - Beginner</option>
+                <option value="A1+">A1+ - Beginner</option>
+                <option value="A2">A2 - Elementary</option>
+                <option value="B1">B1 - Intermediate</option>
+                <option value="B2">B2 - Upper-Intermediate</option>
+                <option value="C1">C1 - Advanced</option>
+                <option value="C2">C2 - Proficient</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="library-container">
+
+        <section class="category-section" data-category="zycie">
+            <h2 class="section-title">zycie</h2>
+            <div class="books-grid">
+                <div class="book-card" data-level="A1">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">A1</div>
+                        <img src="Toms.png" class="book-cover">
+                      <a href="szablon.html"> <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div></a> 
+                    </div>
+                    <div class="book-info"><h3 class="book-title">✅Tom's new start✅</h3><p class="book-author">J. Morgan</p></div>
+                </div>
+                <div class="book-card" data-level="C1">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">C1</div>
+                        <img src="https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">The Silent Witness</h3><p class="book-author">Elena Cruz</p></div>
+                </div>
+                <div class="book-card" data-level="A2">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">A2</div>
+                        <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Cold Footsteps</h3><p class="book-author">Robert Black</p></div>
+                </div>
+                <div class="book-card" data-level="B1">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">B1</div>
+                        <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Behind Closed Doors</h3><p class="book-author">Sarah Jenkins</p></div>
+                </div>
+                <div class="book-card" data-level="C2">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">C2</div>
+                        <img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Deceptive Minds</h3><p class="book-author">Dr. Arthur Vance</p></div>
+                </div>
+            </div>
+        </section>
+
+
+         <section class="category-section" data-category="Thriller">
+            <h2 class="section-title">Thriller</h2>
+            <div class="books-grid">
+
+            </div>
+            
+        </section>
+
+        <section class="category-section" data-category="akcja">
+            <h2 class="section-title">Akcja</h2>
+            <div class="books-grid">
+                <div class="book-card" data-level="A1+">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">A1+</div>
+                        <img src="bag.png" class="book-cover">
+                      <a href="TheRedBagChase.html"> <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div></a> 
+                    </div>
+                    <div class="book-info"><h3 class="book-title">✅The Red Bag Chase✅</h3><p class="book-author">Chris Ryan</p></div>
+                </div>
+                <div class="book-card" data-level="B2">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">B2</div>
+                        <img src="https://images.unsplash.com/photo-1554188718-d807d544866c?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Terminal Velocity</h3><p class="book-author">Alex Mercer</p></div>
+                </div>
+                <div class="book-card" data-level="A1">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">A1</div>
+                        <img src="https://images.unsplash.com/photo-1536924940846-227afb31e2a5?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">The Chase</h3><p class="book-author">Tom Miller</p></div>
+                </div>
+                <div class="book-card" data-level="C1">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">C1</div>
+                        <img src="https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Apex Hunter</h3><p class="book-author">Lara Stone</p></div>
+                </div>
+                <div class="book-card" data-level="B2">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">B2</div>
+                        <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Code Name: Phoenix</h3><p class="book-author">David Vance</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="category-section" data-category="edukacyjne">
+            <h2 class="section-title">Edukacyjne</h2>
+            <div class="books-grid">
+                <div class="book-card" data-level="A1">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">A1</div>
+                        <img src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">English Grammar Basics</h3><p class="book-author">Prof. K. Smith</p></div>
+                </div>
+                <div class="book-card" data-level="B1">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">B1</div>
+                        <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Everyday Idioms</h3><p class="book-author">Lisa Johnson</p></div>
+                </div>
+                <div class="book-card" data-level="B2">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">B2</div>
+                        <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Business English Guide</h3><p class="book-author">Mark Gable</p></div>
+                </div>
+                <div class="book-card" data-level="C1">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">C1</div>
+                        <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Advanced Essay Writing</h3><p class="book-author">Dr. H. Taylor</p></div>
+                </div>
+                <div class="book-card" data-level="A2">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">A2</div>
+                        <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Phonetics for Beginners</h3><p class="book-author">Anna Reed</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="category-section" data-category="scifi">
+            <h2 class="section-title">Sci-Fi</h2>
+            <div class="books-grid">
+                <div class="book-card" data-level="C1">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">C1</div>
+                        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Quantum Core</h3><p class="book-author">Miles Foster</p></div>
+                </div>
+                <div class="book-card" data-level="B2">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">B2</div>
+                        <img src="https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">The Neon Grid</h3><p class="book-author">T. J. Newman</p></div>
+                </div>
+                <div class="book-card" data-level="A2">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">A2</div>
+                        <img src="https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Robot Citizen</h3><p class="book-author">Philip K.</p></div>
+                </div>
+                <div class="book-card" data-level="B1">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">B1</div>
+                        <img src="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Starlight Odyssey</h3><p class="book-author">Ray Vance</p></div>
+                </div>
+                <div class="book-card" data-level="C2">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">C2</div>
+                        <img src="https://images.unsplash.com/photo-1604871000636-074fa5117945?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Singularity Epoch</h3><p class="book-author">Arthur Clarke</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="category-section" data-category="fantasy">
+            <h2 class="section-title">Fantasy</h2>
+            <div class="books-grid">
+                <div class="book-card" data-level="B1">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">B1</div>
+                        <img src="https://images.unsplash.com/photo-1514894780887-121968d00567?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Chronicles of Eloria</h3><p class="book-author">G. R. R. Martin</p></div>
+                </div>
+                <div class="book-card" data-level="C1">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">C1</div>
+                        <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">The Mage's Legacy</h3><p class="book-author">Brandon S.</p></div>
+                </div>
+                <div class="book-card" data-level="A2">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">A2</div>
+                        <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">The Lost Kingdom</h3><p class="book-author">J. R. Tolkien</p></div>
+                </div>
+                <div class="book-card" data-level="B2">
+                    <div class="cover-wrapper">
+                        <div class="level-badge">B2</div>
+                        <img src="https://images.unsplash.com/photo-1560942485-b2a11cc13456?q=80&w=400&auto=format&fit=crop" class="book-cover">
+                        <div class="hover-action"><button class="btn-read">Czytaj e-book</button></div>
+                    </div>
+                    <div class="book-info"><h3 class="book-title">Shadow Bound</h3><p class="book-author">Ursula Le G.</p></div>
+                </div>
+                
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // Logika zmiany przezroczystości menu podczas przewijania (Navbar transition)
+        const header = document.getElementById('main-header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 30) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Zaawansowany filtr powiązany z animacją CSS
+        function runFilter() {
+            const selectedCat = document.getElementById('categorySelect').value;
+            const selectedLevel = document.getElementById('levelSelect').value;
+            
+            const categories = document.querySelectorAll('.category-section');
+
+            categories.forEach(section => {
+                const sectionCategory = section.getAttribute('data-category');
+                const books = section.querySelectorAll('.book-card');
+                let visibleBooksInSection = 0;
+
+                books.forEach(book => {
+                    const bookLevel = book.getAttribute('data-level');
+                    
+                    // Sprawdzenie kryteriów podwójnego filtra
+                    const matchCategory = (selectedCat === 'all' || sectionCategory === selectedCat);
+                    const matchLevel = (selectedLevel === 'all' || bookLevel === selectedLevel);
+
+                    if (matchCategory && matchLevel) {
+                        book.classList.remove('hidden');
+                        visibleBooksInSection++;
+                    } else {
+                        book.classList.add('hidden');
+                    }
+                });
+
+                // Płynne ukrywanie lub pokazywanie całego bloku kategorii, jeśli nie ma w nim książek
+                if (visibleBooksInSection > 0) {
+                    section.classList.remove('hidden');
+                } else {
+                    section.classList.add('hidden');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
