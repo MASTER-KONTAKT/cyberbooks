@@ -18,11 +18,6 @@
             --text-muted: #9ca3af;
             --neon-glow: rgba(162, 82, 250, 0.3);
         }
-        .book-meta-row {
-    display: flex;
-    justify-content: center; /* Wyśrodkuje przycisk pod tytułem */
-    margin-top: 0.6rem;
-}
 
         /* --- Reset i style bazowe --- */
         * {
@@ -532,7 +527,7 @@
             <a href="#" class="logo">CyberBooks</a>
             <ul class="nav-links">
                 <li><a href="#" class="active" id="nav-platform">Platforma</a></li>
-                <a href="biblioteka.html"><button id="nav-library-btn" class="nav-link">📚 Moja Biblioteka</button></a>
+                <li><a href="#" id="nav-library">📚 Moja Biblioteka</a></li>
                 <li><a href="#kategorie">Kategorie</a></li>
                 <li><a href="nowosci.html">Nowości</a></li>
                 <li id="auth-nav-container">
@@ -576,82 +571,51 @@
         </div>
     </div>
 
-  <div id="library-container">
+    <div id="library-container">
 
         <section class="category-section" data-category="zycie">
             <h2 class="section-title">Życie</h2>
             <div class="books-grid">
-
                 <div class="book-card" data-level="A1" data-book-id="toms_new_start">
                     <div class="cover-wrapper">
                         <div class="level-badge">A1</div>
                         <img src="Toms.png" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="szablon.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">✅Tom's new start✅</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="toms_new_start" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">✅Tom's new start✅</h3><p class="book-author">J. Morgan</p></div>
                 </div>
-
                 <div class="book-card" data-level="A1" data-book-id="lucky_the_dog">
                     <div class="cover-wrapper">
                         <div class="level-badge">A1</div>
                         <img src="pies.png" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="LuckytheDog.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">✅Lucky the Dog✅</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="lucky_the_dog" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">✅Lucky the Dog✅</h3><p class="book-author">Elena Cruz</p></div>
                 </div>
-
                 <div class="book-card" data-level="A2" data-book-id="cold_footsteps">
                     <div class="cover-wrapper">
                         <div class="level-badge">A2</div>
                         <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="ColdFootsteps.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Cold Footsteps</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="cold_footsteps" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">Cold Footsteps</h3><p class="book-author">Robert Black</p></div>
                 </div>
-
                 <div class="book-card" data-level="B1" data-book-id="behind_closed_doors">
                     <div class="cover-wrapper">
                         <div class="level-badge">B1</div>
                         <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="BehindClosedDoors.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Behind Closed Doors</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="behind_closed_doors" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">Behind Closed Doors</h3><p class="book-author">Sarah Jenkins</p></div>
                 </div>
-
                 <div class="book-card" data-level="C2" data-book-id="deceptive_minds">
                     <div class="cover-wrapper">
                         <div class="level-badge">C2</div>
                         <img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="DeceptiveMinds.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Deceptive Minds</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="deceptive_minds" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">Deceptive Minds</h3><p class="book-author">Dr. Arthur Vance</p></div>
                 </div>
-
             </div>
         </section>
 
@@ -663,294 +627,130 @@
         <section class="category-section" data-category="akcja">
             <h2 class="section-title">Akcja</h2>
             <div class="books-grid">
-
                 <div class="book-card" data-level="A1+" data-book-id="the_red_bag_chase">
                     <div class="cover-wrapper">
                         <div class="level-badge">A1+</div>
                         <img src="bag.png" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="TheRedBagChase.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">✅The Red Bag Chase✅</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="the_red_bag_chase" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">✅The Red Bag Chase✅</h3><p class="book-author">Chris Ryan</p></div>
                 </div>
-
                 <div class="book-card" data-level="B2" data-book-id="terminal_velocity">
                     <div class="cover-wrapper">
                         <div class="level-badge">B2</div>
                         <img src="https://images.unsplash.com/photo-1554188718-d807d544866c?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="TerminalVelocity.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Terminal Velocity</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="terminal_velocity" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">Terminal Velocity</h3><p class="book-author">Alex Mercer</p></div>
                 </div>
-
                 <div class="book-card" data-level="A1" data-book-id="the_chase">
                     <div class="cover-wrapper">
                         <div class="level-badge">A1</div>
                         <img src="https://images.unsplash.com/photo-1536924940846-227afb31e2a5?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="TheChase.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">The Chase</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="the_chase" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">The Chase</h3><p class="book-author">Tom Miller</p></div>
                 </div>
-
                 <div class="book-card" data-level="C1" data-book-id="apex_hunter">
                     <div class="cover-wrapper">
                         <div class="level-badge">C1</div>
                         <img src="https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="ApexHunter.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Apex Hunter</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="apex_hunter" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">Apex Hunter</h3><p class="book-author">Lara Stone</p></div>
                 </div>
-
                 <div class="book-card" data-level="B2" data-book-id="code_name_phoenix">
                     <div class="cover-wrapper">
                         <div class="level-badge">B2</div>
                         <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="CodeNamePhoenix.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Code Name: Phoenix</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="code_name_phoenix" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">Code Name: Phoenix</h3><p class="book-author">David Vance</p></div>
                 </div>
-
             </div>
         </section>
 
         <section class="category-section" data-category="edukacyjne">
             <h2 class="section-title">Edukacyjne</h2>
             <div class="books-grid">
-
                 <div class="book-card" data-level="A1" data-book-id="english_grammar_basics">
                     <div class="cover-wrapper">
                         <div class="level-badge">A1</div>
                         <img src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="EnglishGrammarBasics.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">English Grammar Basics</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="english_grammar_basics" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">English Grammar Basics</h3><p class="book-author">Prof. K. Smith</p></div>
                 </div>
-
                 <div class="book-card" data-level="B1" data-book-id="everyday_idioms">
                     <div class="cover-wrapper">
                         <div class="level-badge">B1</div>
                         <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="EverydayIdioms.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Everyday Idioms</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="everyday_idioms" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">Everyday Idioms</h3><p class="book-author">Lisa Johnson</p></div>
                 </div>
-
                 <div class="book-card" data-level="B2" data-book-id="business_english_guide">
                     <div class="cover-wrapper">
                         <div class="level-badge">B2</div>
                         <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="BusinessEnglishGuide.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Business English Guide</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="business_english_guide" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">Business English Guide</h3><p class="book-author">Mark Gable</p></div>
                 </div>
-
                 <div class="book-card" data-level="C1" data-book-id="advanced_essay_writing">
                     <div class="cover-wrapper">
                         <div class="level-badge">C1</div>
                         <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="AdvancedEssayWriting.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Advanced Essay Writing</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="advanced_essay_writing" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">Advanced Essay Writing</h3><p class="book-author">Dr. H. Taylor</p></div>
                 </div>
-
                 <div class="book-card" data-level="A2" data-book-id="phonetics_for_beginners">
                     <div class="cover-wrapper">
                         <div class="level-badge">A2</div>
                         <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="PhoneticsBeginners.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Phonetics for Beginners</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="phonetics_for_beginners" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">Phonetics for Beginners</h3><p class="book-author">Anna Reed</p></div>
                 </div>
-
-            </div>
-        </section>
-
-        <section class="category-section" data-category="scifi">
-            <h2 class="section-title">Sci-Fi</h2>
-            <div class="books-grid">
-
-                <div class="book-card" data-level="A2" data-book-id="the_lost_signals">
-                    <div class="cover-wrapper">
-                        <div class="level-badge">A2</div>
-                        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&auto=format&fit=crop" class="book-cover">
-                        <div class="hover-action"><button class="btn-read" data-href="TheLostSignals.html">Czytaj e-book</button></div>
-                    </div>
-                    <div class="book-info">
-                        <h3 class="book-title">The Lost Signals</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="the_lost_signals" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="book-card" data-level="B2" data-book-id="the_neon_grid">
-                    <div class="cover-wrapper">
-                        <div class="level-badge">B2</div>
-                        <img src="https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=400&auto=format&fit=crop" class="book-cover">
-                        <div class="hover-action"><button class="btn-read" data-href="TheNeonGrid.html">Czytaj e-book</button></div>
-                    </div>
-                    <div class="book-info">
-                        <h3 class="book-title">The Neon Grid</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="the_neon_grid" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="book-card" data-level="A2" data-book-id="robot_citizen">
-                    <div class="cover-wrapper">
-                        <div class="level-badge">A2</div>
-                        <img src="https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=400&auto=format&fit=crop" class="book-cover">
-                        <div class="hover-action"><button class="btn-read" data-href="RobotCitizen.html">Czytaj e-book</button></div>
-                    </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Robot Citizen</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="robot_citizen" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="book-card" data-level="B1" data-book-id="starlight_odyssey">
-                    <div class="cover-wrapper">
-                        <div class="level-badge">B1</div>
-                        <img src="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=400&auto=format&fit=crop" class="book-cover">
-                        <div class="hover-action"><button class="btn-read" data-href="StarlightOdyssey.html">Czytaj e-book</button></div>
-                    </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Starlight Odyssey</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="starlight_odyssey" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="book-card" data-level="C2" data-book-id="singularity_epoch">
-                    <div class="cover-wrapper">
-                        <div class="level-badge">C2</div>
-                        <img src="https://images.unsplash.com/photo-1604871000636-074fa5117945?q=80&w=400&auto=format&fit=crop" class="book-cover">
-                        <div class="hover-action"><button class="btn-read" data-href="SingularityEpoch.html">Czytaj e-book</button></div>
-                    </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Singularity Epoch</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="singularity_epoch" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </section>
 
         <section class="category-section" data-category="fantasy">
             <h2 class="section-title">Fantasy</h2>
             <div class="books-grid">
-
                 <div class="book-card" data-level="B1" data-book-id="chronicles_of_eloria">
                     <div class="cover-wrapper">
                         <div class="level-badge">B1</div>
                         <img src="https://images.unsplash.com/photo-1514894780887-121968d00567?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="ChroniclesEloria.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Chronicles of Eloria</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="chronicles_of_eloria" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">Chronicles of Eloria</h3><p class="book-author">G. R. R. Martin</p></div>
                 </div>
-
                 <div class="book-card" data-level="C1" data-book-id="the_mages_legacy">
                     <div class="cover-wrapper">
                         <div class="level-badge">C1</div>
                         <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="TheMagesLegacy.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">The Mage's Legacy</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="the_mages_legacy" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">The Mage's Legacy</h3><p class="book-author">Brandon S.</p></div>
                 </div>
-
                 <div class="book-card" data-level="A2" data-book-id="the_lost_kingdom">
                     <div class="cover-wrapper">
                         <div class="level-badge">A2</div>
                         <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="TheLostKingdom.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">The Lost Kingdom</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="the_lost_kingdom" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">The Lost Kingdom</h3><p class="book-author">J. R. Tolkien</p></div>
                 </div>
-
                 <div class="book-card" data-level="B2" data-book-id="shadow_bound">
                     <div class="cover-wrapper">
                         <div class="level-badge">B2</div>
                         <img src="https://images.unsplash.com/photo-1560942485-b2a11cc13456?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="ShadowBound.html">Czytaj e-book</button></div>
                     </div>
-                    <div class="book-info">
-                        <h3 class="book-title">Shadow Bound</h3>
-                        <div class="book-meta-row">
-                            <button class="btn-add-library" data-id="shadow_bound" title="Dodaj do biblioteki">🔖</button>
-                        </div>
-                    </div>
+                    <div class="book-info"><h3 class="book-title">Shadow Bound</h3><p class="book-author">Ursula Le G.</p></div>
                 </div>
-
             </div>
         </section>
 
@@ -974,7 +774,7 @@
         </div>
     </div>
 
-   <script>
+    <script>
         // Logika zmiany przezroczystości menu podczas przewijania (Navbar transition)
         const header = document.getElementById('main-header');
         window.addEventListener('scroll', () => {
@@ -1078,9 +878,6 @@
                         window.location.reload();
                     });
                 });
-                
-                // Opcjonalnie: Zaznacz książki już zapisane w Firestore jako dodane
-                syncLibraryButtons();
             } else {
                 authNavContainer.innerHTML = `<a href="logowanie.html" class="btn-auth">Zaloguj się</a>`;
             }
@@ -1126,7 +923,7 @@
         navLibrary.addEventListener('click', async (e) => {
             e.preventDefault();
             if (!currentUser) {
-                showModal("Dostęp zablokowany", "Musisz się zalogować, aby mieć dostęp do swojej biblioteki.", true);
+                showModal("Dostęp zablokowany", "Musisz się zalogować, aby mieć dostęp do swojej biblioteki.");
                 return;
             }
 
@@ -1136,7 +933,7 @@
             filterPanel.classList.add('hidden');
             
             heroTitle.innerHTML = `Twoja Osobista <span>Biblioteka</span>`;
-            heroDesc.innerText = `Przeglądaj książki, które aktualnie czytasz lub dodałeś na później. Twój postęp jest bezpiecznie zapisywany w chmurze.`;
+            heroDesc.innerText = `Przeglądaj książki, które aktualnie czytasz. Twój postęp jest bezpiecznie zapisywany w chmurze.`;
 
             // Ładowanie książek użytkownika z Firestore
             const grid = document.getElementById('my-library-grid');
@@ -1152,22 +949,13 @@
                     startedBooks.forEach(bookId => {
                         if (allBooksMap[bookId]) {
                             const clonedCard = allBooksMap[bookId].cloneNode(true);
-                            
-                            // Własna wizualna korekta dla kart w sekcji "Moja Biblioteka"
-                            const addBtn = clonedCard.querySelector('.btn-add-library');
-                            if(addBtn) {
-                                addBtn.innerHTML = "✔️ W bibliotece";
-                                addBtn.classList.add('added');
-                                addBtn.disabled = true;
-                            }
-
                             // Przywrócenie eventów kliknięcia dla sklonowanych elementów
                             bindCardEvents(clonedCard);
                             grid.appendChild(clonedCard);
                         }
                     });
                 } else {
-                    grid.innerHTML = '<div class="empty-library-msg">Nie masz jeszcze żadnych rozpoczętych książek. Użyj ikonki 🔖 lub kliknij "Czytaj" w sekcji głównej!</div>';
+                    grid.innerHTML = '<div class="empty-library-msg">Nie masz jeszcze żadnych rozpoczętych książek. Kliknij "Czytaj" w sekcji głównej!</div>';
                 }
             } catch (err) {
                 grid.innerHTML = '<div class="empty-library-msg">Wystąpił błąd podczas ładowania biblioteki.</div>';
@@ -1176,7 +964,7 @@
             myLibrarySection.style.display = 'block';
         });
 
-        // Logika przycisku "Czytaj" na kartach e-booków
+        // Funkcja nadpisująca kliknięcia akcji "Czytaj" na kartach e-booków
         function bindCardEvents(element) {
             const readBtn = element.querySelector('.btn-read');
             if (!readBtn) return;
@@ -1192,7 +980,7 @@
                     return;
                 }
 
-                // Logika dla zalogowanego użytkownika - automatyczny zapis do biblioteki przy czytaniu
+                // Logika dla zalogowanego użytkownika - zapis do Firestore
                 if (bookId) {
                     try {
                         const userDocRef = doc(db, "users", currentUser.uid);
@@ -1209,64 +997,7 @@
             });
         }
 
-        // GLOBAlNY NASŁUCHIWACZ KLIKNIĘĆ DLA PRZYCISKÓW "DODAJ DO BIBLIOTEKI"
-        document.addEventListener('click', async (e) => {
-            const btn = e.target.closest('.btn-add-library');
-            if (!btn) return; // Jeśli kliknięto coś innego, ignoruj
-
-            e.preventDefault();
-            const bookId = btn.getAttribute('data-id');
-
-            // 1. SPRAWDZENIE CZY UŻYTKOWNIK JEST ZALOGOWANY
-            if (!currentUser) {
-                showModal("Dostęp zablokowany", "Musisz założyć darmowe konto lub zalogować się, aby zarządzać swoją osobistą biblioteką.", true);
-                return;
-            }
-
-            // 2. JEŚLI ZALOGOWANY - DODAJ DO FIRESTORE
-            if (bookId && !btn.classList.contains('added')) {
-                try {
-                    const userRef = doc(db, "users", currentUser.uid);
-                    await updateDoc(userRef, {
-                        startedBooks: arrayUnion(bookId)
-                    });
-
-                    // Zmiana wizualna klikniętego przycisku we wszystkich miejscach na stronie
-                    document.querySelectorAll(`.btn-add-library[data-id="${bookId}"]`).forEach(b => {
-                        b.innerHTML = "✔️ Dodano";
-                        b.classList.add('added');
-                        b.disabled = true;
-                    });
-
-                } catch (error) {
-                    console.error("Błąd zapisu w bazie danych:", error);
-                    alert("Wystąpił problem z synchronizacją. Spróbuj ponownie.");
-                }
-            }
-        });
-
-        // Pomocnicza funkcja sprawdzająca przy załadowaniu, które przyciski zaznaczyć jako dodane
-        async function syncLibraryButtons() {
-            if (!currentUser) return;
-            try {
-                const userDocRef = doc(db, "users", currentUser.uid);
-                const userDocSnap = await getDoc(userDocRef);
-                if (userDocSnap.exists() && userDocSnap.data().startedBooks) {
-                    const startedBooks = userDocSnap.data().startedBooks;
-                    startedBooks.forEach(bookId => {
-                        document.querySelectorAll(`.btn-add-library[data-id="${bookId}"]`).forEach(b => {
-                            b.innerHTML = "✔️ Dodano";
-                            b.classList.add('added');
-                            b.disabled = true;
-                        });
-                    });
-                }
-            } catch (err) {
-                console.log("Błąd synchronizacji statusu przycisków.");
-            }
-        }
-
-        // Przypisanie zdarzeń startowych dla wszystkich kart na stronie głównej
+        // Przypisanie zdarzeń dla wszystkich kart domyślnych na stronie
         document.querySelectorAll('.book-card').forEach(card => bindCardEvents(card));
     </script>
 </body>
