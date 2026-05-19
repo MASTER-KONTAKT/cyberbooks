@@ -1,0 +1,158 @@
+<div class="auth-wrapper">
+  
+  <div id="auth-container" class="auth-card">
+    <h2>CyberBooks // Autoryzacja</h2>
+    
+    <div class="input-group">
+      <input type="email" id="email" required placeholder=" ">
+      <label>E-mail</label>
+    </div>
+    
+    <div class="input-group">
+      <input type="password" id="password" required placeholder=" ">
+      <label>Hasło (min. 6 znaków)</label>
+    </div>
+    
+    <div class="options-group">
+      <label class="checkbox-container">
+        <input type="checkbox" id="remember-me" checked>
+        <span class="checkmark"></span>
+        Zapamiętaj mnie
+      </label>
+    </div>
+    
+    <div id="error-message" class="error-msg"></div>
+    
+    <div class="button-group">
+      <button id="btn-login" class="btn btn-primary">Zaloguj się</button>
+      <button id="btn-signup" class="btn btn-secondary">Zarejestruj się</button>
+    </div>
+  </div>
+
+  <div id="profile-container" class="auth-card" style="display: none;">
+    <h2>Witaj w systemie!</h2>
+    <p class="user-info">Profil: <span id="user-email"></span></p>
+    
+    <div class="reading-section">
+      <h3>Zapisz postęp czytania</h3>
+      <div class="input-group">
+        <input type="text" id="book-title" required placeholder=" ">
+        <label>Tytuł książki</label>
+      </div>
+      <div class="input-group">
+        <input type="number" id="book-page" required placeholder=" ">
+        <label>Numer strony</label>
+      </div>
+      <button id="btn-save" class="btn btn-primary">Zapisz stronę</button>
+    </div>
+    
+    <div id="saved-progress" class="progress-box"></div>
+    
+    <button id="btn-logout" class="btn btn-danger">Wyloguj profil</button>
+  </div>
+</div>
+
+<style>
+  .auth-wrapper {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 50vh;
+    background: #0d0e12;
+    padding: 20px;
+  }
+  .auth-card {
+    background: #161920;
+    border: 1px solid #00ffcc33;
+    border-radius: 12px;
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    color: #ffffff;
+  }
+  .auth-card h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 22px;
+    color: #00ffcc;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .input-group {
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .input-group input {
+    width: 100%;
+    padding: 12px 10px;
+    background: #1f232e;
+    border: 1px solid #313848;
+    border-radius: 6px;
+    color: #fff;
+    outline: none;
+    box-sizing: border-box;
+    transition: 0.3s;
+  }
+  .input-group input:focus {
+    border-color: #00ffcc;
+    box-shadow: 0 0 8px rgba(0,255,204,0.2);
+  }
+  .input-group label {
+    position: absolute;
+    left: 10px;
+    top: 12px;
+    color: #6c7a9c;
+    pointer-events: none;
+    transition: 0.2s;
+  }
+  .input-group input:focus ~ label,
+  .input-group input:not(:placeholder-shown) ~ label {
+    top: -18px;
+    left: 5px;
+    font-size: 12px;
+    color: #00ffcc;
+  }
+  .options-group { margin-bottom: 20px; }
+  .checkbox-container {
+    display: flex;
+    align-items: center;
+    color: #a0aec0;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .checkbox-container input { margin-right: 8px; }
+  .error-msg {
+    color: #ff4a4a;
+    font-size: 14px;
+    margin-bottom: 15px;
+    min-height: 20px;
+    font-weight: 500;
+  }
+  .button-group {
+    display: flex;
+    gap: 10px;
+  }
+  .btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+  }
+  .btn-primary { background: #00ffcc; color: #0d0e12; }
+  .btn-primary:hover { background: #00ccaa; }
+  .btn-secondary { background: #242b3d; color: #fff; border: 1px solid #313848; }
+  .btn-secondary:hover { background: #2f3850; }
+  .btn-danger { background: #ff4a4a; color: #fff; width: 100%; margin-top: 20px; }
+  .btn-danger:hover { background: #e03b3b; }
+  .user-info { color: #a0aec0; margin-bottom: 20px; }
+  .reading-section { border-top: 1px solid #242b3d; padding-top: 20px; margin-top: 20px; }
+  .reading-section h3 { font-size: 16px; margin-bottom: 15px; color: #00ffcc; }
+  .progress-box { background: #1f232e; padding: 12px; border-radius: 6px; margin-top: 15px; font-size: 14px; border-left: 3px solid #00ffcc; }
+</style>
+
+<script type="module" src="logowanie.js"></script>
