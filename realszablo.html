@@ -380,6 +380,9 @@
                     ⬅️ <span>Strona główna</span>
                 </a>
             </div>
+            <div id="online-counter" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9rem; color: #2ecc71; font-weight: bold; background: rgba(46, 204, 113, 0.1); padding: 4px 10px; border-radius: 20px; margin-left: 10px;">
+    🟢 Online: <span id="active-users-count">1</span>
+</div>
             
             <div class="nav-group">
                 <div class="page-jumper">
@@ -502,6 +505,73 @@ function superCleanWord(word) {
         .replace(/[^a-zA-Z']/g, '')     // Wymazuje każdy znak specjalny, cyfrę, spację, tabulator, niewidoczny bajt
         .trim();
 }
+    // 7. WERYFIKACJA FIREBASE + LICZNIK ONLINE LIVE
+(function() {
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.innerHTML = `
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        // Importujemy potrzebne funkcje z bazy Firestore
+        import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCNg0JnAgAH39y9D-8vhJKwQ10JYxx5Z0s",
+          authDomain: "cyberbook-83464.firebaseapp.com",
+          projectId: "cyberbook-83464",
+          storageBucket: "cyberbook-83464.firebasestorage.app",
+          messagingSenderId: "93288968489",
+          appId: "1:93288968489:web:61a2651a867903dff769c8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        document.body.style.opacity = '0';
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'logowanie.html';
+            } else {
+                await loadDictionary();
+                initWordTokenization();
+                document.body.style.opacity = '1';
+                document.body.style.transition = 'opacity 0.4s ease';
+
+                // --- LOGIKA LICZNIKA ONLINE ---
+                // Tworzymy unikalny identyfikator obecności dla tej sesji przeglądarki
+                const userPresenceRef = doc(db, "online_users", user.uid);
+                
+                // Zgłaszamy obecność w bazie przy wejściu
+                await setDoc(userPresenceRef, {
+                    email: user.email,
+                    lastActive: Date.now()
+                });
+
+                // Nasłuchujemy na żywo, ile osób jest w kolekcji "online_users"
+                onSnapshot(collection(db, "online_users"), (snapshot) => {
+                    const count = snapshot.size;
+                    const counterEl = document.getElementById('active-users-count');
+                    if (counterEl) {
+                        counterEl.innerText = count;
+                    }
+                });
+
+                // Usuwamy obecność z bazy, kiedy użytkownik zamyka kartę lub odchodzi ze strony
+                window.addEventListener('beforeunload', () => {
+                    deleteDoc(userPresenceRef);
+                });
+                
+                // Awaryjne czyszczenie przy wylogowaniu
+                window.addEventListener('unload', () => {
+                    deleteDoc(userPresenceRef);
+                });
+            }
+        });
+    `;
+    document.head.appendChild(script);
+})();
 
 // 2. PRZYGOTOWANIE TEKSTU (TOKENIZACJA SŁÓW)
 function initWordTokenization() {
