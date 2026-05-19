@@ -128,7 +128,6 @@
             box-shadow: 0 0 15px var(--neon-glow);
         }
 
-        /* Opcje dodatkowe - Zapamiętaj mnie */
         .options-group {
             margin-bottom: 1.5rem;
         }
@@ -160,7 +159,7 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 0.5rem;
+            margin-top: 1rem;
             transition: all 0.3s ease;
         }
 
@@ -169,27 +168,6 @@
             transform: translateY(-2px);
         }
 
-        /* Przycisk logowania kodem */
-        .btn-email-link {
-            width: 100%;
-            padding: 0.9rem;
-            background: transparent;
-            color: var(--text-main);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            margin-top: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .btn-email-link:hover {
-            border-color: var(--accent-primary);
-            background: rgba(162, 82, 250, 0.05);
-        }
-
-        /* Komunikaty o błędach/powodzeniach */
         .alert {
             padding: 0.8rem 1rem;
             border-radius: 12px;
@@ -243,9 +221,9 @@
                     <label for="login-email">Adres E-mail</label>
                     <input type="email" id="login-email" placeholder="twoj-email@example.com" required>
                 </div>
-                <div class="input-group" id="password-group">
+                <div class="input-group">
                     <label for="login-password">Hasło</label>
-                    <input type="password" id="login-password" placeholder="••••••••">
+                    <input type="password" id="login-password" placeholder="••••••••" required>
                 </div>
 
                 <div class="options-group">
@@ -255,8 +233,7 @@
                     </label>
                 </div>
 
-                <button type="submit" class="btn-submit" id="btn-login-submit">Zaloguj się</button>
-                <button type="button" class="btn-email-link" id="btn-send-link">🚀 Wyślij kod logowania na e-mail</button>
+                <button type="submit" class="btn-submit">Zaloguj się</button>
             </form>
         </div>
 
