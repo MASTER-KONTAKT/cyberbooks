@@ -69,7 +69,7 @@ function translateError(code) {
         case 'auth/weak-password':
             return 'Hasło musi składać się z minimum 6 znaków.';
         case 'unverified-email':
-            return '⚠️ Twój adres e-mail nie został jeszcze zweryfikowany! Kliknij w link wysłany na Twoją skrzynkę pocztową.';
+            return '⚠️ Twój adres e-mail nie został jeszcze zweryfikowany! Kliknij w link wysłany na Twoją skrzynkę pocztową .';
         default:
             return 'Wystąpił nieoczekiwany błąd. Spróbuj ponownie.';
     }
