@@ -1,0 +1,3140 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberBooks Reader Pro - Zaawansowany Czytnik</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Tematy kolorystyczne (Zmienne CSS) --- */
+        :root {
+            /* Domyślny Czarny (Dark Mode) */
+            --bg-main: #0d0e12;
+            --bg-interface: rgba(22, 24, 33, 0.85);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #e2e8f0;
+            --text-interface: #ffffff;
+            --text-muted: #9ca3af;
+            --accent: #a252fa;
+            --accent-glow: rgba(162, 82, 250, 0.3);
+            --book-bg: #0d0e12;
+            --book-text: #e2e8f0;
+            --book-font: 'Merriweather', serif;
+        }
+
+        body.theme-gray {
+            --bg-main: #2d3139;
+            --bg-interface: rgba(53, 58, 68, 0.9);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #e1e4ea;
+            --text-interface: #ffffff;
+            --text-muted: #a0a5b1;
+            --book-bg: #2d3139;
+            --book-text: #e1e4ea;
+        }
+
+        body.theme-light {
+            --bg-main: #f8fafc;
+            --bg-interface: rgba(255, 255, 255, 0.9);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --text-main: #1e293b;
+            --text-interface: #0f172a;
+            --text-muted: #64748b;
+            --book-bg: #f8fafc;
+            --book-text: #1e293b;
+        }
+
+        body.theme-sepia {
+            --bg-main: #f4edd9;
+            --bg-interface: rgba(235, 226, 204, 0.95);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --text-main: #2c2519;
+            --text-interface: #1e170c;
+            --text-muted: #7d725f;
+            --book-bg: #f4edd9;
+            --book-text: #2c2519;
+        }
+
+        /* --- Reset i bazy --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, transform 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Pasek Nawigacyjny --- */
+        header {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 0.8rem 5%;
+            background: var(--bg-interface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Przycisk akcji interfejsu */
+        .btn-nav {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-interface);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-nav:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--text-muted);
+        }
+
+        .btn-nav.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        /* Pola numeryczne stron */
+        .page-jumper {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .page-input {
+            width: 50px;
+            padding: 0.4rem;
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-interface);
+            text-align: center;
+            font-size: 0.88rem;
+            outline: none;
+        }
+
+        /* --- Panel Ochrony Wzroku (Rozwijane Menu) --- */
+        .dropdown-wrapper {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 130%;
+            right: 0;
+            background: var(--bg-interface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 0.8rem;
+            width: 260px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 150;
+        }
+
+        .dropdown-wrapper.open .dropdown-menu {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .theme-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-interface);
+            font-weight: 500;
+        }
+
+        .theme-option:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        body.theme-light .theme-option:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .theme-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .healthy-tag {
+            font-size: 0.72rem;
+            color: #2ecc71;
+            font-weight: 600;
+            margin-left: auto;
+            margin-right: 8px;
+        }
+
+        /* --- Kolumna Tekstu --- */
+        .reader-container {
+            max-width: 740px; /* Perfekcyjna szerokość do skupienia wzroku */
+            margin: 0 auto;
+            padding: 4rem 1.5rem 8rem;
+            background-color: var(--book-bg);
+        }
+
+        .book-content {
+            font-family: var(--book-font);
+            font-size: 1.25rem;
+            line-height: 1.9;
+            color: var(--book-text);
+            text-align: justify;
+        }
+
+        .book-content h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.2rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-interface);
+        }
+
+        .book-content p {
+            margin-bottom: 1.6rem;
+            text-indent: 1.5rem;
+        }
+
+        /* Separator stron */
+        .page-break {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 4rem 0;
+            position: relative;
+        }
+
+        .page-break::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: var(--border-color);
+            z-index: 1;
+        }
+
+        .page-num {
+            background: var(--bg-main);
+            padding: 0 1.5rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            z-index: 2;
+            letter-spacing: 1px;
+        }
+
+        /* --- Obsługa Aktywnego Tłumacza --- */
+        body.translator-active .book-content p span.word {
+            cursor: help;
+            border-bottom: 1px dashed var(--accent);
+            padding: 0 1px;
+        }
+
+        body.translator-active .book-content p span.word:hover {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        /* --- Okno Modalne Słownika --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--bg-interface);
+            border: 1px solid var(--border-color);
+            padding: 2.2rem;
+            border-radius: 24px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.open .modal {
+            transform: scale(1);
+        }
+
+        .modal h3 {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal .word-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-interface);
+            margin-bottom: 0.8rem;
+        }
+
+        .modal .word-translation {
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+            padding: 0.6rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-close {
+            padding: 0.6rem 1.8rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* --- Responsywność --- */
+        @media (max-width: 768px) {
+            header { padding: 0.8rem 3%; }
+            .btn-nav span { display: none; } /* Ukryj opisy tekstowe przycisków na mobile */
+            .reader-container { padding: 2rem 1rem 4rem; } /* Zanikanie marginesów bocznych */
+            .book-content { font-size: 1.15rem; line-height: 1.8; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+
+            <div class="nav-group">
+                <a href="sdfdsf.html" class="btn-nav return-btn" style="text-decoration: none;">
+                    ⬅️ <span>Strona główna</span>
+                </a>
+            </div>
+            
+            <div class="nav-group">
+                <div class="page-jumper">
+                    <input type="number" id="pageInput" class="page-input" min="1" max="2" value="1">
+                    <button class="btn-nav" onclick="jumpToPage()">Idź</button>
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <div class="dropdown-wrapper" id="themeDropdown">
+                    <button class="btn-nav" onclick="toggleDropdown()">🎨 <span>Styl ekranu</span></button>
+                    <div class="dropdown-menu">
+                        <div class="theme-option" onclick="changeTheme('dark')">
+                            <span>Ciemny (Dark)</span>
+                            <div class="theme-dot" style="background: #0d0e12;"></div>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('gray')">
+                            <span>Szary (Muted)</span>
+                            <div class="theme-dot" style="background: #2d3139;"></div>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('light')">
+                            <span>Jasny (Light)</span>
+                            <div class="theme-dot" style="background: #f8fafc;"></div>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('sepia')">
+                            <span>Sepia</span>
+                            <span class="healthy-tag">(Zdrowy ✨)</span>
+                            <div class="theme-dot" style="background: #f4edd9;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-nav" id="fullscreenBtn" onclick="toggleFullscreen()">🔲 <span>Pełny ekran</span></button>
+            </div>
+
+            <div class="nav-group">
+                <button class="btn-nav" id="translatorToggle" onclick="toggleTranslatorMode()">🌐 Tłumacz słowo</button>
+            </div>
+
+        </div>
+    </header>
+
+    <div class="reader-container">
+        <article class="book-content" id="bookContent">
+            
+           <div id="page-1">
+                <h2>Chapter 1: The Rain and the Radio</h2>
+                <p>The night was dark, cold, and wet. Jack drove his silver taxi through the empty streets of the city. It was 3:15 AM. The rain hit the front window of the car with a loud, rhythmic sound. Jack was very tired. He worked for ten hours without a break, and his eyes felt heavy. He wanted to go home, drink a hot cup of tea, and sleep in his comfortable bed.</p>
+                <p>Suddenly, the radio in his car made a strange static noise. The local news presenter spoke with a serious and worried voice: "Attention to all drivers in the north sector. Police are looking for a dangerous man. He escaped from the city prison two hours ago. He is wearing a dark jacket and carries a black leather bag. If you see him, do not go near him. Call the police immediately." Jack changed the station. He did not like bad news at night.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-2">Strona 2</span>
+            </div>
+
+            <div id="page-2">
+                <p>Jack stopped his car at a red light near the old train station. The streets were completely empty. There were no other cars and no people on the sidewalks. The yellow streetlights painted long, strange shadows on the wet asphalt. Jack looked at the digital clock on his dashboard. 3:22 AM. "Just one more passenger," he thought to himself, "and then I finish my work for tonight."</p>
+                <p>As the traffic light turned green, Jack saw a person standing under a broken street lamp. The person did not have an umbrella and was completely wet from the heavy rain. The stranger raised a hand to stop the taxi. Jack hesitated for a brief second. It was late, and the area was unsafe. But he needed the money, so he pressed the brakes and stopped the car near the sidewalk.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-3">Strona 3</span>
+            </div>
+
+            <div id="page-3">
+                <p>The back door of the taxi opened quickly. A cold wave of wet air entered the vehicle. A tall man sat down in the back seat and closed the door with a loud bang. He pulled his hood low over his face, hiding his eyes in the deep shadow. Jack looked into his rearview mirror, trying to see the passenger's face, but it was impossible. The man sat in total silence, breathing heavily.</p>
+                <p>"Good evening, sir," Jack said in a polite voice, turning around slightly. "Where do you want to go?" The passenger did not answer immediately. He took a deep breath, and Jack noticed that the man's hands were shaking violently. In his right hand, the stranger held a thick, heavy black leather bag. Jack's heart skipped a beat. He remembered the warning on the radio.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-4">Strona 4</span>
+            </div>
+
+            <div id="page-4">
+                <p>"Drive north," the passenger finally whispered. His voice was deep, cold, and dry. "Drive to the old industrial harbor. Take the highway, and do not stop for anything. Do you understand?" Jack swallowed hard. The industrial harbor was an abandoned place near the river, miles away from the safe center of the city. Nobody went there at night.</p>
+                <p>"Yes, sir," Jack replied softly. He turned the steering wheel and drove away from the train station. He felt a sudden chill in his spine. The silence inside the car became heavy and terrifying. The only sound was the clicking of the taxi meter and the relentless rain outside. Jack looked at his phone on the dashboard. It was too far to reach without the passenger noticing.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-5">Strona 5</span>
+            </div>
+
+            <div id="page-5">
+                <h2>Chapter 2: The Highway Trap</h2>
+                <p>The taxi entered the highway that led north. The road was dark because many of the lights did not work. Jack drove at ninety kilometers per hour, keeping his eyes on the road. In the rearview mirror, he watched the passenger. The man did not move. He sat like a stone statue, but his fingers held the black leather bag very tightly. Suddenly, a bright light appeared behind them.</p>
+                <p>Another car was behind the taxi. It was a large, black SUV with tinted windows. The SUV moved extremely fast. It came very close to Jack's bumper, flashing its high beams violently. The bright light filled the interior of the taxi, illuminating the passenger's face for a microsecond. Jack saw a sharp scar on the man's cheek and wide, terrified eyes. The passenger looked back and panicked.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-6">Strona 6</span>
+            </div>
+
+            <div id="page-6">
+                <p>"Faster! Acceleration now!" the passenger shouted, leaning forward. His cold breath hit the back of Jack's neck. "Do not let them catch us! Go, go!" Jack pressed his foot down on the gas pedal. The taxi responded immediately, its tires splashing water as the speed rose to one hundred and twenty kilometers per hour. The engine roared loudly in the quiet night.</p>
+                <p>But the black SUV was more powerful than Jack's old car. It easily matched their speed and moved to the left lane. The giant vehicle came side by side with the taxi. Jack looked to his left. Through the wet glass, he saw two men inside the SUV. They wore dark masks. Suddenly, the passenger side window of the SUV rolled down, and Jack saw a heavy metallic object in the driver's hand. They wanted to stop the taxi by force.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-7">Strona 7</span>
+            </div>
+
+            <div id="page-7">
+                <p>"Hold on!" Jack yelled. He hit the brakes hard. The taxi decelerated violently, and the black SUV flew past them, losing its position. The unexpected maneuver saved them for a moment. Jack quickly turned the steering wheel to the right, taking a sudden exit off the highway. The tires screeched on the wet asphalt, and the car skidded slightly, but Jack controlled the slide like a professional driver.</p>
+                <p>The taxi entered a narrow, secondary road surrounded by thick forests. There were no lights here at all. Jack turned off the main headlights and only used the small fog lights to see the road ahead. He wanted to become invisible in the dark night. He looked at the rearview mirror again. The black SUV was not there. They lost their pursuers, but the danger was not over.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-8">Strona 8</span>
+            </div>
+
+            <div id="page-8">
+                <p>The passenger sank back into the seat, breathing like a runner after a marathon. He opened the black leather bag a few centimeters. Jack looked into the mirror and saw a soft, metallic blue glow coming from inside the bag. It was not money or gold. It looked like an advanced electronic device with moving lights and wires. The passenger quickly closed the zipper, noticing Jack's curious look.</p>
+                <p>"You drive well, taxi man," the stranger said, his voice calmer now but still dangerous. "What is your name?" Jack hesitated before answering. "My name is Jack," he said softly. "Listen, sir, I don't want any trouble. Those men in the SUV... they had weapons. Who are they? What is inside that bag?" The man remained silent for a long moment, looking out at the dark trees.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-9">Strona 9</span>
+            </div>
+
+            <div id="page-9">
+                <p>"The less you know, Jack, the longer you live," the passenger answered coldly. "Just know that those men are not police officers. They work for a very powerful and bad organization. If they get this bag, the consequences for the city will be catastrophic. We must reach the harbor before 4:00 AM. If we are late, everything ends." Jack checked his dashboard clock. 3:42 AM. They had eighteen minutes left.</p>
+                <p>The narrow road was full of dangerous curves and deep puddles of water. Jack had to focus all his attention on driving. The adrenaline kept him awake, replacing his previous tiredness with intense focus. He knew he was part of something giant and deadly now. He could not run away. His only choice was to drive forward into the darkness.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-10">Strona 10</span>
+            </div>
+
+            <div id="page-10">
+                <p>Suddenly, the forest ended, and the air smelled like salt and wet wood. In the distance, Jack saw the giant metal cranes and old brick warehouses of the abandoned industrial harbor. The area looked like a ghost town. There were no lights, and the heavy fog from the river made the visibility extremely poor. Jack slowed the taxi down as they approached the main entrance gate.</p>
+                <p>"Stop the car here, near the third warehouse," the passenger commanded, pointing to a dark, massive building at the edge of the water. Jack stopped the taxi and turned off the engine. The silence returned, louder than before. The passenger opened his door and stepped out into the rain. Then, he turned to Jack and said: "Come with me. I need your help, and you cannot stay in the car anymore. They found us." Jack looked at his side mirror and saw two pairs of bright headlights entering the harbor gate.</p>
+            </div>
+            <div id="page-11">
+                <h2>Chapter 3: The Ghost Warehouse</h2>
+                <p>Jack froze in his seat. The bright headlights in his rearview mirror were closing in fast. He could hear the distant roar of the SUV engines over the sound of the rain. He had no choice. He grabbed his phone from the dashboard, pushed his door open, and stepped out into the freezing downpour. The wet wind hit his face, instantly soaking his uniform jacket.</p>
+                <p>The passenger was already moving toward the small side door of the massive brick warehouse. Jack ran after him, his boots splashing through deep puddles of dirty water. They slipped inside the building just as the two dark SUVs screeched to a halt outside. The passenger quickly pulled a heavy iron bar across the door, locking it from the inside with a loud metallic thud.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-12">Strona 12</span>
+            </div>
+
+            <div id="page-12">
+                <p>Inside, the warehouse was pitch black and smelled of old salt, rust, and wet wood. The ceiling was incredibly high, and Jack could hear the rain drumming furiously on the metal roof far above. He turned on his phone’s flashlight, casting a thin beam of light into the darkness. The light revealed giant wooden crates, old shipping containers, and broken machinery covered in thick dust.</p>
+                <p>"Turn that off!" the passenger hissed, slapping Jack’s hand down. The room plunged back into darkness. "They have night-vision equipment. A bright light makes us an easy target." Jack swallowed hard, his heart hammering against his ribs. He stood perfectly still, listening. Outside, he heard the heavy doors of the SUVs open and close. The pursuers were here.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-13">Strona 13</span>
+            </div>
+
+            <div id="page-13">
+                <p>Suddenly, a loud crash echoed through the warehouse. One of the large glass windows near the roof shattered, and pieces of glass rained down onto the concrete floor. A flashlight beam, thin and sharp like a laser, cut through the dark space from above. The men from the organization were entering the building through the upper fire escape routes.</p>
+                <p>"Follow me, and stay low," the passenger whispered, pulling Jack by the arm. They moved slowly through the maze of wooden crates. The passenger walked with surprising confidence in the dark, keeping a tight grip on the heavy leather bag. Jack followed closely, trying not to make any sound on the dusty floor. Every step felt like a gamble.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-14">Strona 14</span>
+            </div>
+
+            <div id="page-14">
+                <p>They reached the center of the warehouse, where an old metal staircase led down into a basement sector. The passenger opened a heavy hatch in the floor. "We need to get to the underground drainage tunnels," he explained softly. "They connect directly to the river docks where my team is waiting. If we stay on the main floor, they will surround us in minutes."</p>
+                <p>Jack looked down into the dark opening. A smell of old water and concrete rose from the hatch. He didn't want to go down there, but a sudden shout from the far side of the warehouse made his choice easy. "They are near the center! Spread out!" a cold voice yelled. Jack quickly climbed down the metal ladder, closing the heavy hatch quietly above his head.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-15">Strona 15</span>
+            </div>
+
+            <div id="page-15">
+                <h2>Chapter 4: The Underground Labyrinth</h2>
+                <p>The basement tunnel was narrow and constructed of old, smooth concrete blocks. A few centimeters of cold water covered the floor, sloshing against Jack's boots as they walked. The passenger turned on a very small, dim blue light pen. It provided just enough illumination to see the walls without creating a bright reflection that could betray their position.</p>
+                <p>They walked quickly for five minutes, turning left and right through the identical concrete corridors. Jack completely lost his sense of direction. "Who are you really?" Jack asked in a low whisper, unable to contain his curiosity any longer. "The radio said you escaped from the city prison, but you don't look like a common criminal to me."</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-16">Strona 16</span>
+            </div>
+
+            <div id="page-16">
+                <p>The man stopped for a brief moment and turned to look at Jack. In the dim blue light, his face looked tired but determined. "My name is Logan," he said quietly. "I am a cyber-security specialist. I didn't rob a bank, Jack. I stole this prototype device from the organization's private laboratory because they wanted to use it to shut down the city's entire power grid."</p>
+                <p>Logan patted the leather bag. "The prison was just a temporary holding facility they controlled using corrupt guards. My team helped me break out tonight so we could get this device to a safe location. If the organization gets it back, they will control every piece of digital technology in the country." Jack stared at him, realizing the true weight of the situation.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-17">Strona 17</span>
+            </div>
+
+            <div id="page-17">
+                <p>Suddenly, a heavy thud echoed from the tunnel behind them. The hatch above had been opened. The pursuers found the entrance to the labyrinth. Loud footsteps splashed violently through the water, moving fast in their direction. "They are in the drainage system!" a voice shouted from a distance. The echo made it sound like they were everywhere.</p>
+                <p>"Run!" Logan shouted, abandoning all attempts at silence. They sprinted forward through the dark tunnel, splashing water high into the air. The physical effort was intense. Jack’s lungs burned, and his wet clothes felt heavy like lead, but the fear of being caught kept his legs moving. The tunnel began to slope upward ahead of them.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-18">Strona 18</span>
+            </div>
+
+            <div id="page-18">
+                <p>At the end of the tunnel, a rusty iron ladder led up to a small exit grate. Logan reached it first and pushed against the metal bars with all his strength. The old lock resisted for a second, then broke with a sharp snap. Logan climbed out into the open air, and Jack quickly followed, scrambling onto the wet wooden planks of the old river docks.</p>
+                <p>The rain was still falling heavily, and the thick river fog limited their visibility to just a few meters. The river water was dark and choppy, slapping violently against the wooden pilings of the dock. In the distance, through the grey mist, Jack could see the faint blinking green light of a small boat. "They are here," Logan said with a sigh of relief.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-19">Strona 19</span>
+            </div>
+
+            <div id="page-19">
+                <p>They ran toward the edge of the dock, but before they could reach the boat, a large figure stepped out from behind a stack of shipping crates, blocking their path. It was a tall man wearing a long black coat and a dark mask. In his right hand, he held a heavy flashlight, aiming the bright beam directly into Logan's eyes, blinding him instantly.</p>
+                <p>"Drop the bag, Logan," the masked man commanded in a calm, terrifying voice. "You have nowhere left to run. The entire harbor is surrounded, and your little boat cannot save you now." Logan froze, holding the bag tightly against his chest. Jack looked around desperately, looking for a way out, but the metal grate behind them was their only exit.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-20">Strona 20</span>
+            </div>
+
+            <div id="page-20">
+                <p>Jack knew he had to act. He was just a taxi driver, but he couldn't let these people take the device and destroy his city. He looked down at his feet and saw a thick, heavy iron wrench lying on the wet wood, probably dropped by a harbor mechanic. Keeping his movements hidden in the thick fog, Jack slowly reached down and gripped the cold metal tool.</p>
+                <p>The masked man stepped closer to Logan, reaching out his hand for the leather bag. The adrenaline surged through Jack's veins, completely erasing his tiredness. With a sudden, explosive movement, he stepped forward, ready to defend his companion and secure their escape. The final confrontation at the harbor had begun.</p>
+            </div>
+
+            <div id="page-21">
+                <h2>Chapter 5: The Choice on the Docks</h2>
+                <p>The masked man did not see Jack's quick movement in the thick river fog. Jack swung the heavy iron wrench and hit the man's flashlight. The tool made a loud metallic sound, and the flashlight flew out of the man's hand, rolling across the wet wooden planks. The bright beam vanished into the dark, choppy water of the river.</p>
+                <p>The sudden darkness confused the attacker. Logan used this second to react. He pushed the masked man back with all his strength. The man lost his balance on the slippery wood and fell into a stack of empty plastic barrels. "Run to the boat, Jack! Now!" Logan shouted, already sprinting toward the edge of the wooden dock.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-22">Strona 22</span>
+            </div>
+
+            <div id="page-22">
+                <p>They reached the end of the pier. The small motorboat was bobbing violently on the rough water. A woman with short dark hair was at the steering wheel. She looked terrified but determined. "Logan! Jump!" she yelled over the roar of the wind. Logan did not hesitate; he jumped down onto the moving deck of the boat, landing safely with the leather bag.</p>
+                <p>Jack stood at the edge of the dock. His heart was beating incredibly fast. If he jumped, he would leave his old taxi and his normal life behind forever. But if he stayed, the organization men would find him in seconds. Behind him, loud footsteps and shouting voices echoed from the warehouse exit. They were closing in.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-23">Strona 23</span>
+            </div>
+
+            <div id="page-23">
+                <p>"Jack, come on! There is no time!" Logan screamed from the boat, extending his hand. Jack took a deep breath and jumped. He landed hard on the metal deck just as the woman pressed the throttle. The boat's engine roared to life, spinning the propeller violently. The small vessel leaped forward into the deep fog, away from the wooden pier.</p>
+                <p>Two men from the organization ran to the edge of the dock, flashing bright lights into the mist. They shouted angrily, but the boat was already too far. The thick river fog swallowed them completely, hiding them from the harbor. Jack sat on the floor of the boat, wet, cold, and exhausted, but he was alive.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-24">Strona 24</span>
+            </div>
+
+            <div id="page-24">
+                <h2>Chapter 6: Safe Waters</h2>
+                <p>The woman navigated the boat through the darkness with great skill. Her name was Clara, and she was the second member of Logan’s specialist team. "Thanks for saving him, taxi driver," Clara said, looking at Jack for a brief second. "Logan told me what happened on the highway. You drive like a stuntman."</p>
+                <p>"I just wanted to finish my shift," Jack said, shaking his head in disbelief. He looked at his hands, which were still trembling from the adrenaline. The boat moved quickly down the river, away from the city center. The skyscrapers looked like distant, silent giants behind the curtain of heavy rain. The danger felt smaller now, but it was not gone.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-25">Strona 25</span>
+            </div>
+
+            <div id="page-25">
+                <p>Logan sat next to Jack and opened the black bag to check the prototype device. The soft blue light illuminated his worried face. "The battery is low," Logan muttered. "We need to connect it to a stable power source soon. If the system shuts down incorrectly, it will trigger an automatic security blast that deletes all the data inside."</p>
+                <p>"Where are we going?" Jack asked, wrapping a dry blanket around his shoulders. Clara answered without turning around: "We have a safe house in an old fishing village ten miles down the river. It has a private generator and an encrypted satellite connection. The organization doesn't know about that place yet."</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-26">Strona 26</span>
+            </div>
+
+            <div id="page-26">
+                <p>The journey took forty minutes. The rain slowly stopped, leaving only a cold, grey mist over the water. The sky in the east began to turn a pale blue—the first sign of dawn. Clara turned the boat into a small, hidden canal surrounded by tall green reeds. At the end of the canal stood a small, wooden house with a metal roof.</p>
+                <p>They tied the boat to a small wooden post and quickly entered the house. Inside, it looked like a modern office hidden in a rustic cabin. There were several fast computers, maps on the walls, and a large workbench in the center. Logan immediately plugged the blue prototype device into a thick black cable connected to a computer.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-27">Strona 27</span>
+            </div>
+
+            <div id="page-27">
+                <h2>Chapter 7: The Blue Code</h2>
+                <p>The computer screens illuminated the dark room with bright white text. Logan’s fingers moved across the keyboard with incredible speed. "The connection is stable," he said with a sigh of relief. "The data is downloading now. Look at this, Jack. This is the blueprint of the city's main digital infrastructure."</p>
+                <p>Jack walked over to the screen. He saw a complex map of lines and nodes that represented every power plant, subway station, and hospital in the city. A small red virus icon was sitting at the center of the system. "The organization already planted the virus," Logan explained. "They are waiting for this prototype to activate it."</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-28">Strona 28</span>
+            </div>
+
+            <div id="page-28">
+                <p>"Can we delete it?" Jack asked, feeling a growing sense of responsibility. He was no longer just a spectator; he was part of the team now. Logan looked at the progress bar on his screen. It was at forty percent. "Yes, but it takes time. We need twenty minutes to send the counter-code to the main server. If they find us before that..."</p>
+                <p>Suddenly, a loud beep came from Clara’s laptop on the other side of the room. She checked the security feed and her face turned pale. "Logan, we have a problem," she said, her voice shaking. "A high-frequency signal just pinged our location. The prototype device has a hidden GPS tracker inside its internal hardware. They know exactly where we are."</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-29">Strona 29</span>
+            </div>
+
+            <div id="page-29">
+                <p>Logan did not stop typing. "I cannot disconnect it now! If I pull the cable, the counter-code will fail, and the city will go dark in five minutes." He looked at Jack with serious eyes. "Jack, I need you and Clara to buy me some time. The village has a main gate. If you can lock it and delay them for just ten minutes, we can win this."</p>
+                <p>Jack looked out the window. The sun was rising over the misty river, casting long orange lights on the ground. In the distance, he heard the faint but familiar sound of heavy SUV engines approaching the fishing village. The organization was here for the final round. Jack gripped his jacket and looked at Clara. "Let's go," he said.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-30">Strona 30</span>
+            </div>
+
+            <div id="page-30">
+                <p>Clara opened a metal cabinet and took out two heavy tools—a metal bar and a radio communicator. She gave the radio to Jack. "Keep this on channel four," she said. They ran out of the cabin into the cool morning air. The gravel road was empty, but the sound of the approaching vehicles was getting louder every second. They had exactly three minutes to prepare the defense.</p>
+                <p>The main entrance of the village had an old, heavy iron gate used to keep wild animals out. Jack and Clara reached it just in time. They pulled the heavy gates together, but the old lock was missing. Jack looked around desperately for something to secure the structure. The countdown in the safe house was ticking, and the enemy was at the door.</p>
+            </div>
+
+            <div id="page-31">
+                <h2>Chapter 8: The Gate Defense</h2>
+                <p>Jack looked around the gravel road with intense focus. Near the iron gate, there was an old, broken tractor with a thick steel chain wrapped around its front wheel. "Clara, help me with this!" Jack shouted. Together, they pulled the heavy chain off the tractor and dragged it to the gate. They wrapped the steel links around the iron bars three times, locking the main entrance tightly.</p>
+                <p>Just as they secured the final knot, the first black SUV appeared at the end of the road. It didn't slow down. The large vehicle hit the brakes at the last second, its tires skidding on the loose gravel and stopping only a few centimeters away from the chained gate. The tinted window rolled down, and a man in a dark suit glared at Jack with cold, angry eyes.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-32">Strona 32</span>
+            </div>
+
+            <div id="page-32">
+                <p>"Open the gate, taxi driver," the man commanded through the window. His voice was calm but extremely dangerous. "You are interfering with a major corporate operation. If you walk away right now, you can go back to your normal life. If you stay, you will suffer the consequences." Jack stood his ground, gripping the metal bar Clara gave him.</p>
+                <p>"The gate stays closed," Jack said, trying to keep his voice steady. He looked at his watch. They needed to delay the organization for seven more minutes. Behind the first SUV, a second vehicle arrived, blocking the narrow road completely. Four more men dressed in tactical gear stepped out, looking at the chained gate with tools in their hands.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-33">Strona 33</span>
+            </div>
+
+            <div id="page-33">
+                <p>Clara raised her radio communicator. "Logan, they are at the gate. They are preparing to cut the chains. What is the status of the counter-code?" A second later, Logan’s voice came through the speaker, accompanied by the loud clacking of his keyboard: "Seventy percent! The upload is getting faster, but the main firewall is resisting. Give me four minutes!"</p>
+                <p>One of the tactical men walked forward holding a heavy hydraulic cutter. He placed the sharp metal jaws against the steel chain and pressed a button. A loud mechanical groan filled the morning air as the tool began to squeeze the steel links. Jack knew they couldn't fight five armed men directly. They needed a smarter distraction.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-34">Strona 34</span>
+            </div>
+
+            <div id="page-34">
+                <p>Clara looked at the old tractor near the gate. The engine was exposed, and a large rubber fuel line was visible. "Jack, look! If we can start the tractor and block the road behind the gate, even if they cut the chain, the vehicles can't pass!" She ran to the driver's seat and looked at the dashboard. The keys were missing, but the wires were exposed under the steering wheel.</p>
+                <p>Jack ran to the front of the tractor to push it into position. Outside the gate, the hydraulic cutter made a sharp *snap* sound. The first link of the chain broke. The organization men laughed. "Two more cuts and we are in," the leader said, looking at Jack with a cruel smile. Jack ignored them and focused all his energy on moving the heavy machine.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-35">Strona 35</span>
+            </div>
+
+            <div id="page-35">
+                <h2>Chapter 9: Sparks in the Mist</h2>
+                <p>Clara connected two loose wires under the tractor's dashboard. A spark flew out, illuminating her face, and the old diesel engine coughed loudly before roaring to life with a thick cloud of grey smoke. She quickly shifted the gear into reverse and jumped out of the seat. The driverless tractor rolled slowly backward, blocking the narrow entrance completely.</p>
+                <p>At that exact moment, the second chain link snapped outside. The organization men pushed the heavy iron gates open, but they immediately faced the side of the massive tractor. The SUVs could not drive past it because the road was too narrow, surrounded by deep water ditches on both sides. The leader screamed an angry command, and the men began to climb over the tractor on foot.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-36">Strona 36</span>
+            </div>
+
+            <div id="page-36">
+                <p>"Retreat to the safe house!" Clara shouted into her radio, grabbing Jack's arm. They turned and sprinted down the gravel road toward the wooden cabin. Behind them, they heard the heavy footsteps of the pursuers splashing through the puddles. The sun was fully up now, burning away the river mist, making the chase completely visible.</p>
+                <p>Jack looked back over his shoulder. The leader of the organization was fast, closing the distance between them with long strides. Jack tripped on a loose stone and fell hard onto the wet gravel, scraping his hands. "Jack!" Clara yelled, stopping to help him, but the leader was already too close. He grabbed Jack's collar and pulled him up violently.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-37">Strona 37</span>
+            </div>
+
+            <div id="page-37">
+                <p>"Where is the specialist? Where is Logan?" the man demanded, staring into Jack's eyes. Jack felt a sharp pain in his shoulder, but he refused to answer. He looked past the man's shoulder and saw the safe house door open. Logan stepped out onto the porch, holding a tablet computer in his hand. He wasn't running; he had a calm smile on his face.</p>
+                <p>"Hey! Looking for this?" Logan shouted, raising the tablet high into the air. The organization leader turned around, releasing his grip on Jack. The other tactical men arrived, surrounding the porch with their weapons ready. "Give us the prototype, Logan," the leader said, walking slowly toward the cabin. "The game is over."</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-38">Strona 38</span>
+            </div>
+
+            <div id="page-38">
+                <p>Logan shook his head slowly. "You are wrong. The game just finished, and you lost." He pressed a large blue button on the tablet screen. Inside the cabin, a loud, high-pitched confirmation tone echoed through the windows. The progress bar on the main computer reached one hundred percent. The counter-code was successfully sent to the city's main server.</p>
+                <p>Suddenly, the leader's smartphone began to ring violently. He pulled it from his pocket and looked at the screen. A bright red message was flashing on his display: *SYSTEM OVERRIDE. OPERATION TERMINATED.* All the digital infrastructure maps they stole vanished from their network, replaced by an automatic deletion sequence created by Logan.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-39">Strona 39</span>
+            </div>
+
+            <div id="page-39">
+                <p>The tactical men checked their electronic equipment, but all their screens went static and dead. The virus inside the city's grid was completely destroyed, and the power network was safe. The organization's plan failed in a single second. The leader stared at Logan with pure hatred, realizing that his powerful employers lost all their control.</p>
+                <p>In the distance, down the river canal, a loud and powerful siren began to wail. Two large police patrol boats, decorated with the official city symbols, cut through the water at high speed. Clara smiled, holding her radio. "I called the international authority ten minutes ago," she whispered to Jack. "They were just waiting for Logan to provide the digital proof."</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-40">Strona 40</span>
+            </div>
+
+            <div id="page-40">
+                <p>The organization men realized they had nowhere to go. Their vehicles were blocked at the gate, the river was controlled by the police, and their secret files were gone forever. The leader dropped his phone onto the gravel and raised his hands into the air, signaling his men to stop. The long, terrifying night was finally coming to an end.</p>
+                <p>Jack sat down on the grass near the road, breathing the fresh morning air deeply. His body ached, and his taxi uniform was ruined, but he felt an incredible sense of relief. He looked at Logan and Clara, who walked over to him with smiles on their faces. They won the battle, but the final chapter of Jack's adventure was still waiting.</p>
+            </div>
+
+            <div id="page-41">
+                <h2>Chapter 10: The Calm After the Storm</h2>
+                <p>The police patrol boats arrived at the wooden dock with a loud splash. Dozens of officers in tactical uniforms quickly moved through the fishing village, securing the area and arresting the organization men. The handcuffs clicked loudly in the quiet morning air. The leader of the group looked at Jack one last time before the police led him away into a boat.</p>
+                <p>Jack stood up slowly, shaking the dirt from his wet trousers. The sun was warm on his face now, a pleasant contrast to the freezing rain of the night. A senior police detective walked over to the group, holding a leather notepad. He looked at Logan, then at Clara, and finally his eyes stopped on Jack's ruined taxi driver uniform.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-42">Strona 42</span>
+            </div>
+
+            <div id="page-42">
+                <p>"You must be the taxi driver," the detective said, his voice deep and surprised. "Logan told us everything that happened on the highway and inside the harbor warehouse. You showed incredible bravery, son. A normal driver would run away at the first red light." Jack smiled weakly, rubbing his sore shoulder.</p>
+                <p>"I just wanted to finish my work tonight, sir," Jack replied honestly. "But when you realize the whole city is in danger, you cannot just look away." The detective nodded respectfully and made a quick note in his pad. "We need your official statement at the central station later, but for now, you need rest and medical attention."</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-43">Strona 43</span>
+            </div>
+
+            <div id="page-43">
+                <p>Clara brought Jack a hot cup of coffee from the safe house kitchen. It was the best coffee Jack ever tasted. They sat on the wooden porch, watching the police boats depart down the river. "What happens to the prototype device now?" Jack asked, looking at Logan, who was carefully packing his laptop into a secure metal case.</p>
+                <p>"It goes to a government research facility," Logan explained, sitting next to Jack. "They will dismantle the virus code permanently and use the technology to improve the city's defenses against future digital attacks. The organization is completely exposed now. Their power is gone, thanks to your driving skills, Jack."</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-44">Strona 44</span>
+            </div>
+
+            <div id="page-44">
+                <p>They spent two hours at the fishing village cleaning up the safe house and preparing to return to the city. The police provided a comfortable transport vehicle for them. As they drove back along the same highway Jack took during the terrifying chase, the city looked different in the daylight. The skyscrapers were shining under the clear blue sky, completely unaware of the disaster they avoided.</p>
+                <p>The transport car stopped near the old industrial harbor. Jack looked through the window and saw his silver taxi. It was still parked near the third warehouse, covered in dry mud and raindrops. The front bumper was scratched from the sudden maneuvers, but the engine was undamaged. It looked like a silent monument to the wildest night of his life.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-45">Strona 45</span>
+            </div>
+
+            <div id="page-45">
+                <p>Jack stepped out of the police vehicle and walked over to his taxi. He opened the driver's door and sat inside the familiar cabin. The interior smelled of old air freshener and wet fabric. He looked at the digital clock on his dashboard. It was 11:30 AM. He was away from his home for more than twelve hours, but it felt like an entire year.</p>
+                <p>Logan and Clara walked up to the driver's window. Logan reached into his pocket and pulled out a clean envelope, passing it to Jack. "This is for the taxi fare, Jack," Logan said with a warm smile. "And a little extra for the damage to your car and your uniform. You are a member of our team now, if you ever want to change your profession."</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-46">Strona 46</span>
+            </div>
+
+            <div id="page-46">
+                <p>Jack opened the envelope and saw enough money to buy a completely new taxi. He laughed softly and shook his head. "Thank you, Logan. But I think I prefer the quiet streets and normal passengers. Cyber-security has too many high-speed chases for my taste." Clara laughed and patted the roof of the taxi. "Fair enough, Jack. Safe travels."</p>
+                <p>They said their goodbyes, and Jack watched them walk away toward the city center. He put the envelope in his glove compartment, turned the key in the ignition, and the taxi engine started with a familiar, comforting hum. He shifted into first gear and drove out of the old harbor, heading towards his small apartment in the south sector.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-47">Strona 47</span>
+            </div>
+
+            <div id="page-47">
+                <p>When Jack finally arrived home, the neighborhood was peaceful. Children were playing in the park, and a postman was delivering letters. Nobody knew that a few hours ago, the entire world they lived in almost lost its power. Jack walked up the stairs to his apartment, unlocked the door, and stepped inside the quiet room. It was exactly how he left it yesterday.</p>
+                <p>He took a long, hot shower, washing away the mud from the harbor and the cold river water. He put on his favorite comfortable clothes and went to the kitchen. He made a large cup of hot black tea with lemon, just like he wanted at 3:15 AM. He sat near the window, looking down at his taxi parked on the street below.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-48">Strona 48</span>
+            </div>
+
+            <div id="page-48">
+                <p>He turned on the television to watch the midday news. The presenter was speaking with a calm, normal voice: "The city's digital network experienced a brief technical fluctuation early this morning, but engineers resolved the issue quickly. The power grid is fully operational, and all public services are running normally. The weather for this afternoon will be sunny and warm."</p>
+                <p>Jack smiled and took a sip of his tea. The official news kept the secret to avoid public panic, and that was fine with him. He didn't need fame or medals. He knew the truth, and he knew he did the right thing. He turned off the television, walked to his bedroom, and pulled the curtains to block the bright afternoon sun.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-49">Strona 49</span>
+            </div>
+
+            <div id="page-49">
+                <p>He lay down on his soft, comfortable bed and closed his heavy eyes. For the first time in twelve hours, his mind was completely calm. The adrenaline was gone, replaced by a deep, satisfying tiredness. He didn't dream about dark SUVs, masked men, or flashing blue codes. He just slept peacefully while the city outside continued its busy life.</p>
+                <p>Three days later, Jack returned to his normal routine. His taxi was repaired, looking clean and shiny again. He started his night shift at 8:00 PM, driving through the familiar streets under the bright yellow lamps. The radio was playing soft music, and the city was quiet. He was just a regular driver again, looking for his next passenger.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-50">Strona 50</span>
+            </div>
+
+            <div id="page-50">
+                <h2>The End</h2>
+                <p>As Jack stopped at a red light near the central park, a passenger raised a hand on the sidewalk. It was a young woman holding a suitcase. Jack smiled, unlocked the doors, and welcomed her into the warm car. His adventure was over, but the streets of the city always had a new story to tell. He was ready for the road ahead.</p>
+                <p>This is the story of Jack, the midnight passenger, and the secret code that saved the city. Every journey has a destination, and sometimes, a simple taxi driver can change the course of history. Thank you for reading. Safe travels on your language learning journey!</p>
+            </div>
+
+
+     </article>
+    </div>
+
+    <div class="modal-overlay" id="translateModal" onclick="closeModal(event)">
+        <div class="modal">
+            <h3>Lokalny Słownik</h3>
+            <div class="word-title" id="modalWord">Słowo</div>
+            <div class="word-translation" id="modalTranslation">Tłumaczenie</div>
+            <button class="btn-close" onclick="document.getElementById('translateModal').classList.remove('open')">Zamknij</button>
+        </div>
+    </div>
+
+    <script>
+
+      const localDictionary = {
+    "Tom": "Tom (imię głównego bohatera)",
+    "Tom's": "Toma (forma dzierżawcza, np. Tom's house - dom Toma)",
+    "Green": "Zielona (część nazwy ulicy 'Green Street' lub szkoły)",
+    "Street": "Ulica",
+    "Chapter": "Rozdział",
+    "a": "przedimek nieokreślony (oznacza 'jakiś jeden')",
+    "abandoned": "porzucony / opuszczony",
+    "abandoning": "porzucający / zaprzestający",
+    "abilities": "umiejętności",
+    "able": "zdolny (do zrobienia czegoś)",
+    "about": "o / na temat",
+    "above": "nad / powyżej",
+    "acceleration": "przyspieszenie",
+    "accompanied": "w towarzystwie / przy akompaniamencie",
+    "aches": "boli / pobolewa",
+    "across": "przez / w poprzek",
+    "act": "działać",
+    "activate": "aktywować",
+    "attacks": "ataki",
+    "attention": "uwaga",
+    "attentive": "uważny",
+    "attitude": "postawa / nastawienie",
+    "authority": "władza / organ (np. international authority - międzynarodowe służby)",
+    "automatic": "automatyczny",
+    "avoid": "unikać",
+    "awake": "obudzony / czujny",
+    "away": "daleko / stąd",
+    "back": "z powrotem / tył / plecy",
+    "bad": "zły / niedobry",
+    "bag": "torba",
+    "balance": "równowaga",
+    "bang": "huk / trzask",
+    "bank": "bank",
+    "bar": "brama / pręt / pasek postępu",
+    "bars": "kraty / pręty",
+    "barrels": "beczki",
+    "basement": "piwnica / podziemie",
+    "battery": "bateria",
+    "battle": "bitwa",
+    "be": "być",
+    "beach": "plaża",
+    "beam": "promień / wiązka światła",
+    "beams": "światła długie / drogowe",
+    "bearing": "zmierzać / nieść",
+    "beat": "bić (o sercu)",
+    "beating": "bicie / tętniący",
+    "beautiful": "piękny",
+    "because": "ponieważ / bo",
+    "bed": "łóżko",
+    "bedroom": "sypialnia",
+    "beep": "pisk / sygnał dźwiękowy",
+    "before": "przed / zanim",
+    "began": "zaczął / zaczęła",
+    "behind": "za / z tyłu",
+    "bell": "dzwonek",
+    "belong": "należeć",
+    "below": "poniżej / pod",
+    "belt": "pas",
+    "beside": "obok",
+    "best": "najlepszy",
+    "betray": "zdradzić",
+    "better": "lepszy",
+    "between": "pomiędzy",
+    "beyond": "poza",
+    "big": "duży",
+    "bind": "wiązać",
+    "birds": "ptaki",
+    "bit": "kawałek / trochę",
+    "bite": "gryźć",
+    "black": "czarny",
+    "blades": "ostrza",
+    "blanket": "koc",
+    "blast": "wybuch / eksplozja",
+    "blind": "ślepy / oślepiać",
+    "blinding": "oślepiający",
+    "blink": "migać",
+    "blinking": "migający",
+    "block": "blokować / blok",
+    "blocked": "zablokowany",
+    "blocks": "bloki / klocki",
+    "blue": "niebieski",
+    "blueprint": "plan / projekt",
+    "board": "tablica / pokład",
+    "boat": "łódź",
+    "boats": "łodzie",
+    "bobbing": "kołyszący się",
+    "body": "ciało",
+    "bold": "śmiały",
+    "bomb": "bomba",
+    "bond": "więź",
+    "bone": "kość",
+    "book": "książka",
+    "boom": "huk",
+    "boot": "but (z wysoką cholewką) / bagażnik",
+    "boots": "buty",
+    "border": "granica",
+    "born": "urodzony",
+    "boss": "szef",
+    "both": "oba / obydwaj",
+    "bother": "martwić się / przeszkadzać",
+    "bottle": "butelka",
+    "bottom": "dno / dół",
+    "bound": "związany / zobowiązany",
+    "box": "pudełko / skrzynka",
+    "boy": "chłopiec",
+    "brain": "mózg",
+    "brake": "hamulec",
+    "brakes": "hamulce",
+    "branches": "gałęzie",
+    "bravery": "odwaga",
+    "bread": "chleb",
+    "break": "przerwa / ucieczka / zepsuć",
+    "breath": "oddech",
+    "breathe": "oddychać",
+    "breathing": "oddychający / oddech",
+    "breeze": "bryza / wietrzyk",
+    "brick": "cegła / ceglany",
+    "bridge": "most",
+    "brief": "krótki / zwięzły",
+    "bright": "jasny / błyszczący",
+    "bring": "przynieść",
+    "broke": "złamał / popsuł (czas przeszły)",
+    "broken": "zepsuty / rozbity / połamany",
+    "brother": "brat",
+    "brought": "przyniósł / przyniosła",
+    "brown": "brązowy",
+    "brush": "szczotka / czyścić",
+    "bucket": "wiadro",
+    "build": "budować",
+    "building": "budynek",
+    "built": "zbudowany",
+    "bullet": "pocisk / kula",
+    "bumper": "zderzak",
+    "bunch": "pęczek / kiść / grupa",
+    "bunker": "bunkier",
+    "burn": "palić / płonąć",
+    "burning": "palący / płonący",
+    "burns": "pali / piecze",
+    "burst": "wybuchnąć / pęknąć",
+    "bury": "pochować / zakopać",
+    "bus": "autobus",
+    "bush": "krzak",
+    "business": "biznes / interesy",
+    "busy": "zajęty / tętniący życiem",
+    "but": "ale",
+    "butter": "masło",
+    "button": "przycisk / guzik",
+    "buy": "kupić",
+    "by": "przez / obok",
+    "cabin": "chatka / kabina",
+    "cabinet": "szafka / gabinet",
+    "cable": "kabel / przewód",
+    "cage": "klatka",
+    "cake": "ciasto",
+    "call": "dzwonić / wołać / wezwać",
+    "called": "nazwał / zadzwonił",
+    "calm": "spokojny / uspokoić",
+    "calmer": "spokojniejszy",
+    "came": "przyszedł / przybył (czas przeszły)",
+    "camera": "aparat / kamera",
+    "camp": "obóz",
+    "can": "móc / potrafić",
+    "canal": "kanał",
+    "candle": "świeca",
+    "cannot": "nie móc / nie potrafić",
+    "canvas": "płótno",
+    "cap": "czapka / nakrętka",
+    "captain": "kapitan",
+    "car": "samochód",
+    "card": "karta",
+    "care": "opieka / dbać",
+    "careful": "ostrożny / uważny",
+    "carefully": "ostrożnie / uważnie",
+    "cargo": "ładunek / towar",
+    "carpet": "dywan",
+    "carries": "niesie / przewozi",
+    "carry": "nieść / nosić",
+    "cars": "samochody",
+    "cart": "wózek",
+    "case": "przypadek / sprawa / walizka / obudowa",
+    "cash": "gotówka",
+    "cast": "rzucić / rzucać (np. cień, spojrzenie)",
+    "casting": "rzucający",
+    "cat": "kot",
+    "catch": "złapać",
+    "catastrophic": "katastrofalny",
+    "caught": "złapany (czas przeszły)",
+    "cause": "przyczyna / powodować",
+    "cave": "jaskinia",
+    "ceiling": "sufit",
+    "cell": "komórka",
+    "centimeter": "centymetr",
+    "centimeters": "centymetry",
+    "central": "centralny",
+    "center": "centrum / środek",
+    "chain": "łańcuch",
+    "chained": "przykowany / zapięty łańcuchem",
+    "chains": "łańcuchy",
+    "chair": "krzesło",
+    "chance": "szansa / przypadek",
+    "change": "zmienić / zmiana",
+    "changed": "zmienił / zmieniła",
+    "channel": "kanał (np. w radiu)",
+    "chapter": "rozdział",
+    "chase": "pościg / gonić",
+    "chased": "goniony / ścigany",
+    "cheap": "tani",
+    "cheat": "oszukiwać",
+    "check": "sprawdzać / skontrolować",
+    "checked": "sprawdził / sprawdziła",
+    "cheek": "policzek",
+    "cheer": "wiwatować / pocieszać",
+    "cheese": "ser",
+    "chest": "klatka piersiowa / skrzynia",
+    "chicken": "kurczak",
+    "chief": "szef / główny",
+    "child": "dziecko",
+    "children": "dzieci",
+    "chill": "chłód / dreszcz",
+    "chin": "broda (część twarzy)",
+    "chips": "frytki / chipsy",
+    "choice": "wybór",
+    "choose": "wybierać",
+    "chop": "siekać",
+    "choppy": "wzburzony / spieniony (o wodzie)",
+    "church": "kościół",
+    "circle": "koło / okrąg",
+    "circumstance": "okoliczność",
+    "city": "miasto",
+    "claim": "twierdzić / roszczenie",
+    "clacking": "klekot / stukanie (np. klawiatury)",
+    "clara": "clara (imię bohaterki)",
+    "class": "klasa",
+    "clay": "glina",
+    "clean": "czysty / czyścić",
+    "cleaning": "sprzątanie / czyszczenie",
+    "clear": "jasny / czysty / wyraźny",
+    "clerk": "urzędnik / sprzedawca",
+    "clever": "sprytny / mądry",
+    "click": "kliknąć / kliknięcie",
+    "clicked": "kliknął / zatrzasnął się",
+    "clicking": "stukanie / cykanie",
+    "cliff": "klif / urwisko",
+    "climb": "wspinać się / wchodzić",
+    "climbed": "wspiął się / wszedł",
+    "clock": "zegar",
+    "close": "zamykać / blisko",
+    "closed": "zamknięty / zamknął",
+    "closely": "uważnie / z bliska",
+    "closer": "bliżej",
+    "closing": "zamykający / zbliżający się",
+    "cloth": "szmatka / tkanina",
+    "clothes": "ubrania",
+    "cloud": "chmura",
+    "club": "klub / maczuga",
+    "clue": "trop / wskazówka",
+    "coach": "trener / autokar",
+    "coal": "węgiel",
+    "coast": "wybrzeże",
+    "coat": "płaszcz / kurtka",
+    "code": "kod",
+    "coffee": "kawa",
+    "coin": "moneta",
+    "cold": "zimny / zimno",
+    "collar": "kołnierz / obroża",
+    "collect": "zbierać / odbierać",
+    "colony": "kolonia",
+    "color": "kolor",
+    "comb": "grzebień / czesać",
+    "combination": "połączenie / kombinacja",
+    "come": "przychodzić",
+    "comes": "przychodzi",
+    "comfortable": "wygodny",
+    "command": "rozkaz / rozkazywać",
+    "commanded": "rozkazał",
+    "common": "wspólny / zwyczajny / pospolity",
+    "communicator": "komunikator / radiotelefon",
+    "community": "społeczność",
+    "company": "firma / towarzystwo",
+    "compare": "porównywać",
+    "compass": "kompas",
+    "compete": "konkurować",
+    "complained": "narzekał",
+    "complete": "kompletny / pełny",
+    "completely": "całkowicie / zupełnie",
+    "complex": "złożony / skomplikowany",
+    "computer": "komputer",
+    "computers": "komputery",
+    "comrade": "towarzysz",
+    "conclude": "wnioskować / kończyć",
+    "concrete": "beton / betonowy",
+    "condition": "warunek / stan",
+    "conduct": "przeprowadzać / prowadzić",
+    "cone": "stożek / szyszka",
+    "confess": "wyznawać / przyznawać się",
+    "confidence": "pewność siebie / zaufanie",
+    "confirm": "potwierdzać",
+    "confirmation": "potwierdzenie",
+    "confuse": "mylić / dezorientować",
+    "confused": "zdezorientowany",
+    "congratulate": "gratulować",
+    "connect": "łączyć",
+    "connected": "połączony / połączył",
+    "connection": "połączenie",
+    "connects": "łączy",
+    "consequences": "konsekwencje",
+    "consider": "rozważać / brać pod uwagę",
+    "consist": "składać się",
+    "constant": "stały / nieustanny",
+    "constructed": "zbudowany / skonstruowany",
+    "contain": "zawierać / pomieścić",
+    "containers": "kontenery / pojemniki",
+    "content": "zawartość / zadowolony",
+    "continent": "kontynent",
+    "continue": "kontynuować",
+    "continued": "kontynuował",
+    "contract": "umowa / kurczyć się",
+    "contrast": "kontrast",
+    "control": "kontrolować / kontrola",
+    "controlled": "kontrolowany / kontrolował",
+    "conversation": "rozmowa",
+    "cook": "gotować / kucharz",
+    "cool": "chłodny / fajny",
+    "copper": "miedź",
+    "copy": "kopiować / kopia",
+    "cord": "sznur / przewód",
+    "core": "rdzeń / wnętrze",
+    "corn": "kukurydza",
+    "corner": "róg / kąt / zakręt",
+    "corporate": "korporacyjny",
+    "correct": "poprawny / poprawiać",
+    "corridor": "korytarz",
+    "corridors": "korytarze",
+    "corrupt": "skorumpowany",
+    "cost": "kosztować / koszt",
+    "costume": "kostium",
+    "cottage": "chatka / domek",
+    "cotton": "bawełna",
+    "couch": "kanapa",
+    "coughed": "zakaszlał",
+    "could": "mógł / mogła (czas przeszły od can)",
+    "council": "rada",
+    "count": "liczyć",
+    "countdown": "odliczanie",
+    "counter": "lada / licznik (tu: counter-code - kontrkod)",
+    "country": "kraj / wieś",
+    "couple": "para / kilka",
+    "courage": "odwaga",
+    "course": "kurs / tok (np. course of history - bieg historii)",
+    "court": "sąd / boisko",
+    "cousin": "kuzyn / kuzynka",
+    "cover": "pokrywać / okładka",
+    "covered": "pokryty",
+    "cow": "krowa",
+    "coward": "tchórz",
+    "crack": "pęknięcie / pękać",
+    "cradle": "kołyska",
+    "craft": "rzemiosło / statek",
+    "cranes": "dźwigi / żurawie",
+    "crash": "huk / zderzenie / katastrofa",
+    "crates": "skrzynie",
+    "crawl": "pełzać / raczkować",
+    "crazy": "szalony",
+    "cream": "śmietanka / krem",
+    "create": "tworzyć",
+    "created": "stworzył / stworzyła",
+    "creating": "tworzący / kreujący",
+    "creative": "kreatywny",
+    "creature": "stworzenie / istota",
+    "credit": "kredyt / uznanie",
+    "crew": "załoga",
+    "cried": "płakał / krzyknął",
+    "criminal": "przestępca",
+    "critic": "krytyk",
+    "crop": "plon / zbierać plony",
+    "cross": "przechodzić / krzyż",
+    "crowd": "tłum",
+    "crown": "korona",
+    "cruel": "okrutny",
+    "crush": "miażdżyć / zgniatać",
+    "cry": "płakać / krzyczeć",
+    "crystal": "kryształ",
+    "cube": "kostka / sześcian",
+    "culture": "kultura",
+    "cunning": "chytry / przebiegły",
+    "cup": "filiżanka / kubek",
+    "cure": "leczyć / lekarstwo",
+    "curiosity": "ciekawość",
+    "curious": "ciekawy",
+    "current": "bieżący / prąd (np. prąd rzeki)",
+    "curtains": "zasłony / firanki",
+    "curved": "zakrzywiony",
+    "curves": "zakręty / łuki",
+    "cushion": "poduszka (ozdobna)",
+    "custom": "zwyczaj",
+    "cut": "ciąć / ciął / nacięcie",
+    "cuts": "cięcia / nacięcia",
+    "cutter": "wycinak / przecinak (tu: hydraulic cutter - przecinak hydrauliczny)",
+    "cutting": "cięcie / tnący",
+    "cyber-security": "cyberbezpieczeństwo",
+    "cycle": "cykl / jeździć na rowerze",
+    "dad": "tata",
+    "daily": "codzienny / codziennie",
+    "damage": "uszkodzenie / szkoda / uszkodzić",
+    "damaged": "uszkodzony",
+    "dance": "tańczyć / taniec",
+    "danger": "niebezpieczeństwo",
+    "dangerous": "niebezpieczny",
+    "dare": "odważyć się",
+    "dark": "ciemny / ciemność",
+    "darkness": "ciemność",
+    "darling": "kochanie / drogi",
+    "dash": "deska rozdzielcza / sprint",
+    "dashboard": "deska rozdzielcza",
+    "data": "dane / informacje",
+    "date": "data / randka",
+    "daughter": "córka",
+    "dawn": "świt / brzask",
+    "day": "dzień",
+    "daylight": "światło dzienne",
+    "dead": "martwy",
+    "deadly": "zabójczy / śmiertelny",
+    "deaf": "głuchy",
+    "deal": "umowa / radzić sobie",
+    "dear": "drogi / szanowny",
+    "death": "śmierć",
+    "debate": "debata / dyskusja",
+    "debt": "dług",
+    "decade": "dekada",
+    "decay": "gnić / rozkładać się",
+    "deceive": "oszukać",
+    "december": "grudzień",
+    "decent": "przyzwoity",
+    "decelerated": "zwolnił / wytracił prędkość",
+    "decide": "decydować",
+    "decided": "zdecydował",
+    "decision": "decyzja",
+    "deck": "pokład (np. łodzi)",
+    "declare": "deklarować / oświadczać",
+    "decorate": "dekorować",
+    "decorated": "ozdobiony / udekorowany",
+    "decrease": "zmniejszać / spadek",
+    "deed": "czyn / uczynek",
+    "deep": "głęboki / głęboko",
+    "deeply": "głęboko",
+    "deer": "jeleń / sarna",
+    "defeat": "pokonać / porażka",
+    "defend": "bronić",
+    "defense": "obrona",
+    "defenses": "obrona / systemy obronne",
+    "defendings": "obrona / działania obronne",
+    "define": "definiować",
+    "definite": "jasny / określony",
+    "degree": "stopień (np. temperatury)",
+    "delay": "opóźniać / opóźnienie",
+    "deliberate": "celowy / zamierzony",
+    "delicate": "delikatny",
+    "delicious": "pyszny",
+    "delight": "zachwyt / zachwycać",
+    "deliver": "dostarczać",
+    "delivering": "dostarczający / doręczający",
+    "delivery": "dostawa / doręczenie",
+    "demand": "żądać / żądanie",
+    "demanded": "zażądał",
+    "democracy": "demokracja",
+    "demonstrate": "demonstrować",
+    "denial": "zaprzeczenie",
+    "dense": "gęsty",
+    "dentist": "dentysta",
+    "deny": "zaprzeczać",
+    "depart": "odpływać / odjeżdżać / odlatywać",
+    "departure": "odjazd / odlot",
+    "depend": "zależeć",
+    "dependent": "zależny",
+    "depict": "przedstawiać",
+    "deposit": "kaucja / depozyt",
+    "depress": "przygnębić / wcisnąć",
+    "depth": "głębokość",
+    "deputy": "zastępca",
+    "derive": "pochodzić / czerpać",
+    "descend": "schodzić / obniżać się",
+    "describe": "opisywać",
+    "described": "opisany",
+    "description": "opis",
+    "desert": "pustynia / porzucić",
+    "deserve": "zasługiwać",
+    "design": "projekt / projektować",
+    "designer": "projektant",
+    "desire": "pragnienie / pragnąć",
+    "desk": "biurko",
+    "despair": "rozpacz / rozpaczać",
+    "desperate": "rozpaczliwy / zdesperowany",
+    "desperately": "rozpaczliwie",
+    "despite": "mimo / pomimo",
+    "destination": "cel podróży / przeznaczenie",
+    "destroy": "zniszczyć",
+    "destroyed": "zniszczony",
+    "destruction": "zniszczenie",
+    "detach": "odłączyć / odczepić",
+    "detail": "szczegół",
+    "detailed": "szczegółowy",
+    "detect": "wykryć",
+    "detective": "detektyw",
+    "determination": "determinacja",
+    "determine": "określać / ustalać",
+    "determined": "zdeterminowany",
+    "develop": "rozwijać",
+    "development": "rozwój",
+    "device": "urządzenie",
+    "devil": "diabeł",
+    "devote": "poświęcać (np. czas)",
+    "diagram": "diagram / schemat",
+    "dial": "wybierać numer / tarcza",
+    "dialogue": "dialog",
+    "diamond": "diament",
+    "diary": "pamiętnik / dziennik",
+    "dictate": "dyktować",
+    "dictionary": "słownik",
+    "did": "zrobił / zrobiła (czas przeszły od do)",
+    "die": "umierać",
+    "diesel": "diesel / olej napędowy",
+    "diet": "dieta",
+    "differ": "różnić się",
+    "difference": "różnica",
+    "different": "inny / różny",
+    "difficult": "trudny",
+    "difficulty": "trudność",
+    "dig": "kopać",
+    "digest": "trawić",
+    "digital": "cyfrowy",
+    "dignity": "godność",
+    "dim": "ciemny / przyciemniony / słaby (o świetle)",
+    "dine": "jeść obiad",
+    "dinner": "obiad / obiadokolacja",
+    "dip": "maczać / zanurzać",
+    "direct": "bezpośredni / kierować",
+    "direction": "kierunek",
+    "directly": "bezpośrednio",
+    "director": "dyrektor / reżyser",
+    "dirt": "brud / błoto / ziemia",
+    "dirty": "brudny",
+    "disagree": "nie zgadzać się",
+    "disappear": "znikać",
+    "disappeared": "zniknął",
+    "disaster": "katastrofa / klęska",
+    "disbelief": "niedowierzanie",
+    "disc": "płyta / dysk",
+    "discharge": "wypisać / rozładować",
+    "discipline": "dyscyplina",
+    "disclose": "ujawnić",
+    "discount": "zniżka / rabat",
+    "discover": "odkryć",
+    "discovered": "odkryty / odkrył",
+    "discovery": "odkrycie",
+    "discuss": "dyskutować",
+    "discussion": "dyskusja",
+    "disease": "choroba",
+    "disguise": "przebranie / tuszować",
+    "disgust": "wstręt / obrzydzenie",
+    "dish": "danie / naczynie",
+    "dislike": "nie lubić",
+    "dismantle": "demontować / rozebrać na części",
+    "dismiss": "odrzucić / zwolnić",
+    "disorder": "nieład / zaburzenie",
+    "display": "wyświetlacz / ekran / pokazywać",
+    "disposal": "dyspozycja / usuwanie",
+    "dispose": "rozmieszczać / pozbywać się",
+    "dispute": "spór / dysputa",
+    "disrupt": "zakłócać",
+    "dissolve": "rozpuszczać (się)",
+    "distance": "odległość / dystans",
+    "distant": "odległy",
+    "distinct": "wyraźny / odmienny",
+    "distinction": "wyróżnienie / różnica",
+    "distinguish": "rozróżniać",
+    "distract": "rozpraszać",
+    "distraction": "rozproszenie uwagi / coś odwracającego uwagę",
+    "distribute": "rozprowadzać / dystrybuować",
+    "distribution": "dystrybucja",
+    "district": "dzielnica / okręg",
+    "disturb": "przeszkadzać / zakłócać",
+    "ditch": "rów",
+    "ditches": "rowy",
+    "dive": "nurkować / nurkowanie",
+    "divide": "dzielić",
+    "divided": "podzielony",
+    "divine": "boski",
+    "division": "podział / dywizja",
+    "divorce": "rozwód",
+    "do": "robić",
+    "dock": "dok / rampa załadunkowa / molo",
+    "docks": "doki / nabrzeże portowe",
+    "doctor": "lekarz / doktor",
+    "document": "dokument",
+    "does": "robi (dla trzeciej osoby liczby pojedynczej)",
+    "dog": "pies",
+    "dogs": "psy",
+    "doll": "lalka",
+    "dollar": "dolar",
+    "dolphin": "delfin",
+    "domain": "domena / dziedzina",
+    "domestic": "domowy / krajowy",
+    "dominant": "dominujący",
+    "dominate": "dominować",
+    "don't": "nie (skrót od do not)",
+    "donation": "darowizna",
+    "donkey": "osioł",
+    "door": "drzwi",
+    "doors": "drzwi (liczba mnoga)",
+    "doorway": "próg / wejście",
+    "dormitory": "akademik / sypialnia zbiorowa",
+    "dose": "dawka",
+    "dot": "kropka",
+    "double": "podwójny",
+    "doubt": "najść wątpliwość / wątpliwość",
+    "dough": "ciasto (surowe)",
+    "down": "w dół / na dół",
+    "downpour": "ulewa / ulewny deszcz",
+    "downstairs": "na dole / na dolne piętro",
+    "downtown": "centrum miasta",
+    "downward": "w dół / skierowany w dół",
+    "dozen": "tuzin (dwanaście)",
+    "dozens": "dziesiątki / tuziny",
+    "draft": "szkic / wersja robocza",
+    "drag": "ciągnąć / wlec",
+    "dragged": "ciągnięty / wleczony",
+    "dragon": "smok",
+    "drain": "odpływ / drenaż / osuszać",
+    "drainage": "drenaż / odpływowy",
+    "drama": "dramat",
+    "dramatic": "dramatyczny",
+    "drank": "wypił / wypiła (czas przeszły od drink)",
+    "draw": "rysować / ciągnąć",
+    "drawer": "szuflada",
+    "drawing": "rysunek",
+    "dread": "strach / lęk",
+    "dream": "śnić / marzyć / sen",
+    "dress": "sukienka / ubierać się",
+    "dressed": "ubrany",
+    "drew": "narysował / pociągnął (czas przeszły od draw)",
+    "dried": "wysuszony",
+    "drift": "dryfować / dryf",
+    "drill": "wiertarka / ćwiczenie / wiercić",
+    "drink": "pić / napój",
+    "drinking": "pijący / picie",
+    "drinks": "pije / napoje",
+    "drive": "jechać / prowadzić auto",
+    "driven": "prowadzony / napędzany",
+    "driver": "kierowca",
+    "driverless": "bezzałogowy / bez kierowcy",
+    "drivers": "kierowcy",
+    "drives": "prowadzi auto / jedzie",
+    "driving": "prowadzenie pojazdu / kierowanie",
+    "drop": "upuścić / rzucić / kropla",
+    "dropped": "upuścił / rzucił",
+    "drove": "jechał / pojechał (czas przeszły od drive)",
+    "drown": "topić się / tonąć",
+    "drum": "bęben",
+    "drumming": "bębnienie / stukanie",
+    "drunk": "pijany",
+    "dry": "suchy / suszyć",
+    "duck": "kaczka / robić unik",
+    "due": "należny / planowany",
+    "dull": "nudny / matowy / głuchy (ból)",
+    "dump": "wysypisko / rzucić",
+    "during": "podczas / w czasie",
+    "dust": "kurz / pył",
+    "dusty": "zakurzony",
+    "duty": "obowiązek / cło",
+    "dwell": "zamieszkiwać / przebywać",
+    "dynamic": "dynamiczny",
+    "each": "każdy",
+    "eager": "chętny / żarliwy",
+    "eagle": "orzeł",
+    "ear": "ucho",
+    "early": "wcześnie / wczesny",
+    "earn": "zarabiać",
+    "earnest": "poważny / gorliwy",
+    "ears": "uszy",
+    "earth": "ziemia",
+    "earthquake": "trzęsienie ziemi",
+    "ease": "łatwość / ulga",
+    "easily": "łatwo",
+    "east": "wschód (kierunek świata)",
+    "eastern": "wschodni",
+    "easy": "łatwy",
+    "eat": "jeść",
+    "echo": "echo / odbijać się echem",
+    "echoed": "odbiło się echem / rozbrzmiało",
+    "economic": "ekonomiczny",
+    "edge": "krawędź / skraj",
+    "editor": "redaktor",
+    "education": "edukacja",
+    "effect": "efekt / skutek",
+    "effort": "wysiłek",
+    "egg": "jajko",
+    "eight": "osiem",
+    "eighteen": "osiemnaście",
+    "eighth": "ósmy",
+    "eighty": "osiemdziesiąt",
+    "either": "albo / też (w przeczeniach)",
+    "elastic": "elastyczny",
+    "elbow": "łokieć",
+    "elder": "starszy (w rodzinie)",
+    "elect": "wybierać (w głosowaniu)",
+    "election": "wybory",
+    "electric": "elektryczny",
+    "electrical": "elektryczny (dotyczący elektryczności)",
+    "electricity": "elektryczność",
+    "electronic": "elektroniczny",
+    "element": "element",
+    "elephant": "słoń",
+    "elevator": "winda",
+    "eleven": "jedenaście",
+    "eliminate": "eliminować",
+    "else": "innego / jeszcze (np. coś innego)",
+    "elsewhere": "gdzie indziej",
+    "embarrass": "zawstydzić",
+    "embrace": "uścisk / obejmować",
+    "emerge": "wyłaniać się",
+    "emergency": "nagły wypadek / sytuacja awaryjna",
+    "emission": "emisja",
+    "emotion": "emocja",
+    "emotional": "emocjonalny",
+    "emphasis": "nacisk / podkreślenie",
+    "empire": "imperium",
+    "employ": "zatrudniać",
+    "employee": "pracownik",
+    "employer": "pracodawca",
+    "employers": "pracodawcy",
+    "employment": "zatrudnienie",
+    "empty": "pusty",
+    "enable": "umożliwiać",
+    "enclose": "załączyć / otoczyć",
+    "encounter": "napotkać / spotkanie",
+    "encourage": "zachęcać",
+    "encrypted": "zaszyfrowany",
+    "end": "koniec / kończyć",
+    "ending": "zakończenie",
+    "endless": "nieskończony",
+    "ends": "kończy się / końce",
+    "endure": "wytrzymać / znosić",
+    "enemy": "wróg",
+    "energy": "energia",
+    "enforce": "egzekwować / narzucać",
+    "engage": "angażować (się)",
+    "engine": "silnik",
+    "engineer": "inżynier",
+    "engineers": "inżynierowie",
+    "engines": "silniki",
+    "english": "angielski",
+    "enhance": "ulepszać / wzmacniać",
+    "enjoy": "lubić / czerpać przyjemność",
+    "enormous": "ogromny",
+    "enough": "dość / wystarczająco",
+    "enquire": "pytać / dowiadywać się",
+    "ensure": "zapewniać",
+    "enter": "wchodzić / wprowadzać",
+    "entered": "wszedł / weszła",
+    "entering": "wchodzący",
+    "enterprise": "przedsiębiorstwo",
+    "entertain": "zabawiać",
+    "entertainment": "rozrywka",
+    "enthusiasm": "entuzjazm",
+    "entire": "cały",
+    "entirely": "całkowicie",
+    "entrance": "wejście",
+    "entry": "wpis / wejście",
+    "envelope": "koperta",
+    "environment": "środowisko",
+    "environmental": "środowiskowy",
+    "envy": "zazdrość / zazdrościć",
+    "episode": "epizod / odcinek",
+    "equal": "równy",
+    "equally": "równo / na równi",
+    "equipment": "sprzęt / wyposażenie",
+    "era": "era / epoka",
+    "erase": "wymazać / usunąć",
+    "erasing": "wymazujący / usuwający",
+    "error": "błąd",
+    "escape": "ucieczka / uciekać",
+    "escaped": "uciekł / zbiegł",
+    "escort": "eskorta / eskortować",
+    "especially": "szczególnie",
+    "essay": "wypracowanie / esej",
+    "essence": "esencja / sedno",
+    "essential": "niezbędny / kluczowy",
+    "establish": "ustanowić / założyć",
+    "estate": "majątek / posiadłość",
+    "estimate": "szacować / kosztorys",
+    "eternal": "wieczny",
+    "ethics": "etyka",
+    "ethnic": "etniczny",
+    "evaluate": "oceniać / szacować",
+    "even": "nawet / parzysty",
+    "evening": "wieczór",
+    "event": "wydarzenie",
+    "eventually": "w końcu / ostatecznie",
+    "ever": "kiedykolwiek",
+    "every": "każdy",
+    "everybody": "wszyscy / każdy",
+    "everyday": "codzienny",
+    "everyone": "wszyscy",
+    "everything": "wszystko",
+    "everywhere": "wszędzie",
+    "evidence": "dowód / dowody",
+    "evident": "ewidentny / widoczny",
+    "evil": "zło / zły",
+    "evolution": "ewolucja",
+    "evolve": "ewoluować",
+    "exact": "dokładny",
+    "exactly": "dokładnie",
+    "exaggerate": "przesadzać / wyolbrzymiać",
+    "exam": "egzamin",
+    "examination": "badanie / egzamin",
+    "examine": "badać / egzaminować",
+    "example": "przykład",
+    "exceed": "przekraczać",
+    "excellent": "doskonały",
+    "except": "z wyjątkiem / oprócz",
+    "exception": "wyjątek",
+    "excess": "nadmiar",
+    "exchange": "wymiana / wymieniać",
+    "excite": "ekscytować",
+    "excited": "podekscytowany",
+    "excitement": "ekscytacja",
+    "exciting": "ekscytujący",
+    "exclude": "wykluczać",
+    "exclusive": "ekskluzywny / wyłączny",
+    "excuse": "wymówka / wybaczać",
+    "execute": "wykonać / egzekwować",
+    "executive": "kierowniczy / wykonawczy",
+    "exercise": "ćwiczenie / ćwiczyć",
+    "exhausted": "wykończony / wyczerpany",
+    "exhibit": "eksponat / wystawiać",
+    "exhibition": "wystawa",
+    "exile": "wygnanie / wygnaniec",
+    "exist": "istnieć",
+    "existence": "istnienie",
+    "existing": "istniejący",
+    "exit": "wyjście / zjechać (z drogi)",
+    "exotic": "egzotyczny",
+    "expand": "rozszerzać (się)",
+    "expansion": "ekspansja / rozwój",
+    "expect": "oczekiwać / spodziewać się",
+    "expectation": "oczekiwanie",
+    "expedition": "wyprawa / ekspedycja",
+    "expense": "wydatek / koszt",
+    "expensive": "drogi",
+    "experience": "doświadczenie / doświadczyć",
+    "experienced": "doświadczony",
+    "experiment": "eksperyment",
+    "expert": "ekspert / biegły",
+    "explain": "wyjaśniać",
+    "explained": "wyjaśnił / wyjaśniła",
+    "explanation": "wyjaśnienie",
+    "explode": "eksplodować",
+    "exploit": "eksploatować / wykorzystywać",
+    "exploration": "badanie / eksploracja",
+    "explore": "badać / odkrywać",
+    "explosion": "eksplozja",
+    "explosive": "wybuchowy / ładunek wybuchowy",
+    "export": "eksport / eksportować",
+    "expose": "odsłonić / obnażyć / narazić",
+    "exposed": "odsłonięty / narażony",
+    "exposure": "wystawienie / ekspozycja",
+    "express": "wyrażać / ekspresowy",
+    "expression": "wyrażenie / ekspresja / mina",
+    "extend": "przedłużyć / rozciągać się",
+    "extended": "wyciągnięty / przedłużony",
+    "extending": "wyciągający / rozszerzający",
+    "extension": "przedłużenie / numer wewnętrzny",
+    "extensive": "obszerny / rozległy",
+    "extent": "stopień / zakres",
+    "exterior": "zewnętrzny / zewnętrze",
+    "external": "zewnętrzny",
+    "extra": "dodatkowy / ekstra",
+    "extraordinary": "niezwykły / nadzwyczajny",
+    "extreme": "skrajny / ekstremalny",
+    "extremely": "niezwykle / skrajnie",
+    "eye": "oko",
+    "eyebrow": "brew",
+    "eyes": "oczy",
+    "fabric": "tkanina / materiał",
+    "fabulous": "fantastyczny / bajeczny",
+    "face": "twarz / stawiać czoła",
+    "faced": "stawiać czoła (w czasie przeszłym)",
+    "facilitate": "ułatwiać",
+    "facility": "obiekt / placówka / udogodnienie",
+    "fact": "fakt",
+    "faction": "frakcja",
+    "factor": "czynnik",
+    "factory": "fabryka",
+    "faculty": "wydział / zdolność",
+    "fade": "blaknąć / zanikać",
+    "fail": "oblewać / zawieść / nie udać się",
+    "failed": "nie powiódł się / zawiódł",
+    "failure": "porażka / awaria",
+    "faint": "słaby / blady / zemdleć",
+    "fair": "sprawiedliwy / jasny (o włosach) / jarmark",
+    "fairly": "dość / sprawiedliwie",
+    "faith": "wiara / ufność",
+    "faithful": "wierny",
+    "fake": "fałszywy / podróbka",
+    "fall": "spadać / upadać / jesień",
+    "fallen": "spadł / upadł (forma trzecia)",
+    "falling": "spadający",
+    "falls": "wodospad / spada",
+    "false": "fałszywy / błędny",
+    "fame": "sława",
+    "familiar": "znajomy / dobrze znany",
+    "family": "rodzina",
+    "famous": "sławny",
+    "fan": "wachlarz / wentylator / fan",
+    "fancy": "wymyślny / mieć ochotę",
+    "fantastic": "fantastyczny",
+    "far": "daleko",
+    "fare": "opłata za przejazd / bilet",
+    "farewell": "pożegnanie",
+    "farm": "gospodarstwo / farma",
+    "farmer": "farmer / rolnik",
+    "fascinating": "fascynujący",
+    "fashion": "moda",
+    "fast": "szybko / szybki",
+    "fasten": "zapinać / mocować",
+    "faster": "szybciej",
+    "fat": "gruby / tłuszcz",
+    "fatal": "śmiertelny / fatalny",
+    "fate": "los / przeznaczenie",
+    "father": "ojciec",
+    "fatigue": "zmęczenie",
+    "fault": "wina / wada",
+    "favor": "przysługa / przychylność",
+    "favorite": "ulubiony",
+    "fear": "strach / bać się",
+    "fearful": "przestraszony / bojaźliwy",
+    "feasible": "wykonalny / realny",
+    "feast": "uczta / ucztować",
+    "feat": "wyczyn / osiągnięcie",
+    "feather": "pióro (ptasie)",
+    "feature": "cecha / funkcja / zawierać",
+    "february": "luty",
+    "federal": "federalny",
+    "fee": "opłata (np. za szkołę, lekarza)",
+    "feed": "karmić / pasza",
+    "feel": "czuć / czuć się",
+    "feeling": "uczucie / poczucie",
+    "feelings": "uczucia",
+    "feels": "czuje / wydaje się",
+    "fees": "opłaty",
+    "feet": "stopy (liczba mnoga od foot)",
+    "fell": "upadł / spadł (czas przeszły od fall)",
+    "fellow": "kolega / gość",
+    "felt": "czuł / czuła (czas przeszły od feel)",
+    "female": "samica / kobieta / żeński",
+    "fence": "płot / ogrodzenie",
+    "ferry": "prom",
+    "festival": "festiwal",
+    "fetch": "przynieść (iść i przynieść)",
+    "fever": "gorączka",
+    "few": "kilka / mało",
+    "fiber": "włókno",
+    "fiction": "fikcja",
+    "field": "pole / dziedzina",
+    "fierce": "gwałtowny / wściekły / dziki",
+    "fifteen": "piętnaście",
+    "fifth": "piąty",
+    "fifty": "pięćdziesiąt",
+    "fight": "walczyć / walka",
+    "fighter": "wojownik / zawodnik",
+    "fighting": "walczący / walka",
+    "figure": "postać / liczba / figura",
+    "figures": "postacie / liczby",
+    "file": "plik / pilnik / teczka",
+    "files": "pliki",
+    "fill": "napełniać / wypełniać",
+    "filled": "napełnił / wypełnił",
+    "film": "film / kręcić film",
+    "filter": "filtr / filtrować",
+    "filthy": "brudny / obrzydliwy",
+    "final": "finałowy / ostateczny",
+    "finally": "w końcu / ostatecznie",
+    "finance": "finansować / finanse",
+    "financial": "finansowy",
+    "find": "znaleźć",
+    "finding": "znalezienie / odkrycie",
+    "finds": "znajduje",
+    "fine": "dobrze / grzywna / drobny",
+    "finger": "palec (u ręki)",
+    "fingers": "palce",
+    "finish": "kończyć / koniec",
+    "finished": "skończył / ukończony",
+    "fire": "ogień / pożar / zwolnić (z pracy)",
+    "firearm": "broń palna",
+    "fireworks": "fajerwerki",
+    "firm": "firma / twardy / solidny",
+    "firmly": "mocno / pewnie",
+    "first": "pierwszy / najpierw",
+    "fish": "ryba / łowić ryby",
+    "fisherman": "rybak",
+    "fishing": "wędkarstwo / rybacki",
+    "fist": "piść",
+    "fit": "pasować / wysportowany",
+    "fitness": "sprawność fizyczna / fitness",
+    "fitted": "dopasowany",
+    "five": "pięć",
+    "fix": "naprawić / ustalić",
+    "fixed": "naprawiony / stały",
+    "flag": "flaga",
+    "flame": "płomień",
+    "flash": "błysk / migać / błyskać",
+    "flashed": "błysnął / migał",
+    "flashing": "migający / błyskający",
+    "flashlight": "latarka",
+    "flat": "mieszkanie / płaski",
+    "flavor": "smak / aromat",
+    "flee": "uciekać (z danego miejsca)",
+    "flesh": "ciało / miąższ",
+    "flew": "poleciał (czas przeszły od fly)",
+    "flexible": "elastyczny / giętki",
+    "flight": "lot / ucieczka",
+    "float": "unosić się na wodzie",
+    "flock": "stado / gromadzić się",
+    "flood": "powódź / zalać",
+    "floor": "podłoga / piętro",
+    "flour": "mąka",
+    "flow": "przepływ / płynąć",
+    "flower": "kwiat",
+    "fluctuation": "wahanie / fluktuacja",
+    "fluent": "biegły / płynny (o języku)",
+    "fluid": "płyn / płynny",
+    "fly": "latać / mucha",
+    "flying": "latający / lot",
+    "foam": "piana / pianka",
+    "focus": "skupić się / ostrość / centrum",
+    "focused": "skupiony",
+    "fog": "mgła",
+    "fold": "składać / zginać",
+    "folk": "ludowy / ludzie",
+    "follow": "iść za / śledzić / następować",
+    "followed": "nastąpił / podążył za",
+    "following": "następny / podążający",
+    "fond": "czuły / lubiący coś (np. fond of reading)",
+    "food": "jedzenie",
+    "fool": "głupek / oszukać",
+    "foolish": "głupi / niedorzeczny",
+    "foot": "stopa / stopa (miara)",
+    "footage": "materiał filmowy",
+    "football": "piłka nożna",
+    "footstep": "krok",
+    "footsteps": "kroki / odgłos kroków",
+    "for": "dla / przez (jakiś czas)",
+    "forbid": "zabraniać",
+    "force": "siła / zmuszać",
+    "forced": "zmuszony",
+    "forecast": "prognoza",
+    "forehead": "czoło",
+    "foreign": "zagraniczny / obcy",
+    "foreigner": "obcokrajowiec",
+    "forest": "las",
+    "forever": "na zawsze",
+    "forge": "kuć / podrabiać",
+    "forget": "zapominać",
+    "forgive": "wybaczać",
+    "forgot": "zapomniał (czas przeszły od forget)",
+    "forgotten": "zapomniany",
+    "fork": "widelec / widły / rozwidlenie",
+    "form": "forma / formularz / tworzyć",
+    "formal": "formalny",
+    "format": "format / formatować",
+    "formation": "formowanie / szyk",
+    "former": "były / poprzedni",
+    "formula": "formuła / wzór",
+    "forth": "naprzód / dalej",
+    "fortnight": "dwa tygodnie",
+    "fortunate": "mający szczęście / pomyślny",
+    "fortune": "fortuna / los / majątek",
+    "forty": "czterdzieści",
+    "forward": "naprzód / bezczelny",
+    "fossil": "skamielina",
+    "foster": "pielęgnować / brać na wychowanie",
+    "found": "znalazł / założył",
+    "foundation": "fundacja / fundament",
+    "founder": "założyciel",
+    "fountain": "fontanna",
+    "four": "cztery",
+    "fourteen": "czternaście",
+    "fourth": "czwarty",
+    "fox": "lis",
+    "fraction": "ułamek / odrobina",
+    "fracture": "złamanie / pęknięcie",
+    "fragile": "kruchy / delikatny",
+    "fragment": "fragment",
+    "frame": "rama / ramka / klatka (filmu)",
+    "framework": "struktura / ramowe założenia",
+    "frankly": "szczerze",
+    "fraud": "oszustwo / wyłudzenie",
+    "free": "wolny / darmowy",
+    "freedom": "wolność",
+    "freely": "swobodnie",
+    "freeze": "zamarzać / zamrażać",
+    "freezing": "lodowaty / zamarzający",
+    "freight": "ładunek / fracht",
+    "frequent": "częsty",
+    "frequently": "często",
+    "fresh": "świeży",
+    "friction": "tarcie / konflikt",
+    "friday": "piątek",
+    "fridge": "lodówka",
+    "friend": "przyjaciel",
+    "friendly": "przyjacielski / miły",
+    "friendship": "przyjaźń",
+    "fright": "przerażenie / strach",
+    "frighten": "przestraszyć",
+    "frightened": "przestraszony",
+    "frog": "żaba",
+    "from": "z / od",
+    "front": "przód / przedni",
+    "frost": "mróz",
+    "frown": "zmarszczyć brwi",
+    "fruit": "owoc / owoce",
+    "frustrate": "frustrować",
+    "fry": "smażyć",
+    "fuel": "paliwo",
+    "fulfill": "spełniać / wypełniać",
+    "full": "pełny",
+    "fully": "w pełni / całkowicie",
+    "fume": "dym / spaliny",
+    "fun": "zabawa",
+    "function": "funkcja / działać",
+    "functional": "funkcjonalny",
+    "fund": "fundusz / finansować",
+    "fundamental": "fundamentalny / podstawowy",
+    "funds": "fundusze / środki finansowe",
+    "funeral": "pogrzeb",
+    "funny": "zabawny / śmieszny",
+    "fur": "futro",
+    "furious": "wściekły",
+    "furiously": "wściekle / gwałtownie",
+    "furnace": "piec (hutniczy, przemysłowy)",
+    "furnish": "meblować / dostarczać",
+    "furniture": "meble",
+    "further": "dalej / kolejny",
+    "furthermore": "co więcej / ponadto",
+    "fury": "furia / wściekłość",
+    "fuse": "bezpiecznik / ląt / połączyć się",
+    "future": "przyszłość / przyszły",
+    "gain": "zyskać / zysk",
+    "gale": "wichura",
+    "gallery": "galeria",
+    "gamble": "hazard / ryzykować / hazard",
+    "game": "gra / mecz",
+    "gang": "gang / banda",
+    "gap": "szczelina / przerwa",
+    "garage": "garaż",
+    "garbage": "śmieci",
+    "garden": "ogród",
+    "garment": "odzież / strój",
+    "gas": "gaz / benzyna",
+    "gasp": "gwałtownie łapać powietrze",
+    "gate": "brama / bramka",
+    "gates": "bramy",
+    "gather": "zbierać (się) / gromadzić",
+    "gathered": "zebrany / zgromadzony",
+    "gauge": "wskaźnik / miernik",
+    "gay": "wesoły / homoseksualny",
+    "gaze": "wpatrywać się / spojrzenie",
+    "gear": "bieg (w aucie) / sprzęt / oporządzenie",
+    "general": "ogólny / generał",
+    "generally": "ogólnie / zazwyczaj",
+    "generate": "generować / wytwarzać",
+    "generation": "generacja / pokolenie",
+    "generator": "generator / agregat prądotwórczy",
+    "generous": "hojny",
+    "genius": "geniusz",
+    "gentle": "delikatny / łagodny",
+    "gentleman": "dżentelmen",
+    "gently": "delikatnie / łagodnie",
+    "genuine": "prawdziwy / autentyczny",
+    "geography": "geografia",
+    "geometry": "geometria",
+    "germ": "bakteria / zarodek",
+    "gesture": "gest",
+    "get": "dostać / docierać / kupić",
+    "gets": "dostaje / staje się",
+    "getting": "stający się / dostawanie",
+    "ghost": "duch",
+    "giant": "gigantyczny / olbrzym",
+    "gift": "prezent / dar / talent",
+    "girl": "dziewczyna",
+    "give": "dawać",
+    "given": "dany / podany",
+    "gives": "daje",
+    "giving": "dający",
+    "glad": "zadowolony / wdzięczny",
+    "glance": "zerknąć / zerknięcie",
+    "glare": "oślepiające światło / wrogie spojrzenie / piorunować wzrokiem",
+    "glared": "spojrzał wrogo / piorunował wzrokiem",
+    "glass": "szkło / szklanka / kieliszek",
+    "glide": "ślizgać się / szybować",
+    "glimpse": "mignięcie / ujrzeć przelotnie",
+    "global": "globalny",
+    "globe": "glob / kula ziemska",
+    "gloom": "mrok / przygnębienie",
+    "glorious": "wspaniały / chwalebny",
+    "glory": "chwała / sława",
+    "glove": "rękawiczka",
+    "glow": "poświata / świecić / żarzyć się",
+    "glue": "klej / kleić",
+    "go": "iść / jechać",
+    "goal": "cel / gol",
+    "goat": "koza",
+    "god": "bóg",
+    "gold": "złoto / złoty",
+    "golden": "złoty",
+    "good": "dobry",
+    "goodbye": "do widzenia",
+    "goodbyes": "pożegnania",
+    "goodness": "dobroć",
+    "goods": "towary",
+    "goose": "gęś",
+    "gorge": "wąwóz",
+    "gorgeous": "zachwycający / przepiękny",
+    "gossip": "plotka / plotkować",
+    "got": "dostał / kupił (czas przeszły od get)",
+    "govern": "rządzić / zarządzać",
+    "goverment": "rząd (częsty błąd ortograficzny od government)",
+    "government": "rząd / rządowy",
+    "governor": "gubernator",
+    "gown": "suknia / toga",
+    "grab": "złapać / chwycić",
+    "grabbed": "chwycił / złapał",
+    "grace": "wdzięk / łaska",
+    "graceful": "pełen wdzięku / pełen gracji",
+    "grade": "ocena / klasa / stopień",
+    "gradual": "stopniowy",
+    "gradually": "stopniowo",
+    "graduate": "ukończyć szkołę / absolwent",
+    "grain": "ziarno / zboże",
+    "grammar": "gramatyka",
+    "grand": "wspaniały / okazały",
+    "grandchild": "wnuk / wnuczka",
+    "granddaughter": "wnuczka",
+    "grandfather": "dziadek",
+    "grandmother": "babcia",
+    "grandpa": "dziadek (potocznie)",
+    "grandparents": "dziadkowie",
+    "grandson": "wnuk",
+    "grant": "przyznać / dotacja",
+    "grape": "winogrono",
+    "graph": "wykres / graf",
+    "grasp": "chwycić / pojąć",
+    "grass": "trawa",
+    "grateful": "wdzięczny",
+    "grave": "grób / poważny",
+    "gravel": "żwir / żwirowy",
+    "gravity": "grawitacja / powaga",
+    "gray": "szary (amerykańska pisownia)",
+    "grease": "smar / tłuszcz",
+    "great": "wspaniały / wielki",
+    "greatly": "ogromnie / bardzo",
+    "greed": "chciwość",
+    "greedy": "chciwy",
+    "green": "zielony",
+    "greet": "witać / pozdrawiać",
+    "greeting": "powitanie",
+    "grew": "rósł / dorastał (czas przeszły od grow)",
+    "grey": "szary (brytyjska pisownia)",
+    "grief": "żal / rozpacz",
+    "grieve": "rozpaczać / opłakiwać",
+    "grill": "grill / piec na grillu",
+    "grim": "ponury / groźny",
+    "grin": "szeroki uśmiech / uśmiechać się szeroko",
+    "grind": "mleć / zgrzytać",
+    "grip": "chwyt / chwycić / trzymać mocno",
+    "gripped": "chwycił / ścisnął",
+    "gripping": "trzymający w napięciu / mocno trzymający",
+    "groan": "jęk / jęczeć / rzężenie",
+    "grocery": "sklep spożywczy / zakupy spożywcze",
+    "groom": "pan młody / oporządzać konia",
+    "groove": "rowek / wyżłobienie",
+    "gross": "brutto / obrzydliwy",
+    "ground": "ziemia / podłoże / grunt",
+    "group": "grupa",
+    "groups": "grupy",
+    "grove": "gaj / lasek",
+    "grow": "rosnąć / uprawiać",
+    "growing": "rosnący / rosnące",
+    "grown": "dorosły / wyrośnięty",
+    "growth": "wzrost / rozwój",
+    "grudge": "uraza / żal do kogoś",
+    "grumble": "narzekać / gderać",
+    "grunt": "chrząknięcie / chrząkać",
+    "guarantee": "gwarancja / gwarantować",
+    "guard": "strażnik / chronić",
+    "guardian": "opiekun / strażnik",
+    "guards": "strażnicy",
+    "guess": "zgadywać / domysł",
+    "guest": "gość",
+    "guidance": "wskazówki / przewodnictwo",
+    "guide": "przewodnik / prowadzić",
+    "guilt": "wina",
+    "guilty": "winny",
+    "guitar": "gitara",
+    "gulf": "zatoka / przepaść",
+    "gum": "guma (np. do żucia) / dziąsło",
+    "gun": "pistolet / broń",
+    "gut": "jelito / intuicja",
+    "guy": "facet / gość",
+    "gym": "siłownia / sala gimnastyczna",
+    "habit": "nawyk / zwyczaj",
+    "habitat": "siedlisko / środowisko naturalne",
+    "hail": "grad / witać okrzykiem",
+    "hair": "włosy",
+    "half": "pół / połowa",
+    "hall": "hol / korytarz / sala",
+    "halt": "zatrzymanie / stawać (np. screech to a halt)",
+    "ham": "szynka",
+    "hammer": "młotek / młot",
+    "hammering": "bębnienie / uderzanie",
+    "hand": "ręka / dłoń / podawać",
+    "handful": "garść",
+    "handicap": "niepełnosprawność / utrudnienie",
+    "handkerchief": "chusteczka (materiałowa)",
+    "handle": "klamka / rączka / radzić sobie z czymś",
+    "handsome": "przystojny",
+    "handwriting": "charakter pisma",
+    "handy": "użyteczny / poręczny",
+    "hang": "wisieć / wieszać",
+    "happen": "dziać się / wydarzyć się",
+    "happened": "wydarzyło się / stało się",
+    "happens": "dzieje się",
+    "happiness": "szczęście",
+    "happy": "szczęśliwy",
+    "harbor": "port / przystań",
+    "hard": "trudny / twardy / mocno",
+    "hardly": "ledwo / ledwie",
+    "hardship": "trud / ciężkie czasy",
+    "hardware": "sprzęt (komputerowy) / narzędzia metalowe",
+    "hare": "zając",
+    "harm": "szkoda / krzywda / krzywdzić",
+    "harmful": "szkodliwy",
+    "harmless": "niegroźny / bezbronny",
+    "harmony": "harmonia",
+    "harness": "uprząż / okiełznać",
+    "harsh": "surowy / szorstki",
+    "harvest": "żniwa / zbiory",
+    "has": "ma (dla he/she/it)",
+    "haste": "pośpiech",
+    "hasten": "śpieszyć się / przyspieszać",
+    "hasty": "porywczy / pośpieszny",
+    "hat": "kapelusz / czapka",
+    "hatch": "właz / wykluwać się",
+    "hate": "nienawidzić / nienawiść",
+    "hated": "nienawidził",
+    "hatred": "nienawiść / wstręt",
+    "haul": "ciągnąć / łup",
+    "have": "mieć",
+    "having": "posiadanie / mający",
+    "hawk": "jastrząb",
+    "hay": "siano",
+    "hazard": "zagrożenie / ryzyko",
+    "he": "on",
+    "head": "głowa / kierować się",
+    "headache": "ból głowy",
+    "heading": "nagłówek / zmierzający w kierunku",
+    "headline": "nagłówek prasowy",
+    "headlights": "reflektory samochodu",
+    "headquarters": "kwatera główna / siedziba",
+    "heal": "leczyć (się) / goić (się)",
+    "health": "zdrowie",
+    "healthy": "zdrowy",
+    "heap": "sterta / stóg",
+    "hear": "słyszeć",
+    "heard": "słyszał / usłyszał",
+    "hearing": "słuch / przesłuchanie",
+    "heart": "serce",
+    "hearty": "serdeczny / obfity",
+    "heat": "ciepło / upał / podgrzewać",
+    "heater": "grzejnik",
+    "heaven": "niebo (w sensie religijnym)",
+    "heavy": "ciężki / ulewny (np. rain)",
+    "heavyly": "ciężko (częsty błąd od heavily)",
+    "hedge": "żywopłot",
+    "heel": "pięta / obcas",
+    "height": "wysokość / wzrost",
+    "heir": "spadkobierca",
+    "helicopter": "helikopter",
+    "hell": "piekło",
+    "hello": "witaj",
+    "helmet": "kask / hełm",
+    "help": "pomagać / pomoc",
+    "helpful": "pomocny",
+    "helpless": "bezradny",
+    "hem": "rąbek / obszycie",
+    "hen": "kura",
+    "hence": "stąd / skutkiem tego",
+    "her": "jej / ją",
+    "herd": "stado",
+    "here": "tutaj",
+    "heritage": "dziedzictwo",
+    "hero": "bohater",
+    "heroic": "bohaterski",
+    "hesitate": "wahać się",
+    "hesitated": "zawahał się",
+    "hesitation": "wahanie",
+    "hid": "ukrył (czas przeszły od hide)",
+    "hidden": "ukryty",
+    "hide": "chować (się) / ukrywać",
+    "hiding": "ukrywanie się / chowający",
+    "high": "wysoki / wysoko / wysokie (np. beams)",
+    "high-frequency": "wysokiej częstliwości",
+    "high-pitched": "o wysokim tonie",
+    "highly": "wysoce / bardzo",
+    "highway": "autostrada",
+    "hike": "wędrować / piesza wycieczka",
+    "hill": "wzgórze / pagórek",
+    "him": "go / jemu",
+    "himself": "sam / samego siebie",
+    "hind": "tylny",
+    "hinder": "utrudniać / ograniczać",
+    "hint": "wskazówka / aluzja",
+    "hip": "biodro",
+    "hire": "wynajmować / zatrudniać",
+    "his": "jego",
+    "hiss": "syk / syczeć",
+    "hissed": "syknął",
+    "historian": "historyk",
+    "historic": "historyczny (o dużym znaczeniu)",
+    "historical": "historyczny (dotyczący historii)",
+    "history": "historia",
+    "hit": "uderzyć / trafienie",
+    "hits": "uderza",
+    "hive": "ul",
+    "hobby": "hobby",
+    "hoe": "motyka",
+    "hog": "wieprz",
+    "hold": "trzymać / uścisk",
+    "holding": "trzymający",
+    "hole": "dziura / otwór",
+    "holiday": "wakacje / święto",
+    "hollow": "pusty w środku / zagłębienie",
+    "holy": "święty",
+    "home": "dom / do domu",
+    "homeland": "ojczyzna",
+    "homeless": "bezdomny",
+    "honest": "uczciwy / szczery",
+    "honestly": "szczerze / uczciwie",
+    "honesty": "uczciwość",
+    "honey": "miód / kochanie",
+    "honor": "honor / zaszczyt / czcić",
+    "honorable": "honorowy / zacny",
+    "hood": "kaptur / maska samochodu",
+    "hoof": "kopyto",
+    "hook": "haczyk / hak",
+    "hop": "skakać na jednej nodze",
+    "hope": "nadzieja / mieć nadzieję",
+    "hopeful": "pełen nadziei",
+    "hopeless": "beznadziejny",
+    "horizon": "horyzont",
+    "horizontal": "poziomy",
+    "horn": "róg / klakson",
+    "horrible": "okropny / straszny",
+    "horror": "horror / przerażenie",
+    "horse": "koń",
+    "hose": "wąż (np. ogrodowy)",
+    "hospital": "szpital",
+    "host": "gospodarz / gościć",
+    "hostage": "zakładnik",
+    "hostile": "wrogi",
+    "hostility": "wrogość",
+    "hot": "gorący",
+    "hotel": "hotel",
+    "hound": "ogar / pies gończy",
+    "hour": "godzina",
+    "hours": "godziny",
+    "house": "dom",
+    "household": "gospodarstwo domowe",
+    "housing": "warunki mieszkaniowe / obudowa",
+    "hover": "unosić się w powietrzu / krążyć",
+    "how": "jak",
+    "however": "jednak / jednakże",
+    "howl": "wycie / wyć",
+    "hug": "uścisk / przytulać",
+    "huge": "ogromny",
+    "human": "ludzki / człowiek",
+    "humanity": "ludzkość",
+    "humble": "pokorny / skromny",
+    "humid": "wilgotny (o powietrzu)",
+    "humor": "humor",
+    "hundred": "sto",
+    "hunger": "głód",
+    "hungry": "głodny",
+    "hunt": "polować / polowanie",
+    "hunter": "myśliwy",
+    "hunting": "polowanie",
+    "hurl": "ciepnąć / rzucić z siłą",
+    "hurrah": "hura",
+    "hurricane": "huragan",
+    "hurry": "spieszyć się / pośpiech",
+    "hurt": "boleć / ranić / krzywda",
+    "husband": "mąż",
+    "hut": "chata / szałas",
+    "hydraulic": "hydrauliczny",
+    "hygiene": "higiena",
+    "hymn": "hymn (religijny)",
+    "hypothesis": "hipoteza",
+    "ice": "lód",
+    "icy": "lodowaty",
+    "idea": "pomysł / idea",
+    "ideal": "idealny / ideał",
+    "identical": "identyczny",
+    "identify": "identyfikować / rozpoznać",
+    "identity": "tożsamość",
+    "idle": "bezczynny / leniwy",
+    "idol": "idol",
+    "if": "jeśli / jeżeli",
+    "ignore": "ignorować",
+    "ignored": "zignorował",
+    "ill": "chory",
+    "illegal": "nielegalny",
+    "illness": "choroba",
+    "illuminate": "oświetlać / rozjaśniać",
+    "illuminated": "oświetlił / oświetlony",
+    "illuminating": "oświetlający",
+    "illusion": "iluzja / złudzenie",
+    "illustrate": "ilustrować",
+    "illustration": "ilustracja",
+    "image": "obraz / wizerunek",
+    "imaginary": "zmyślony / wyimaginowany",
+    "imagination": "wyobraźnia",
+    "imagine": "wyobrażać sobie",
+    "imitate": "naśladować",
+    "immediate": "natychmiastowy",
+    "immediately": "natychmiast",
+    "immense": "ogromny / niezmierzony",
+    "immigrant": "imigrant",
+    "immune": "odporny",
+    "impact": "wpływ / uderzenie",
+    "impatient": "niecierpliwy",
+    "imperative": "konieczny / nakaz",
+    "imperfect": "nieidealny / niedoskonały",
+    "imperial": "imperialny / cesarski",
+    "implement": "wdrażać / narzędzie",
+    "imply": "sugerować / dawać do zrozumienia",
+    "import": "import / importować",
+    "importance": "znaczenie / ważność",
+    "important": "ważny",
+    "impose": "narzucać",
+    "impossible": "niemożliwy",
+    "impress": "wywierać wrażenie",
+    "impression": "wrażenie",
+    "impressive": "imponujący",
+    "imprison": "uwięzić",
+    "improve": "polepszać / poprawiać",
+    "impulse": "impuls",
+    "in": "w / wewnątrz",
+    "ability": "zdolność",
+    "incentive": "bodziec / zachęta",
+    "inch": "cal (jednostka miary)",
+    "incident": "incydent / zajście",
+    "incline": "skłaniać się / pochyłość",
+    "include": "zawierać / włączać",
+    "included": "włączony / zawarty",
+    "including": "w tym / włączając",
+    "income": "dochód",
+    "incorporate": "wcielać / włączać",
+    "incorrect": "błędny / niepoprawny",
+    "incorrectly": "niepoprawnie / błędnie",
+    "increase": "zwiększać / wzrost",
+    "increasing": "rosnący / zwiększający się",
+    "incredible": "niesamowity / niewiarygodny",
+    "incredibly": "niesamowicie",
+    "indeed": "rzeczywiście / doprawdy",
+    "indefinite": "nieokreślony",
+    "independence": "niepodległość",
+    "independent": "niezależny",
+    "index": "indeks / wskaźnik",
+    "indicate": "wskazywać",
+    "indication": "wskazówka / oznaka",
+    "indifferent": "obojętny",
+    "indirect": "pośredni",
+    "individual": "indywidualny / jednostka",
+    "indoor": "wewnętrzny (w budynku)",
+    "indoors": "wewnątrz budynku",
+    "induce": "skłaniać / wywoływać",
+    "industrial": "przemysłowy",
+    "industry": "przemysł",
+    "inevitable": "nieunikniony",
+    "infant": "niemowlę",
+    "infect": "zarażać / zainfekować",
+    "infection": "infekcja / zakażenie",
+    "infer": "wnioskować",
+    "inferior": "gorszy / niższy rangą",
+    "infinite": "nieskończony",
+    "inflation": "inflacja",
+    "influence": "wpływ / wpływać",
+    "influential": "wpływowy",
+    "inform": "informować",
+    "informal": "nieoficjalny / swobodny",
+    "information": "informacja / informacje",
+    "infra": "pod- / poniżej (przedrostek)",
+    "infrastructure": "infrastruktura",
+    "frequent": "częsty",
+    "ingenuity": "pomysłowość / pomysł",
+    "ingredient": "składnik",
+    "inhabit": "zamieszkiwać",
+    "inhabitant": "mieszkaniec",
+    "inherent": "nieodłączny",
+    "inherit": "dziedziczyć",
+    "initial": "początkowy / inicjał",
+    "initially": "początkowo",
+    "initiate": "zapoczątkować / zainicjować",
+    "inject": "wstrzykiwać",
+    "injection": "zastrzyk",
+    "injure": "ranić / urazić",
+    "injured": "ranny / kontuzjowany",
+    "injury": "uraz / kontuzja",
+    "ink": "atrament",
+    "inland": "w głąb lądu / śródlądowy",
+    "inn": "gospoda / karczma",
+    "inner": "wewnętrzny",
+    "innocence": "niewinność",
+    "innocent": "niewinny",
+    "innovation": "innowacja",
+    "input": "wkład / wejście (dane)",
+    "inquire": "pytać / dowiadywać się",
+    "inquiry": "zapytanie / dochodzenie",
+    "insane": "obłąkany / szalony",
+    "insect": "owad",
+    "insert": "włożyć / wstawić",
+    "inside": "wewnątrz / w środku",
+    "insight": "wgląd / intuicja",
+    "insist": "nalegać",
+    "insisted": "nalegał",
+    "inspect": "kontrolować / badać",
+    "inspection": "inspekcja / kontrola",
+    "inspector": "inspektor",
+    "inspiration": "inspiracja",
+    "inspire": "inspirować",
+    "instability": "niestabilność",
+    "install": "instalować",
+    "installation": "instalacja",
+    "instance": "przypadek / przykład",
+    "instant": "natychmiastowy / moment",
+    "instantly": "natychmiast",
+    "instead": "zamiast",
+    "instinct": "instynkt",
+    "institute": "instytut / wszczynać",
+    "institution": "instytucja",
+    "instruct": "instruować / pouczać",
+    "instruction": "instrukcja",
+    "instructions": "instrukcje",
+    "instructor": "instruktor",
+    "instrument": "instrument / przyrząd",
+    "insult": "zniewaga / obrażać",
+    "insurance": "ubezpieczenie",
+    "insure": "ubezpieczać",
+    "intact": "nietknięty / nienaruszony",
+    "intake": "spożycie / wlot",
+    "integral": "całkowity / integralny",
+    "integrate": "integrować (się)",
+    "integration": "integracja",
+    "integrity": "prawość / integralność",
+    "intellect": "intelekt",
+    "intellectual": "intelektualny / intelektualista",
+    "intelligence": "inteligencja / wywiad (służby)",
+    "intelligent": "inteligentny",
+    "intend": "zamierzać",
+    "intended": "zamierzony",
+    "intense": "intensywny",
+    "intensity": "intensywność",
+    "intent": "zamiar / intencja",
+    "intention": "intencja / zamiar",
+    "interact": "wchodzić w interakcję",
+    "interaction": "interakcja",
+    "interest": "zainteresowanie / odsetki",
+    "interested": "zainteresowany",
+    "interesting": "interesujący",
+    "interfere": "wtrącać się / kolidować",
+    "interfering": "wtrącający się / ingerujący",
+    "interior": "wnętrze / wewnętrzny",
+    "intermediate": "średniozaawansowany",
+    "intermittent": "przerywany / okresowy",
+    "internal": "wewnętrzny",
+    "international": "międzynarodowy",
+    "internet": "internet",
+    "interpret": "interpretować",
+    "interpretation": "interpretacja",
+    "interrupt": "przerywać / przeszkadzać",
+    "interval": "interwał / odstęp czasu",
+    "intervene": "interweniować",
+    "interview": "wywiad / rozmowa kwalifikacyjna",
+    "intimate": "kameralny / intymny",
+    "into": "do / w (kierunek do wnętrza)",
+    "intrigue": "intryga / intrygować",
+    "introduce": "przedstawiać / wprowadzać",
+    "introduction": "wprowadzenie / wstęp",
+    "invade": "najechać / najeżdżać",
+    "invalid": "nieważny / inwalida",
+    "invasion": "inwazja / najazd",
+    "invent": "wynaleźć",
+    "invention": "wynalazek",
+    "inventory": "inwentarz / zapasy",
+    "invest": "inwestować",
+    "investigate": "badać / prowadzić śledztwo",
+    "investigation": "śledztwo / dochodzenie",
+    "investigator": "śledczy / badacz",
+    "investment": "inwestycja",
+    "invisible": "niewidzialny",
+    "invitation": "zaproszenie",
+    "invite": "zapraszać",
+    "invited": "zaproszony",
+    "invoice": "faktura",
+    "involve": "angażować / wymagać",
+    "involved": "zaangażowany",
+    "involvement": "zaangażowanie",
+    "iron": "żelazo / żelazne / prasować",
+    "irrigate": "nawadniać",
+    "island": "wyspa",
+    "isolate": "izolować",
+    "isolated": "odizolowany",
+    "isolation": "izolacja",
+    "issue": "kwestia / wydanie / problem",
+    "it": "to / ono",
+    "italian": "włoski / włoch",
+    "item": "rzecz / pozycja (na liście)",
+    "items": "pozycje / przedmioty",
+    "its": "jego / jej (dla rzeczy/zwierząt)",
+    "itself": "samo / siebie",
+    "jacket": "kurtka / marynarka",
+    "jack": "jack (imię bohatera)",
+    "jail": "więzienie",
+    "jam": "dżem / zator / zakleszczyć się",
+    "january": "styczeń",
+    "japanese": "japoński / japończyk",
+    "jar": "słoik / wstrząs",
+    "jaw": "szczęka",
+    "jaws": "szczęki",
+    "jealous": "zazdrosny",
+    "jeans": "dżinsy",
+    "jelly": "galaretka",
+    "jeopardize": "zagrozić / narażać na szwank",
+    "jerk": "szarpnięcie / szarpać",
+    "jet": "odrzutowiec / strumień",
+    "jewel": "klejnot",
+    "jewelry": "biżuteria",
+    "job": "praca / zadanie",
+    "join": "dołączyć",
+    "joined": "dołączył",
+    "joint": "staw / wspólny",
+    "joke": "żart / żartować",
+    "jolly": "wesoły / radosny",
+    "journal": "czasopismo / dziennik",
+    "journey": "podróż",
+    "joy": "radość",
+    "judge": "sędzia / oceniać",
+    "judgment": "osąd / wyrok",
+    "judicial": "sądowy",
+    "jug": "dzbanek",
+    "juice": "sok",
+    "july": "lipiec",
+    "jump": "skakać / skok",
+    "jumped": "skoczył",
+    "junction": "skrzyżowanie / węzeł",
+    "june": "czerwiec",
+    "jungle": "dżungla",
+    "junior": "młodszy rangą / junior",
+    "junk": "graty / tandeta",
+    "jurisdiction": "jurysdykcja",
+    "jury": "ława przysięgłych",
+    "just": "tylko / właśnie / sprawiedliwy",
+    "justice": "sprawiedliwość",
+    "justify": "usprawiedliwiać",
+    "keen": "chętny / ostry / zapalony",
+    "keep": "trzymać / zachować / kontynuować",
+    "keeping": "trzymanie / zachowywanie",
+    "keeps": "trzyma / zachowuje",
+    "kernel": "ziarno / rdzeń",
+    "kettle": "czajnik",
+    "key": "klucz / kluczowy",
+    "keyboard": "klawiatura",
+    "keys": "klucze / klawisze",
+    "kick": "kopnąć / kopnięcie",
+    "kid": "dziecko / żartować",
+    "kidnap": "porwać (człowieka)",
+    "kidney": "nerka",
+    "kill": "zabijać",
+    "killed": "zabity",
+    "killer": "zabójca",
+    "kilo": "kilogram",
+    "kilogram": "kilogram",
+    "kilometer": "kilometr",
+    "kilometers": "kilometry",
+    "kind": "rodzaj / miły",
+    "kindness": "dobroć / życzliwość",
+    "king": "król",
+    "kingdom": "królestwo",
+    "kiss": "pocałunek / całować",
+    "kitchen": "kuchnia",
+    "kite": "latawiec",
+    "kitten": "kotek",
+    "knee": "kolano",
+    "kneel": "klękać",
+    "knelt": "klęczał (czas przeszły od kneel)",
+    "knew": "wiedział (czas przeszły od know)",
+    "knife": "nóż",
+    "knight": "rycerz",
+    "knit": "robić na drutach",
+    "knob": "gałka / pokrętło",
+    "knock": "pukać / stukać / pukanie",
+    "knocked": "zapukał / uderzył",
+    "knot": "węzeł",
+    "know": "wiedzieć / znać",
+    "knowledge": "wiedza",
+    "known": "znany",
+    "knows": "wie / zna",
+    "lab": "laboratorium (skrót)",
+    "label": "etykieta / metka / znakować",
+    "laboratory": "laboratorium",
+    "labor": "praca / robocizna",
+    "lace": "koronka / sznurówka",
+    "lack": "brak / brakować",
+    "lad": "chłopak / młodzieniec",
+    "ladder": "drabina",
+    "lady": "dama / pani",
+    "lag": "zostawać w tyle / opóźnienie",
+    "lake": "jezioro",
+    "lamb": "jagnięcina / jagnię",
+    "lame": "kulawy / słaby (np. wymówka)",
+    "lamp": "lampa",
+    "lamps": "lampy",
+    "land": "ziemia / lądować",
+    "landed": "wylądował / dopadł",
+    "landing": "lądowanie",
+    "landlord": "właściciel mieszkania (wynajmujący)",
+    "landmark": "punkt orientacyjny / punkt zwrotny",
+    "landscape": "krajobraz",
+    "lane": "pas ruchu / dróżka",
+    "language": "język",
+    "lantern": "latarnia (przenośna)",
+    "lap": "kolana (u siedzącego człowieka) / okrążenie",
+    "laptop": "laptop",
+    "laptops": "laptopy",
+    "large": "duży / wielki",
+    "largely": "w dużej mierze",
+    "laser": "laser / laserowy",
+    "last": "ostatni / trwać",
+    "lasting": "trwały",
+    "late": "późno / późny",
+    "lately": "ostatnio",
+    "later": "później",
+    "latest": "najnowszy",
+    "latin": "łaciński / łacina",
+    "latter": "ten drugi (z dwóch wymienionych)",
+    "laugh": "śmiać się / śmiech",
+    "laughed": "zaśmiał się",
+    "launch": "odpalić / uruchomić / premiera",
+    "laundry": "pranie / pralnia",
+    "law": "prawo",
+    "lawful": "legalny / zgodny z prawem",
+    "lawn": "trawnik",
+    "lawsuit": "pozew sądowy",
+    "lawyer": "prawnik / adwokat",
+    "lay": "kłaść / położyć",
+    "layer": "warstwa",
+    "layout": "układ / makieta",
+    "lazy": "leniwy",
+    "lead": "prowadzić / wieść",
+    "leader": "przywódca / lider",
+    "learning": "nauka / uczenie się",
+    "leather": "skóra / skórzany",
+    "leave": "zostawić / opuścić",
+    "led": "poprowadził / zaprowadził (czas przeszły od lead)",
+    "left": "lewy / zostawił (czas przeszły od leave)",
+    "legs": "nogi",
+    "lemon": "cytryna",
+    "length": "długość",
+    "less": "mniej",
+    "letters": "listy",
+    "level": "poziom",
+    "license": "licencja / prawo jazdy",
+    "life": "życie",
+    "light": "światło / jasny / czerwone światło (na skrzyżowaniu)",
+    "lights": "światła / reflektory",
+    "line": "linia / przewód",
+    "links": "ogniwa (łańcucha) / linki",
+    "lion": "lew",
+    "lip": "warga",
+    "list": "lista",
+    "listen": "słuchać",
+    "listened": "słuchał",
+    "listening": "słuchanie / słuchający",
+    "little": "mało / trochę / mały",
+    "live": "żyć / mieszkać",
+    "lived": "żył / mieszkał",
+    "lively": "tętniący życiem / żywy",
+    "lives": "życia (liczba mnoga od life) / żyje",
+    "living": "żyjący / życie",
+    "local": "lokalny",
+    "location": "lokalizacja / położenie",
+    "lock": "zamykać na klucz / blokada",
+    "locked": "zamknięty / zablokowany",
+    "locking": "blokowanie / zamykanie",
+    "logan": "logan (imię bohatera)",
+    "logical": "logiczny",
+    "long": "długi / długo",
+    "look": "patrzeć / wyglądać / spojrzenie",
+    "looked": "spojrzał / popatrzył",
+    "looking": "patrzący / szukający",
+    "looks": "patrzy / wygląda",
+    "loose": "luźny / ruchomy (np. kamień)",
+    "lose": "zgubić / stracić / przegrać",
+    "lost": "zgubiony / stracony / przegrał",
+    "loud": "głośny / głośno",
+    "loudly": "głośno",
+    "love": "miłość / kochać",
+    "low": "niski / nisko",
+    "lower": "obniżać / niższy",
+    "luck": "szczęście",
+    "luggage": "bagaż",
+    "lunch": "lunch / obiad",
+    "machine": "maszyna",
+    "mad": "szalony / wściekły",
+    "made": "zrobił / stworzył (czas przeszły od make)",
+    "main": "główny",
+    "make": "robić / tworzyć",
+    "makes": "robi / sprawia",
+    "making": "robienie / sprawianie, że",
+    "man": "mężczyzna / człowiek",
+    "managed": "zdołał / poradził sobie",
+    "manager": "menedżer / kierownik",
+    "maneuver": "manewr",
+    "maneuvers": "manewry",
+    "manner": "sposób / maniery",
+    "many": "wiele / dużo",
+    "map": "mapa",
+    "maps": "mapy",
+    "march": "marsz / maszerować",
+    "mark": "znak / ślad",
+    "marker": "znacznik",
+    "market": "rynek / targ",
+    "mask": "maska",
+    "masked": "zamaskowany",
+    "massive": "masywny / potężny",
+    "master": "mistrz",
+    "match": "mecz / zapałka / pasować do siebie",
+    "material": "materiał",
+    "matter": "sprawa / kwestia / mieć znaczenie",
+    "may": "móc / maj",
+    "maybe": "może",
+    "me": "mnie / mi",
+    "meal": "posiłek",
+    "mean": "znaczyć / skąpy",
+    "meaning": "znaczenie",
+    "means": "środki / oznacza",
+    "meant": "znaczył (czas przeszły od mean)",
+    "meantime": "w międzyczasie",
+    "measure": "mierzyć / środek",
+    "meat": "mięso",
+    "mechanical": "mechaniczny",
+    "medals": "medale",
+    "medical": "medyczny",
+    "medicine": "lekarstwo / medycyna",
+    "meet": "spotykać",
+    "meeting": "spotkanie",
+    "meets": "spotyka",
+    "melt": "topnieć",
+    "member": "członek (np. zespołu, organizacji)",
+    "memory": "pamięć",
+    "men": "mężczyźni (liczba mnoga od man)",
+    "mention": "wspominać",
+    "menu": "menu",
+    "merchant": "kupiec / handlowiec",
+    "merely": "zaledwie / jedynie",
+    "merry": "wesoły",
+    "message": "wiadomość",
+    "messages": "wiadomości",
+    "met": "spotkał (czas przeszły od meet)",
+    "metal": "metal / metalowy",
+    "method": "metoda",
+    "meters": "metry",
+    "midday": "południe (środek dnia)",
+    "middle": "środek",
+    "midnight": "północ (godzina 24:00)",
+    "might": "móc / móc prawdopodobnie",
+    "mile": "mila",
+    "miles": "mile",
+    "military": "wojsko / wojskowy",
+    "milk": "mleko",
+    "mill": "młyn / fabryka",
+    "mind": "umysł / mieć coś przeciwko",
+    "minds": "umysły",
+    "mine": "mój / kopalnia",
+    "mineral": "minerał / mineralny",
+    "minister": "minister",
+    "minute": "minuta",
+    "minutes": "minuty",
+    "mirror": "lustro",
+    "mirrors": "lusterka",
+    "misfortune": "nieszczęście",
+    "miss": "tęsknić / chybić / przegapić",
+    "missed": "przegapiony / spóźniony",
+    "missing": "brakujący / zaginiony",
+    "mist": "mgła / opary",
+    "mistake": "błąd",
+    "mix": "mieszać",
+    "mixture": "mieszanina",
+    "model": "model",
+    "modern": "nowoczesny",
+    "modest": "skromny",
+    "moment": "moment / chwila",
+    "moments": "momenty / chwile",
+    "monastery": "klasztor",
+    "monday": "poniedziałek",
+    "money": "pieniądze",
+    "monkey": "małpa",
+    "monument": "pomnik",
+    "mood": "nastrój",
+    "moon": "księżyc",
+    "moonlight": "światło księżyca",
+    "moral": "moralny",
+    "more": "więcej",
+    "morning": "poranek / rano",
+    "most": "najbardziej / większość",
+    "mostly": "głównie / przeważnie",
+    "mother": "matka",
+    "motion": "ruch",
+    "motioned": "skinął / wskazał ruchem ręki",
+    "motor": "silnik / motor",
+    "mountain": "góra",
+    "mountains": "góry",
+    "mouse": "mysz",
+    "mouth": "usta",
+    "move": "ruszać się / ruszaj się! / ruch",
+    "moved": "ruszył się / przeniósł się",
+    "movement": "ruch",
+    "movements": "ruchy",
+    "moves": "porusza się",
+    "movie": "film",
+    "moving": "ruszający się / w ruchu",
+    "much": "dużo / znacznie",
+    "mud": "błoto",
+    "muddy": "błotnisty",
+    "multi": "multi- (wielu / wielokrotny)",
+    "murder": "morderstwo / mordować",
+    "muscle": "mięsień",
+    "museum": "muzeum",
+    "music": "muzyka",
+    "must": "musieć",
+    "my": "mój",
+    "mysterious": "tajemniczy",
+    "mystery": "tajemnica",
+
+    
+};
+
+      
+
+// Przygotowanie tekstu - pakowanie każdego słowa w tagi span.word
+function initWordTokenization() {
+    const paragraphs = document.querySelectorAll('.book-content p');
+    paragraphs.forEach(p => {
+        const text = p.innerText;
+        const tokens = text.split(/(\s+)/);
+        
+        const processedTokens = tokens.map(token => {
+            if (/[a-zA-Z]/.test(token)) {
+                // Wyciągamy litery i apostrofy, usuwamy resztę interpunkcji dookoła
+                const cleanWord = token.replace(/[^a-zA-Z']/g, '');
+                const punctuation = token.replace(/[a-zA-Z']/g, '');
+                
+                return `<span class="word" onclick="handleWordClick('${cleanWord}')">${cleanWord}</span>${punctuation}`;
+            }
+            return token;
+        });
+        p.innerHTML = processedTokens.join('');
+    });
+}
+
+// Uruchomienie tokenizacji słów
+initWordTokenization();
+
+// ==========================================
+// 2. INTERAKTYWNY SYSTEM TŁUMACZENIA NA STRONIE
+// ==========================================
+let isTranslatorActive = false;
+
+function toggleTranslatorMode() {
+    isTranslatorActive = !isTranslatorActive;
+    const btn = document.getElementById('translatorToggle');
+    if (isTranslatorActive) {
+        document.body.classList.add('translator-active');
+        btn.classList.add('active');
+    } else {
+        document.body.classList.remove('translator-active');
+        btn.classList.remove('active');
+    }
+}
+
+function handleWordClick(word) {
+    if (!isTranslatorActive) return;
+
+    // Standaryzacja słowa: małe litery i usunięcie dziwnych znaków niebędących literami
+    let searchWord = word.toLowerCase().replace(/[^a-z]/g, '').trim();
+    // Odcięcie ewentualnego apostrofu (np. tom's -> tom)
+    let fallbackWord = word.toLowerCase().split("'")[0].replace(/[^a-z]/g, '').trim();
+
+    let translation = null;
+
+    // Szukamy w naszym słowniku
+    if (localDictionary[searchWord]) {
+        translation = localDictionary[searchWord];
+    } else if (localDictionary[fallbackWord]) {
+        translation = localDictionary[fallbackWord];
+    }
+
+    // Pobieramy elementy okienka modalnego ze strony
+    const modalWord = document.getElementById('modalWord');
+    const modalTranslation = document.getElementById('modalTranslation');
+    const modalOverlay = document.getElementById('translateModal');
+
+    // Ustawiamy nagłówek okienka na kliknięte słowo
+    modalWord.innerText = word;
+
+    // Generujemy uniwersalny link do Google Translate dla klikniętego słowa
+    const googleUrl = `https://translate.google.com/?sl=en&tl=pl&text=${encodeURIComponent(word)}&op=translate`;
+
+    // Opcja A: Słowo JEST w bazie danych
+    if (translation) {
+        modalTranslation.innerHTML = `
+            <div style="color: #2ecc71; font-weight: 500; margin-bottom: 15px;">
+                ${translation}
+            </div>
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 12px;">
+            <a href="${googleUrl}" target="_blank" style="display: inline-block; font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 600; padding: 4px 10px; background: rgba(162, 82, 250, 0.1); border-radius: 6px;">
+                🔍 Pełne tłumaczenie w Google
+            </a>
+        `;
+    } 
+    // Opcja B: Słowa NIE MA w bazie danych
+    else {
+        modalTranslation.innerHTML = `
+            <div style="font-size: 0.95rem; color: #e74c3c; margin-bottom: 12px; background: rgba(231, 76, 60, 0.1); padding: 8px; border-radius: 8px;">
+                Brak tłumaczenia w bazie podręcznej
+            </div>
+            <a href="${googleUrl}" target="_blank" style="display: inline-block; font-size: 0.9rem; color: var(--accent); text-decoration: underline; font-weight: 600; margin-top: 5px;">
+                🔍 Sprawdź w Google Translate
+            </a>
+        `;
+    }
+
+    // Otwieramy okienko na ekranie
+    modalOverlay.classList.add('open');
+}
+
+function closeModal(e) {
+    if (e.target.id === 'translateModal') {
+        document.getElementById('translateModal').classList.remove('open');
+    }
+}
+
+// ==========================================
+// 3. ROZWIJALNY PANEL OCHRONY WZROKU
+// ==========================================
+function toggleDropdown() {
+    document.getElementById('themeDropdown').classList.toggle('open');
+}
+
+function changeTheme(themeName) {
+    document.body.classList.remove('theme-dark', 'theme-gray', 'theme-light', 'theme-sepia');
+    
+    if (themeName !== 'dark') {
+        document.body.classList.add(`theme-${themeName}`);
+    }
+    
+    document.getElementById('themeDropdown').classList.remove('open');
+}
+
+window.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('themeDropdown');
+    if (dropdown && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('open');
+    }
+});
+
+// ==========================================
+// 4. TRYB PEŁNOEKRANOWY (FULLSCREEN)
+// ==========================================
+function toggleFullscreen() {
+    const btn = document.getElementById('fullscreenBtn');
+    
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+            btn.classList.add('active');
+            btn.innerHTML = `🔲 <span>Zamknij pełny ekran</span>`;
+        }).catch(err => {
+            console.error(`Błąd Fullscreen: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen().then(() => {
+            btn.classList.remove('active');
+            btn.innerHTML = `🔲 <span>Pełny ekran</span>`;
+        });
+    }
+}
+
+// Skok do podanej strony
+function jumpToPage() {
+    const pageNum = document.getElementById('pageInput').value;
+    if (pageNum == 1) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+        const marker = document.getElementById(`page-marker-${pageNum}`);
+        if (marker) marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+      (function() {
+    // Dynamiczne wstrzyknięcie Firebase Auth i sprawdzenie uprawnień dostępu
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.innerHTML = `
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCNg0JnAgAH39y9D-8vhJKwQ10JYxx5Z0s",
+          authDomain: "cyberbook-83464.firebaseapp.com",
+          projectId: "cyberbook-83464",
+          storageBucket: "cyberbook-83464.firebasestorage.app",
+          messagingSenderId: "93288968489",
+          appId: "1:93288968489:web:61a2651a867903dff769c8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Ukrywamy treść na czas weryfikacji tożsamości
+        document.body.style.opacity = '0';
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // Jeśli brak autoryzacji, natychmiast wyrzucamy na logowanie
+                window.location.href = 'logowanie.html';
+            } else {
+                // Autoryzacja pomyślna - pokazujemy zawartość podstrony
+                document.body.style.opacity = '1';
+                document.body.style.transition = 'opacity 0.4s ease';
+            }
+        });
+    `;
+    document.head.appendChild(script);
+})();
+    </script>
+</body>
+</html>
