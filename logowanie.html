@@ -1,158 +1,231 @@
-<div class="auth-wrapper">
-  
-  <div id="auth-container" class="auth-card">
-    <h2>CyberBooks // Autoryzacja</h2>
-    
-    <div class="input-group">
-      <input type="email" id="email" required placeholder=" ">
-      <label>E-mail</label>
-    </div>
-    
-    <div class="input-group">
-      <input type="password" id="password" required placeholder=" ">
-      <label>Hasło (min. 6 znaków)</label>
-    </div>
-    
-    <div class="options-group">
-      <label class="checkbox-container">
-        <input type="checkbox" id="remember-me" checked>
-        <span class="checkmark"></span>
-        Zapamiętaj mnie
-      </label>
-    </div>
-    
-    <div id="error-message" class="error-msg"></div>
-    
-    <div class="button-group">
-      <button id="btn-login" class="btn btn-primary">Zaloguj się</button>
-      <button id="btn-signup" class="btn btn-secondary">Zarejestruj się</button>
-    </div>
-  </div>
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberBooks - Logowanie i Rejestracja</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0d0e12;
+            --bg-card: rgba(22, 24, 33, 0.75);
+            --accent-primary: #a252fa;
+            --accent-gradient: linear-gradient(135deg, #646cff 0%, #f355da 100%);
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --neon-glow: rgba(162, 82, 250, 0.3);
+        }
 
-  <div id="profile-container" class="auth-card" style="display: none;">
-    <h2>Witaj w systemie!</h2>
-    <p class="user-info">Profil: <span id="user-email"></span></p>
-    
-    <div class="reading-section">
-      <h3>Zapisz postęp czytania</h3>
-      <div class="input-group">
-        <input type="text" id="book-title" required placeholder=" ">
-        <label>Tytuł książki</label>
-      </div>
-      <div class="input-group">
-        <input type="number" id="book-page" required placeholder=" ">
-        <label>Numer strony</label>
-      </div>
-      <button id="btn-save" class="btn btn-primary">Zapisz stronę</button>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 440px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(100, 108, 255, 0.1);
+        }
+
+        .auth-logo {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+            letter-spacing: 1px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            color: var(--text-main);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -9px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--accent-gradient);
+            border-radius: 2px;
+        }
+
+        .form-panel {
+            display: none;
+        }
+
+        .form-panel.active {
+            display: block;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .input-group input {
+            background: #161821;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 0.85rem 1.2rem;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px var(--neon-glow);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.9rem;
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            box-shadow: 0 0 20px rgba(243, 85, 218, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Komunikaty o błędach/powodzeniach wbudowane w design */
+        .alert {
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+            display: none;
+            line-height: 1.4;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s ease;
+        }
+        .back-link:hover {
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="auth-logo">CyberBooks</div>
+        
+        <div class="tabs">
+            <button class="tab-btn active" id="tab-login">Logowanie</button>
+            <button class="tab-btn" id="tab-register">Rejestracja</button>
+        </div>
+
+        <div class="alert alert-error" id="auth-alert"></div>
+
+        <div class="form-panel active" id="panel-login">
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="login-email">Adres E-mail</label>
+                    <input type="email" id="login-email" placeholder="twoj-email@example.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="login-password">Hasło</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-submit">Zaloguj się</button>
+            </form>
+        </div>
+
+        <div class="form-panel" id="panel-register">
+            <form id="register-form">
+                <div class="input-group">
+                    <label for="register-email">Adres E-mail</label>
+                    <input type="email" id="register-email" placeholder="twoj-email@example.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="register-password">Hasło</label>
+                    <input type="password" id="register-password" placeholder="Min. 6 znaków" required>
+                </div>
+                <button type="submit" class="btn-submit">Utwórz konto</button>
+            </form>
+        </div>
+
+        <a href="index.html" class="back-link">← Wróć do platformy</a>
     </div>
-    
-    <div id="saved-progress" class="progress-box"></div>
-    
-    <button id="btn-logout" class="btn btn-danger">Wyloguj profil</button>
-  </div>
-</div>
 
-<style>
-  .auth-wrapper {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 50vh;
-    background: #0d0e12;
-    padding: 20px;
-  }
-  .auth-card {
-    background: #161920;
-    border: 1px solid #00ffcc33;
-    border-radius: 12px;
-    padding: 40px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-    color: #ffffff;
-  }
-  .auth-card h2 {
-    margin-top: 0;
-    margin-bottom: 25px;
-    font-size: 22px;
-    color: #00ffcc;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  .input-group {
-    position: relative;
-    margin-bottom: 20px;
-  }
-  .input-group input {
-    width: 100%;
-    padding: 12px 10px;
-    background: #1f232e;
-    border: 1px solid #313848;
-    border-radius: 6px;
-    color: #fff;
-    outline: none;
-    box-sizing: border-box;
-    transition: 0.3s;
-  }
-  .input-group input:focus {
-    border-color: #00ffcc;
-    box-shadow: 0 0 8px rgba(0,255,204,0.2);
-  }
-  .input-group label {
-    position: absolute;
-    left: 10px;
-    top: 12px;
-    color: #6c7a9c;
-    pointer-events: none;
-    transition: 0.2s;
-  }
-  .input-group input:focus ~ label,
-  .input-group input:not(:placeholder-shown) ~ label {
-    top: -18px;
-    left: 5px;
-    font-size: 12px;
-    color: #00ffcc;
-  }
-  .options-group { margin-bottom: 20px; }
-  .checkbox-container {
-    display: flex;
-    align-items: center;
-    color: #a0aec0;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  .checkbox-container input { margin-right: 8px; }
-  .error-msg {
-    color: #ff4a4a;
-    font-size: 14px;
-    margin-bottom: 15px;
-    min-height: 20px;
-    font-weight: 500;
-  }
-  .button-group {
-    display: flex;
-    gap: 10px;
-  }
-  .btn {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.2s;
-  }
-  .btn-primary { background: #00ffcc; color: #0d0e12; }
-  .btn-primary:hover { background: #00ccaa; }
-  .btn-secondary { background: #242b3d; color: #fff; border: 1px solid #313848; }
-  .btn-secondary:hover { background: #2f3850; }
-  .btn-danger { background: #ff4a4a; color: #fff; width: 100%; margin-top: 20px; }
-  .btn-danger:hover { background: #e03b3b; }
-  .user-info { color: #a0aec0; margin-bottom: 20px; }
-  .reading-section { border-top: 1px solid #242b3d; padding-top: 20px; margin-top: 20px; }
-  .reading-section h3 { font-size: 16px; margin-bottom: 15px; color: #00ffcc; }
-  .progress-box { background: #1f232e; padding: 12px; border-radius: 6px; margin-top: 15px; font-size: 14px; border-left: 3px solid #00ffcc; }
-</style>
-
-<script type="module" src="logowanie.js"></script>
+    <script type="module" src="logowanie.js"></script>
+</body>
+</html>
