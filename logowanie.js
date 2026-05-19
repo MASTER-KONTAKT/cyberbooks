@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -16,134 +16,112 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const authContainer = document.getElementById('auth-container');
-const profileContainer = document.getElementById('profile-container');
-const userEmailSpan = document.getElementById('user-email');
-const savedProgressDiv = document.getElementById('saved-progress');
-const errorDiv = document.getElementById('error-message');
+// Przełączanie zakładek formularza
+const tabLogin = document.getElementById('tab-login');
+const tabRegister = document.getElementById('tab-register');
+const panelLogin = document.getElementById('panel-login');
+const panelRegister = document.getElementById('panel-register');
+const alertBox = document.getElementById('auth-alert');
 
-let currentUser = null;
-
-// Słownik tłumaczeń błędów z angielskiego na polski
-function pokazBlad(kodBledu) {
-  errorDiv.innerText = "";
-  switch(kodBledu) {
-    case 'auth/invalid-email':
-      errorDiv.innerText = "❌ Niepoprawny format adresu e-mail.";
-      break;
-    case 'auth/weak-password':
-      errorDiv.innerText = "❌ Hasło musi mieć co najmniej 6 znaków.";
-      break;
-    case 'auth/invalid-credential':
-    case 'auth/wrong-password':
-    case 'auth/user-not-found':
-      errorDiv.innerText = "❌ Błędny e-mail lub hasło.";
-      break;
-    case 'auth/email-already-in-use':
-      errorDiv.innerText = "❌ Ten adres e-mail jest już zarejestrowany.";
-      break;
-    case 'puste-pola':
-      errorDiv.innerText = "⚠️ Wpisz e-mail oraz hasło.";
-      break;
-    default:
-      errorDiv.innerText = "❌ Wystąpił nieznany błąd. Spróbuj ponownie.";
-      console.error(kodBledu);
-  }
+function showAlert(message, type = 'error') {
+    alertBox.innerText = message;
+    alertBox.style.display = 'block';
+    if(type === 'success') {
+        alertBox.className = 'alert alert-success';
+    } else {
+        alertBox.className = 'alert alert-error';
+    }
 }
 
-// Funkcja ustawiająca typ pamięci (Zapamiętaj mnie)
-async function ustawPamiec() {
-  const zapamietaj = document.getElementById('remember-me').checked;
-  // browserLocalPersistence = pamięta na zawsze | browserSessionPersistence = pamięta tylko do zamknięcia karty
-  const typPamieci = zapamietaj ? browserLocalPersistence : browserSessionPersistence;
-  await setPersistence(auth, typPamieci);
+function clearAlert() {
+    alertBox.style.display = 'none';
 }
 
-// --- REJESTRACJA ---
-document.getElementById('btn-signup').addEventListener('click', async () => {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  errorDiv.innerText = "";
-
-  if(!email || !password) { pokazBlad('puste-pola'); return; }
-  if(password.length < 6) { pokazBlad('auth/weak-password'); return; }
-
-  try {
-    await ustawPamiec();
-    await createUserWithEmailAndPassword(auth, email, password);
-    alert("Konto założone! Automatycznie Cię zalogowano.");
-  } catch (error) {
-    pokazBlad(error.code);
-  }
+tabLogin.addEventListener('click', () => {
+    tabRegister.classList.remove('active');
+    tabLogin.classList.add('active');
+    panelRegister.classList.remove('active');
+    panelLogin.classList.add('active');
+    clearAlert();
 });
 
-// --- LOGOWANIE ---
-document.getElementById('btn-login').addEventListener('click', async () => {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  errorDiv.innerText = "";
-
-  if(!email || !password) { pokazBlad('puste-pola'); return; }
-
-  try {
-    await ustawPamiec();
-    await signInWithEmailAndPassword(auth, email, password);
-  } catch (error) {
-    pokazBlad(error.code);
-  }
+tabRegister.addEventListener('click', () => {
+    tabLogin.classList.remove('active');
+    tabRegister.classList.add('active');
+    panelLogin.classList.remove('active');
+    panelRegister.classList.add('active');
+    clearAlert();
 });
 
-// --- WYLOGOWANIE ---
-document.getElementById('btn-logout').addEventListener('click', () => {
-  signOut(auth);
-});
-
-// --- NASŁUCHIWANIE STANU SESJI ---
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    currentUser = user;
-    authContainer.style.display = 'none';
-    profileContainer.style.display = 'block';
-    userEmailSpan.innerText = user.email;
-    wczytajPostep(user.uid);
-  } else {
-    currentUser = null;
-    authContainer.style.display = 'block';
-    profileContainer.style.display = 'none';
-    savedProgressDiv.innerText = "";
-  }
-});
-
-// --- ZAPISYWANIE DO BAZY ---
-document.getElementById('btn-save').addEventListener('click', async () => {
-  if (!currentUser) return;
-  const title = document.getElementById('book-title').value;
-  const page = document.getElementById('book-page').value;
-
-  if(!title || !page) { alert("Wpisz tytuł książki i stronę!"); return; }
-
-  try {
-    await setDoc(doc(db, "users", currentUser.uid), {
-      ostatniaKsiazka: title,
-      strona: page
-    });
-    wczytajPostep(currentUser.uid);
-    document.getElementById('book-title').value = "";
-    document.getElementById('book-page').value = "";
-  } catch (error) {
-    alert("Błąd zapisu: " + error.message);
-  }
-});
-
-// --- WCZYTYWANIE Z BAZY ---
-async function wczytajPostep(uid) {
-  const docRef = doc(db, "users", uid);
-  const docSnap = await getDoc(docRef);
-
-  if (docSnap.exists()) {
-    const dane = docSnap.data();
-    savedProgressDiv.innerHTML = `📖 Czytasz obecnie: <strong>${dane.ostatniaKsiazka}</strong><br>📍 Twój postęp: <strong>strona ${dane.strona}</strong>`;
-  } else {
-    savedProgressDiv.innerText = "Brak zapisanych postępów.";
-  }
+// Tłumaczenie błędów Firebase na język polski
+function translateError(code) {
+    switch (code) {
+        case 'auth/invalid-email':
+            return 'Podany adres e-mail jest nieprawidłowy.';
+        case 'auth/user-not-found':
+            return 'Konto o tym adresie e-mail nie istnieje.';
+        case 'auth/wrong-password':
+            return 'Hasło jest nieprawidłowe.';
+        case 'auth/invalid-credential':
+            return 'Błędne dane logowania. Sprawdź e-mail i hasło.';
+        case 'auth/email-already-in-use':
+            return 'Ten adres e-mail jest już przypisany do innego konta.';
+        case 'auth/weak-password':
+            return 'Hasło musi składać się z minimum 6 znaków.';
+        default:
+            return 'Wystąpił nieoczekiwany błąd. Spróbuj ponownie.';
+    }
 }
+
+// LOGOWANIE
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearAlert();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    try {
+        // Utrzymanie zalogowanego użytkownika (Local Persistence)
+        await setPersistence(auth, browserLocalPersistence);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        
+        // Zapewnienie, że dokument użytkownika istnieje w Firestore
+        const userDocRef = doc(db, "users", userCredential.user.uid);
+        const docSnap = await getDoc(userDocRef);
+        if (!docSnap.exists()) {
+            await setDoc(userDocRef, { startedBooks: [] });
+        }
+
+        window.location.href = 'index.html';
+    } catch (error) {
+        showAlert(translateError(error.code));
+    }
+});
+
+// REJESTRACJA
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearAlert();
+    const email = document.getElementById('register-email').value.trim();
+    const password = document.getElementById('register-password').value;
+
+    try {
+        await setPersistence(auth, browserLocalPersistence);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // Tworzenie profilu i bazy Mojej Biblioteki w Firestore
+        await setDoc(doc(db, "users", userCredential.user.uid), {
+            email: email,
+            createdAt: new Date().toISOString(),
+            startedBooks: []
+        });
+
+        showAlert("Konto utworzone pomyślnie! Przekierowywanie...", "success");
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1500);
+
+    } catch (error) {
+        showAlert(translateError(error.code));
+    }
+});
