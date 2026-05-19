@@ -168,7 +168,6 @@
             transform: translateY(-2px);
         }
 
-        /* Komunikaty o błędach/powodzeniach wbudowane w design */
         .alert {
             padding: 0.8rem 1rem;
             border-radius: 12px;
@@ -176,6 +175,7 @@
             margin-bottom: 1.5rem;
             display: none;
             line-height: 1.4;
+            word-break: break-word;
         }
 
         .alert-error {
@@ -188,6 +188,7 @@
             background: rgba(16, 185, 129, 0.1);
             color: #10b981;
             border: 1px solid rgba(16, 185, 129, 0.2);
+            font-weight: 500;
         }
         
         .back-link {
@@ -225,6 +226,11 @@
                 <div class="input-group">
                     <label for="login-password">Hasło</label>
                     <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                
+                <div class="input-group" id="verification-code-group" style="display: none;">
+                    <label for="login-code" style="color: #f355da; font-weight: 600;">Kod aktywacyjny (Wymagany przy pierwszym logowaniu)</label>
+                    <input type="text" id="login-code" placeholder="Wpisz swój 4-cyfrowy kod PIN">
                 </div>
                 
                 <div class="options-group">
