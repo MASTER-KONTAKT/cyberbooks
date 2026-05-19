@@ -463,7 +463,7 @@
     </div>
 
 <script>
-// 1. DYNAMICZNE POBIERANIE SŁOWNIKA Z PLIKU JSON
+// 1. DYNAMICZNE POBIERANIE SŁOWNIKA + TOTALNE OCZYSZCZANIE KLUCZY
 let localDictionary = {};
 
 async function loadDictionary() {
@@ -472,31 +472,61 @@ async function loadDictionary() {
         if (!response.ok) {
             throw new Error(`Problem z plikiem słownika: ${response.status}`);
         }
-        localDictionary = await response.json();
-        console.log('Słownik załadowany poprawnie.');
+        const data = await response.json();
+        
+        localDictionary = {};
+        for (let key in data) {
+            // Czyścimy klucz w JSON zostawiając absolutnie tylko małe litery i prosty apostrof
+            let cleanKey = key
+                .normalize('NFD')
+                .replace(/[\u2018\u2019]/g, "'") // Zamiana zakrzywionych apostrofów na proste
+                .replace(/[^a-zA-Z']/g, '')     // Usunięcie WSZYSTKIEGO co nie jest literą lub apostrofem
+                .toLowerCase();
+            
+            if (cleanKey) {
+                localDictionary[cleanKey] = data[key];
+            }
+        }
+        console.log('Słownik załadowany i pancernie oczyszczony.');
     } catch (error) {
         console.error('Nie udało się załadować słownika z pliku JSON:', error);
     }
+}
+
+// Funkcja pomocnicza – bezwzględny filtr zostawiający TYLKO czyste litery angielskie i apostrof
+function superCleanWord(word) {
+    if (!word) return '';
+    return word
+        .normalize('NFD')               // Rozbija ukryte znaki diakrytyczne i ligatury binarne
+        .replace(/[\u2018\u2019]/g, "'") // Ujednolica apostrofy drukarskie na proste
+        .replace(/[^a-zA-Z']/g, '')     // Wymazuje każdy znak specjalny, cyfrę, spację, tabulator, niewidoczny bajt
+        .trim();
 }
 
 // 2. PRZYGOTOWANIE TEKSTU (TOKENIZACJA SŁÓW)
 function initWordTokenization() {
     const paragraphs = document.querySelectorAll('.book-content p');
     paragraphs.forEach(p => {
-        const text = p.innerText;
-        const tokens = text.split(/(\s+)/);
+        // Zamieniamy wszelkie białe znaki (entery, tabulatory, potrójne spacje) na pojedyncze, klasyczne spacje
+        let text = p.innerText.replace(/\s+/g, ' ');
+        
+        // Dzielimy tekst na pojedyncze wyrazy
+        const tokens = text.split(' ');
         
         const processedTokens = tokens.map(token => {
-            if (/[a-zA-Z]/.test(token)) {
-                // Wyciągamy litery i apostrofy, usuwamy resztę interpunkcji dookoła
-                const cleanWord = token.replace(/[^a-zA-Z']/g, '');
-                const punctuation = token.replace(/[a-zA-Z']/g, '');
-                
+            const cleanWord = superCleanWord(token);
+            
+            // Jeśli po agresywnym oczyszczeniu słowo nadal istnieje, robimy z niego klikalny span
+            if (cleanWord.length > 0) {
+                // Znaki interpunkcyjne stojące przy słowie (np. przecinek, kropka, myślnik) wyciągamy na zewnątrz spana
+                const punctuation = token.replace(/[a-zA-Z\u2018\u2019']/g, '').trim();
                 return `<span class="word" onclick="handleWordClick('${cleanWord}')">${cleanWord}</span>${punctuation}`;
             }
             return token;
         });
-        p.innerHTML = processedTokens.join('');
+        
+        // Łączymy tekst z powrotem standardowymi spacjami
+        p.innerHTML = processedTokens.join(' ');
     });
 }
 
@@ -518,26 +548,19 @@ function toggleTranslatorMode() {
 function handleWordClick(word) {
     if (!isTranslatorActive) return;
 
-    // Oczyszczenie słowa z ewentualnych znaków specjalnych
-    let cleanWord = word.replace(/[^a-zA-Z']/g, '').trim();
+    // Przepuszczamy kliknięte słowo przez nasz pancerny filtr i zamieniamy na małe litery
+    let searchWord = superCleanWord(word).toLowerCase();
     
-    // Przygotowanie różnych wariantów do przeszukania bazy JSON
-    let originalWord = cleanWord; // np. "Tom", "Chapter"
-    let lowerWord = cleanWord.toLowerCase(); // np. "tom", "chapter"
-    let fallbackWord = lowerWord.split("'")[0]; // np. "tom" (z formy tom's)
-    let capitalizedWord = cleanWord.charAt(0).toUpperCase() + cleanWord.slice(1).toLowerCase(); // np. "Tom"
+    // Obsługa form z końcówką dopasowania (np. "bed's" spróbuje też znaleźć "bed")
+    let fallbackWord = searchWord.split("'")[0];
 
     let translation = null;
 
-    // Szukamy dopasowania w bazie na 4 sposoby (od najbardziej precyzyjnego)
-    if (localDictionary[originalWord]) {
-        translation = localDictionary[originalWord];
-    } else if (localDictionary[lowerWord]) {
-        translation = localDictionary[lowerWord];
+    // Szukamy dopasowania w czystej bazie danych
+    if (localDictionary[searchWord]) {
+        translation = localDictionary[searchWord];
     } else if (localDictionary[fallbackWord]) {
         translation = localDictionary[fallbackWord];
-    } else if (localDictionary[capitalizedWord]) {
-        translation = localDictionary[capitalizedWord];
     }
 
     const modalWord = document.getElementById('modalWord');
@@ -578,7 +601,7 @@ function closeModal(e) {
     }
 }
 
-// 4. ROZWIJALNY PANEL OCHRONY WZROKU (TEMATY)
+// 4. PANEL TEMATÓW
 function toggleDropdown() {
     document.getElementById('themeDropdown').classList.toggle('open');
 }
@@ -617,7 +640,7 @@ function toggleFullscreen() {
     }
 }
 
-// 6. NAWIGACJA (SKOK DO PODANEJ STRONY)
+// 6. NAWIGACJA
 function jumpToPage() {
     const pageNum = document.getElementById('pageInput').value;
     if (pageNum == 1) {
@@ -648,19 +671,14 @@ function jumpToPage() {
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Ukrywamy treść na czas weryfikacji tożsamości użytkownika
         document.body.style.opacity = '0';
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
-                // Brak sesji -> przekierowanie do logowania
                 window.location.href = 'logowanie.html';
             } else {
-                // Zalogowano pomyślnie -> ładujemy bazę JSON w tle, potem przygotowujemy słowa
                 await loadDictionary();
                 initWordTokenization();
-
-                // Pokazujemy gotową stronę z płynnym przejściem
                 document.body.style.opacity = '1';
                 document.body.style.transition = 'opacity 0.4s ease';
             }
