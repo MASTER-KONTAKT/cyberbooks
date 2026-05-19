@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -53,7 +53,7 @@ tabRegister.addEventListener('click', () => {
     clearAlert();
 });
 
-// Tłumaczenie błędów Firebase na język polski
+// POPRAWKA 1: Słownik tłumaczeń błędów z angielskiego na polski (Strona już nie "milczy")
 function translateError(code) {
     switch (code) {
         case 'auth/invalid-email':
@@ -68,38 +68,42 @@ function translateError(code) {
             return 'Ten adres e-mail jest już przypisany do innego konta.';
         case 'auth/weak-password':
             return 'Hasło musi składać się z minimum 6 znaków.';
-        case 'brak-email':
-            return 'Wpisz adres e-mail, aby otrzymać link logowania.';
+        case 'niezweryfikowany':
+            return '⚠️ Twój adres e-mail nie został jeszcze aktywowany! Sprawdź skrzynkę, weszliśmy tam z linkiem potwierdzającym.';
         default:
             return 'Wystąpił nieoczekiwany błąd. Spróbuj ponownie.';
     }
 }
 
-// Dynamiczne ustawianie sesji (Zapamiętaj mnie)
+// POPRAWKA 2: Pełna kontrola nad sesją (Mechanizm Zapamiętaj mnie)
 async function handlePersistence() {
     const rememberMe = document.getElementById('remember-me').checked;
+    // Jeśli zaznaczone -> local (pamięta po zamknięciu przeglądarki), jeśli nie -> session (zapomina po zamknięciu karty)
     const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
     await setPersistence(auth, persistenceType);
 }
 
-// TRADYCYJNE LOGOWANIE HASŁEM
+// --- LOGOWANIE Z BLOKADĄ KONT BEZ WERYFIKACJI ---
 document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     clearAlert();
     const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
 
-    if (!password) {
-        showAlert('Wpisz hasło lub użyj logowania bezhasłowego poniżej.');
-        return;
-    }
-
     try {
         await handlePersistence();
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // POPRAWKA 3 (Część Logowania): Jeśli użytkownik nie przeszedł weryfikacji mailowej, wyrzucamy go
+        if (!user.emailVerified) {
+            showAlert(translateError('niezweryfikowany'));
+            await signOut(auth); // Natychmiastowe usunięcie błędnej sesji
+            return;
+        }
         
-        // Zapewnienie, że dokument użytkownika istnieje w Firestore
-        const userDocRef = doc(db, "users", userCredential.user.uid);
+        // Jeśli jest zweryfikowany, dbamy o poprawną strukturę w bazie danych
+        const userDocRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(userDocRef);
         if (!docSnap.exists()) {
             await setDoc(userDocRef, { startedBooks: [] });
@@ -111,80 +115,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     }
 });
 
-// LOGOWANIE LINKIEM NA E-MAIL (PASSWORDLESS)
-document.getElementById('btn-send-link').addEventListener('click', async () => {
-    clearAlert();
-    const email = document.getElementById('login-email').value.trim();
-
-    if (!email) {
-        showAlert(translateError('brak-email'));
-        return;
-    }
-
-    const actionCodeSettings = {
-        // Powrót dokładnie na ten sam plik logowania
-        url: window.location.origin + window.location.pathname,
-        handleCodeInApp: true,
-    };
-
-    try {
-        await handlePersistence();
-        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-        // Zapisujemy e-mail w przeglądarce, by uniknąć ponownego pytania po powrocie
-        window.localStorage.setItem('emailForSignIn', email);
-        showAlert("🚀 Link logowania został wysłany! Sprawdź swoją skrzynkę pocztową.", "success");
-    } catch (error) {
-        showAlert(translateError(error.code));
-    }
-});
-
-// PRZECHWYTYWANIE POWROTU Z POCZTY ELEKTRONICZNEJ
-async function checkEmailSignInLink() {
-    if (isSignInWithEmailLink(auth, window.location.href)) {
-        let email = window.localStorage.getItem('emailForSignIn');
-        
-        if (!email) {
-            email = window.prompt('Wprowadź swój e-mail w celu weryfikacji urządzenia:');
-        }
-
-        if (!email) {
-            showAlert('Weryfikacja została anulowana.');
-            return;
-        }
-
-        try {
-            const result = await signInWithEmailLink(auth, email, window.location.href);
-            window.localStorage.removeItem('emailForSignIn');
-            
-            // Czyszczenie linku z brzydkich parametrów Firebase
-            window.history.replaceState({}, document.title, window.location.pathname);
-            
-            // Konfiguracja bazy w Firestore dla nowego użytkownika logującego się linkiem
-            const userDocRef = doc(db, "users", result.user.uid);
-            const docSnap = await getDoc(userDocRef);
-            if (!docSnap.exists()) {
-                await setDoc(userDocRef, {
-                    email: email,
-                    createdAt: new Date().toISOString(),
-                    startedBooks: []
-                });
-            }
-
-            showAlert("🎉 Zalogowano pomyślnie! Przekierowywanie...", "success");
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1500);
-        } catch (error) {
-            showAlert("Obydwa kody weryfikacyjne wygasły lub link został już zużyty.");
-            console.error(error);
-        }
-    }
-}
-
-// Automatyczny start sprawdzania linku e-mail po otwarciu strony
-checkEmailSignInLink();
-
-// REJESTRACJA
+// --- REJESTRACJA Z WYSYŁANIEM LINKU NA MAILA ---
 document.getElementById('register-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     clearAlert();
@@ -194,18 +125,28 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     try {
         await handlePersistence();
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
         
-        // Tworzenie profilu i bazy Mojej Biblioteki w Firestore
-        await setDoc(doc(db, "users", userCredential.user.uid), {
+        // POPRAWKA 3 (Część Rejestracji): Wymuszenie wysłania prawdziwego kodu aktywacyjnego od Firebase
+        await sendEmailVerification(user);
+
+        // Zapis podstawowych danych użytkownika w Firestore
+        await setDoc(doc(db, "users", user.uid), {
             email: email,
             createdAt: new Date().toISOString(),
             startedBooks: []
         });
 
-        showAlert("Konto utworzone pomyślnie! Przekierowywanie...", "success");
+        // Wylogowujemy go od razu. Konto jest zamrożone dopóki nie kliknie w maila
+        await signOut(auth);
+
+        // Wyświetlamy ładny, zielony ekran sukcesu informujący o konieczności kliknięcia w link
+        showAlert("🚀 Konto utworzone! Na Twój adres e-mail wysłaliśmy link potwierdzający. Kliknij go, aby aktywować profil i móc się zalogować.", "success");
+        
+        // Przełączenie użytkownika z powrotem na zakładkę Logowania po 5 sekundach
         setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 1500);
+            tabLogin.click();
+        }, 5000);
 
     } catch (error) {
         showAlert(translateError(error.code));
