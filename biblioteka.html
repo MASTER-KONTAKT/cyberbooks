@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moja Biblioteka | NeonBooks</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d0e12;
+            --purple-neon: #a020f0;
+            --pink-neon: #ff007f;
+            --red-neon: #ff3333;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: #8a8d98;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(160, 32, 240, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 0, 127, 0.1) 0%, transparent 40%);
+        }
+
+        /* NAVBAR */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 4%;
+            background: rgba(13, 14, 18, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--purple-neon), var(--pink-neon));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 0, 127, 0.3);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-nav {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-nav:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--purple-neon);
+            box-shadow: 0 0 10px rgba(160, 32, 240, 0.3);
+        }
+
+        .btn-logout {
+            border-color: rgba(255, 51, 51, 0.4);
+        }
+
+        .btn-logout:hover {
+            border-color: var(--red-neon);
+            box-shadow: 0 0 10px rgba(255, 51, 51, 0.3);
+            background: rgba(255, 51, 51, 0.1);
+        }
+
+        /* GŁÓWNY KONTENER */
+        main {
+            padding: 2rem 4%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        /* SYSTEM KATEGORII */
+        .categories-container {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 3rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .categories-container::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .categories-container::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 4px;
+        }
+
+        .category-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .category-btn:hover, .category-btn.active {
+            color: var(--text-main);
+            border-color: var(--pink-neon);
+            background: rgba(255, 0, 127, 0.1);
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.2);
+        }
+
+        /* SIATKA KSIĄŻEK */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 2rem;
+        }
+
+        /* KARTA KSIĄŻKI (Glassmorphism) */
+        .book-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.2rem;
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(160, 32, 240, 0.4);
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        }
+
+        .book-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            line-height: 1.4;
+        }
+
+        .book-author {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+
+        .book-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 0.6rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-read {
+            background: linear-gradient(45deg, var(--purple-neon), var(--pink-neon));
+            color: var(--text-main);
+            border: none;
+        }
+
+        .btn-read:hover {
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+            opacity: 0.9;
+        }
+
+        .btn-remove {
+            background: rgba(255, 51, 51, 0.1);
+            border: 1px solid rgba(255, 51, 51, 0.3);
+            color: #ff4d4d;
+        }
+
+        .btn-remove:hover {
+            background: rgba(255, 51, 51, 0.25);
+            border-color: var(--red-neon);
+            box-shadow: 0 0 10px rgba(255, 51, 51, 0.2);
+        }
+
+        /* STAN PUSTEJ BIBLIOTEKI */
+        .empty-library {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 5rem 2rem;
+            background: var(--glass-bg);
+            border: 1px dashed var(--glass-border);
+            border-radius: 16px;
+        }
+
+        .empty-library p {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-back-shop {
+            display: inline-block;
+            background: transparent;
+            border: 1px solid var(--pink-neon);
+            color: var(--pink-neon);
+            padding: 0.8rem 2rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back-shop:hover {
+            background: var(--pink-neon);
+            color: var(--text-main);
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">NeonBooks</div>
+        <div class="nav-actions">
+            <a href="index.html" class="btn-nav">⬅️ Strona główna</a>
+            <button id="logout-btn" class="btn-nav btn-logout">Wyloguj</button>
+        </div>
+    </nav>
+
+    <main>
+        <h1>Twój Zbiór E-booków</h1>
+
+        <div class="categories-container" id="categories-box">
+            <button class="category-btn active" data-category="all">Wszystkie</button>
+            <button class="category-btn" data-category="Sci-Fi">Sci-Fi</button>
+            <button class="category-btn" data-category="Fantasy">Fantasy</button>
+            <button class="category-btn" data-category="Thriller">Thriller</button>
+            <button class="category-btn" data-category="Cyberpunk">Cyberpunk</button>
+        </div>
+
+        <div class="books-grid" id="library-grid">
+            </div>
+    </main>
+
+    <script type="module">
+        // INICJALIZACJA FIREBASE
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.x.x/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, arrayRemove } from "https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "TWÓJ_API_KEY",
+            authDomain: "TWÓJ_AUTH_DOMAIN",
+            projectId: "TWÓJ_PROJECT_ID",
+            storageBucket: "TWÓJ_STORAGE_BUCKET",
+            messagingSenderId: "TWÓJ_MESSAGING_SENDER_ID",
+            appId: "TWÓJ_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // LOKALNA BAZA DANYCH KSIĄŻEK (Struktura identyczna z index.html)
+        const localBooksDatabase = [
+            { id: "book_1", title: "Neuromancer", author: "William Gibson", category: "Cyberpunk", cover: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=400" },
+            { id: "book_2", title: "Diuna", author: "Frank Herbert", category: "Sci-Fi", cover: "https://images.unsplash.com/photo-1531988042231-d39a9cc12a9a?q=80&w=400" },
+            { id: "book_3", title: "Gra o Tron", author: "George R.R. Martin", category: "Fantasy", cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=400" },
+            { id: "book_4", title: "Modyfikowany Węgiel", author: "Richard Morgan", category: "Cyberpunk", cover: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=400" },
+            { id: "book_5", title: "Milczenie Owiec", author: "Thomas Harris", category: "Thriller", cover: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=400" }
+        ];
+
+        let userLibraryIDs = []; 
+        let currentFilter = "all";
+        let currentUser = null;
+
+        // 3. BEZPIECZEŃSTWO (auth-check)
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                // Jeśli niezalogowany -> natychmiastowy kick do logowanie.html
+                window.location.href = 'logowanie.html';
+            } else {
+                currentUser = user;
+                await loadUserLibrary();
+            }
+        });
+
+        // POBIERANIE DANYCH Z FIRESTORE
+        async function loadUserLibrary() {
+            try {
+                const userDocRef = doc(db, "users", currentUser.uid);
+                const userDocSnap = await getDoc(userDocRef);
+
+                if (userDocSnap.exists() && userDocSnap.data().startedBooks) {
+                    userLibraryIDs = userDocSnap.data().startedBooks;
+                } else {
+                    userLibraryIDs = [];
+                }
+                
+                renderLibrary();
+            } catch (error) {
+                console.error("Błąd ładowania biblioteki Firestore:", error);
+            }
+        }
+
+        // RENDEROWANIE KSIĄŻEK NA EKRANIE
+        function renderLibrary() {
+            const grid = document.getElementById('library-grid');
+            grid.innerHTML = "";
+
+            // Filtrujemy lokalną bazę danych, zostawiając tylko te obiekty, których ID użytkownik ma w Firestore
+            let userBooks = localBooksDatabase.filter(book => userLibraryIDs.includes(book.id));
+
+            // Filtrowanie po kategorii
+            if (currentFilter !== "all") {
+                userBooks = userBooks.filter(book => book.category === currentFilter);
+            }
+
+            // Obsługa pustej biblioteki
+            if (userBooks.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-library">
+                        <p>Twoja biblioteka jest jeszcze pusta. Wróć na stronę główną i dodaj coś do czytania! 🚀</p>
+                        <a href="index.html" class="btn-back-shop">Przeglądaj książki</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Mapowanie na HTML
+            userBooks.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.id = `card-${book.id}`;
+                card.innerHTML = `
+                    <img src="${book.cover}" alt="${book.title}" class="book-cover">
+                    <h3 class="book-title">${book.title}</h3>
+                    <p class="book-author">${book.author}</p>
+                    <div class="book-actions">
+                        <a href="czytnik.html?id=${book.id}" class="btn-action btn-read">Czytaj 📖</a>
+                        <button class="btn-action btn-remove" data-id="${book.id}">🗑️ Usuń</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // LOGIKA USURWANIA Z BIBLIOTEKI (arrayRemove)
+        document.getElementById('library-grid').addEventListener('click', async (e) => {
+            if (e.target.classList.contains('btn-remove')) {
+                const bookId = e.target.getAttribute('data-id');
+                const card = document.getElementById(`card-${bookId}`);
+
+                try {
+                    const userRef = doc(db, "users", currentUser.uid);
+                    
+                    // Aktualizacja bazy danych Firestore
+                    await updateDoc(userRef, {
+                        startedBooks: arrayRemove(bookId)
+                    });
+
+                    // Aktualizacja lokalnej tablicy stanów
+                    userLibraryIDs = userLibraryIDs.filter(id => id !== bookId);
+
+                    // Płynne usunięcie karty z DOM (animacja fade-out)
+                    card.style.transition = "all 0.4s ease";
+                    card.style.opacity = "0";
+                    card.style.transform = "scale(0.8)";
+                    
+                    setTimeout(() => {
+                        renderLibrary(); // Ponowny render sprawdzi też, czy koszyk nie stał się pusty
+                    }, 400);
+
+                } catch (error) {
+                    console.error("Błąd podczas usuwania z Firestore:", error);
+                    alert("Nie udało się usunąć książki. Spróbuj ponownie.");
+                }
+            }
+        });
+
+        // SYSTEM FILTROWANIA KATEGORII
+        document.getElementById('categories-box').addEventListener('click', (e) => {
+            if (e.target.classList.contains('category-btn')) {
+                // Wyczyszczenie aktywnej klasy z poprzednich przycisków
+                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+                
+                // Nadanie klasy aktywnej klikniętemu
+                e.target.classList.add('active');
+                
+                currentFilter = e.target.getAttribute('data-category');
+                renderLibrary();
+            }
+        });
+
+        // WYLOGOWANIE
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.href = 'logowanie.html';
+            }).catch((error) => {
+                console.error("Błąd wylogowania:", error);
+            });
+        });
+    </script>
+</body>
+</html>
