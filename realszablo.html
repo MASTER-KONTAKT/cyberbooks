@@ -462,7 +462,7 @@
         </div>
     </div>
 
-    <script>
+<script>
 // 1. DYNAMICZNE POBIERANIE SŁOWNIKA Z PLIKU JSON
 let localDictionary = {};
 
@@ -473,12 +473,13 @@ async function loadDictionary() {
             throw new Error(`Problem z plikiem słownika: ${response.status}`);
         }
         localDictionary = await response.json();
+        console.log('Słownik załadowany poprawnie.');
     } catch (error) {
         console.error('Nie udało się załadować słownika z pliku JSON:', error);
     }
 }
 
-// 2. PRZYGOTOWANIE TEKSTU (TOKENIZACJA)
+// 2. PRZYGOTOWANIE TEKSTU (TOKENIZACJA SŁÓW)
 function initWordTokenization() {
     const paragraphs = document.querySelectorAll('.book-content p');
     paragraphs.forEach(p => {
@@ -517,16 +518,26 @@ function toggleTranslatorMode() {
 function handleWordClick(word) {
     if (!isTranslatorActive) return;
 
-    // Standaryzacja słowa: małe litery, odcięcie apostrofu (np. tom's -> tom)
-    let searchWord = word.toLowerCase().replace(/[^a-z]/g, '').trim();
-    let fallbackWord = word.toLowerCase().split("'")[0].replace(/[^a-z]/g, '').trim();
+    // Oczyszczenie słowa z ewentualnych znaków specjalnych
+    let cleanWord = word.replace(/[^a-zA-Z']/g, '').trim();
+    
+    // Przygotowanie różnych wariantów do przeszukania bazy JSON
+    let originalWord = cleanWord; // np. "Tom", "Chapter"
+    let lowerWord = cleanWord.toLowerCase(); // np. "tom", "chapter"
+    let fallbackWord = lowerWord.split("'")[0]; // np. "tom" (z formy tom's)
+    let capitalizedWord = cleanWord.charAt(0).toUpperCase() + cleanWord.slice(1).toLowerCase(); // np. "Tom"
 
     let translation = null;
 
-    if (localDictionary[searchWord]) {
-        translation = localDictionary[searchWord];
+    // Szukamy dopasowania w bazie na 4 sposoby (od najbardziej precyzyjnego)
+    if (localDictionary[originalWord]) {
+        translation = localDictionary[originalWord];
+    } else if (localDictionary[lowerWord]) {
+        translation = localDictionary[lowerWord];
     } else if (localDictionary[fallbackWord]) {
         translation = localDictionary[fallbackWord];
+    } else if (localDictionary[capitalizedWord]) {
+        translation = localDictionary[capitalizedWord];
     }
 
     const modalWord = document.getElementById('modalWord');
@@ -567,7 +578,7 @@ function closeModal(e) {
     }
 }
 
-// 4. ROZWIJALNY PANEL OCHRONY WZROKU
+// 4. ROZWIJALNY PANEL OCHRONY WZROKU (TEMATY)
 function toggleDropdown() {
     document.getElementById('themeDropdown').classList.toggle('open');
 }
@@ -606,7 +617,7 @@ function toggleFullscreen() {
     }
 }
 
-// 6. NAWIGACJA (SKOK DO STRONY)
+// 6. NAWIGACJA (SKOK DO PODANEJ STRONY)
 function jumpToPage() {
     const pageNum = document.getElementById('pageInput').value;
     if (pageNum == 1) {
@@ -637,18 +648,19 @@ function jumpToPage() {
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Ukrywamy treść na czas weryfikacji tożsamości
+        // Ukrywamy treść na czas weryfikacji tożsamości użytkownika
         document.body.style.opacity = '0';
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
+                // Brak sesji -> przekierowanie do logowania
                 window.location.href = 'logowanie.html';
             } else {
-                // Użytkownik zalogowany -> najpierw pobieramy słownik z JSON, potem przygotowujemy tekst
+                // Zalogowano pomyślnie -> ładujemy bazę JSON w tle, potem przygotowujemy słowa
                 await loadDictionary();
                 initWordTokenization();
 
-                // Pokazujemy w pełni przygotowaną stronę
+                // Pokazujemy gotową stronę z płynnym przejściem
                 document.body.style.opacity = '1';
                 document.body.style.transition = 'opacity 0.4s ease';
             }
