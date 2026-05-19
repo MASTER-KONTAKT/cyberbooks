@@ -915,7 +915,10 @@ function cleanAndNormalizeWord(word) {
 function initWordTokenization() {
     const paragraphs = document.querySelectorAll('.book-content p');
     paragraphs.forEach(p => {
-        const text = p.innerText;
+        // Zastępujemy wszystkie tabulacje, entery i dziwne odstępy zwykłymi spacjami
+        let text = p.innerText.replace(/\s+/g, ' ');
+        
+        // Dzielimy tekst po zwykłych spacjach
         const tokens = text.split(/(\s+)/);
         
         const processedTokens = tokens.map(token => {
@@ -924,7 +927,7 @@ function initWordTokenization() {
                 
                 // Jeśli po oczyszczeniu coś zostało, robimy z tego klikalne słowo
                 if (cleanWord.length > 0) {
-                    const punctuation = token.replace(/[a-zA-Z\u2018\u2019']/g, '');
+                    const punctuation = token.replace(/[a-zA-Z\u2018\u2019']/g, '').trim();
                     return `<span class="word" onclick="handleWordClick('${cleanWord}')">${cleanWord}</span>${punctuation}`;
                 }
             }
