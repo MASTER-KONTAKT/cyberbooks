@@ -1237,6 +1237,43 @@ function jumpToPage() {
         if (marker) marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
+
+              (function() {
+    // Dynamiczne wstrzyknięcie Firebase Auth i sprawdzenie uprawnień dostępu
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.innerHTML = `
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCNg0JnAgAH39y9D-8vhJKwQ10JYxx5Z0s",
+          authDomain: "cyberbook-83464.firebaseapp.com",
+          projectId: "cyberbook-83464",
+          storageBucket: "cyberbook-83464.firebasestorage.app",
+          messagingSenderId: "93288968489",
+          appId: "1:93288968489:web:61a2651a867903dff769c8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Ukrywamy treść na czas weryfikacji tożsamości
+        document.body.style.opacity = '0';
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // Jeśli brak autoryzacji, natychmiast wyrzucamy na logowanie
+                window.location.href = 'logowanie.html';
+            } else {
+                // Autoryzacja pomyślna - pokazujemy zawartość podstrony
+                document.body.style.opacity = '1';
+                document.body.style.transition = 'opacity 0.4s ease';
+            }
+        });
+    `;
+    document.head.appendChild(script);
+})();
     </script>
 </body>
 </html>
