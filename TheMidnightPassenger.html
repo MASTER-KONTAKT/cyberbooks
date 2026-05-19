@@ -879,7 +879,7 @@
     </div>
 
 <script>
-// 1. DYNAMICZNE POBIERANIE SŁOWNIKA Z PLIKU JSON + USUWANIE UKRYTYCH ZNAKÓW
+// 1. DYNAMICZNE POBIERANIE SŁOWNIKA + TOTALNE OCZYSZCZANIE KLUCZY
 let localDictionary = {};
 
 async function loadDictionary() {
@@ -890,24 +890,32 @@ async function loadDictionary() {
         }
         const data = await response.json();
         
-        // Czyszczenie bazy: bezlitośnie usuwamy zwykłe spacji oraz twarde spacje Unicode (\xA0, \uFEFF)
         localDictionary = {};
         for (let key in data) {
-            let cleanKey = key.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '').toLowerCase();
-            localDictionary[cleanKey] = data[key];
+            // Czyścimy klucz w JSON zostawiając absolutnie tylko małe litery i prosty apostrof
+            let cleanKey = key
+                .normalize('NFD')
+                .replace(/[\u2018\u2019]/g, "'") // Zamiana zakrzywionych apostrofów na proste
+                .replace(/[^a-zA-Z']/g, '')     // Usunięcie WSZYSTKIEGO co nie jest literą lub apostrofem
+                .toLowerCase();
+            
+            if (cleanKey) {
+                localDictionary[cleanKey] = data[key];
+            }
         }
-        console.log('Słownik załadowany i oczyszczony z ukrytych znaków.');
+        console.log('Słownik załadowany i pancernie oczyszczony.');
     } catch (error) {
         console.error('Nie udało się załadować słownika z pliku JSON:', error);
     }
 }
 
-// Funkcja pomocnicza do ujednolicania tekstu z książki
-function cleanAndNormalizeWord(word) {
+// Funkcja pomocnicza – bezwzględny filtr zostawiający TYLKO czyste litery angielskie i apostrof
+function superCleanWord(word) {
     if (!word) return '';
     return word
-        .replace(/[\u2018\u2019]/g, "'") // Zamienia zakrzywione apostrofy ’ na proste '
-        .replace(/[^a-zA-Z']/g, '')     // Usuwa kropki, przecinki, pytajniki, zostawia tylko litery i apostrof
+        .normalize('NFD')               // Rozbija ukryte znaki diakrytyczne i ligatury binarne
+        .replace(/[\u2018\u2019]/g, "'") // Ujednolica apostrofy drukarskie na proste
+        .replace(/[^a-zA-Z']/g, '')     // Wymazuje każdy znak specjalny, cyfrę, spację, tabulator, niewidoczny bajt
         .trim();
 }
 
@@ -915,25 +923,26 @@ function cleanAndNormalizeWord(word) {
 function initWordTokenization() {
     const paragraphs = document.querySelectorAll('.book-content p');
     paragraphs.forEach(p => {
-        // Zastępujemy wszystkie tabulacje, entery i dziwne odstępy zwykłymi spacjami
+        // Zamieniamy wszelkie białe znaki (entery, tabulatory, potrójne spacje) na pojedyncze, klasyczne spacje
         let text = p.innerText.replace(/\s+/g, ' ');
         
-        // Dzielimy tekst po zwykłych spacjach
-        const tokens = text.split(/(\s+)/);
+        // Dzielimy tekst na pojedyncze wyrazy
+        const tokens = text.split(' ');
         
         const processedTokens = tokens.map(token => {
-            if (/[a-zA-Z\u2018\u2019]/.test(token)) {
-                const cleanWord = cleanAndNormalizeWord(token);
-                
-                // Jeśli po oczyszczeniu coś zostało, robimy z tego klikalne słowo
-                if (cleanWord.length > 0) {
-                    const punctuation = token.replace(/[a-zA-Z\u2018\u2019']/g, '').trim();
-                    return `<span class="word" onclick="handleWordClick('${cleanWord}')">${cleanWord}</span>${punctuation}`;
-                }
+            const cleanWord = superCleanWord(token);
+            
+            // Jeśli po agresywnym oczyszczeniu słowo nadal istnieje, robimy z niego klikalny span
+            if (cleanWord.length > 0) {
+                // Znaki interpunkcyjne stojące przy słowie (np. przecinek, kropka, myślnik) wyciągamy na zewnątrz spana
+                const punctuation = token.replace(/[a-zA-Z\u2018\u2019']/g, '').trim();
+                return `<span class="word" onclick="handleWordClick('${cleanWord}')">${cleanWord}</span>${punctuation}`;
             }
             return token;
         });
-        p.innerHTML = processedTokens.join('');
+        
+        // Łączymy tekst z powrotem standardowymi spacjami
+        p.innerHTML = processedTokens.join(' ');
     });
 }
 
@@ -955,17 +964,15 @@ function toggleTranslatorMode() {
 function handleWordClick(word) {
     if (!isTranslatorActive) return;
 
-    // Pobranie czystego słowa, usunięcie spacji/twardych spacji i sprowadzenie do małych liter
-    let searchWord = cleanAndNormalizeWord(word)
-        .replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '')
-        .toLowerCase();
+    // Przepuszczamy kliknięte słowo przez nasz pancerny filtr i zamieniamy na małe litery
+    let searchWord = superCleanWord(word).toLowerCase();
     
-    // Alternatywa na wypadek formy z końcówką 's (np. tom's -> tom)
+    // Obsługa form z końcówką dopasowania (np. "bed's" spróbuje też znaleźć "bed")
     let fallbackWord = searchWord.split("'")[0];
 
     let translation = null;
 
-    // Szukamy dopasowania w wyczyszczonej bazie
+    // Szukamy dopasowania w czystej bazie danych
     if (localDictionary[searchWord]) {
         translation = localDictionary[searchWord];
     } else if (localDictionary[fallbackWord]) {
@@ -1010,7 +1017,7 @@ function closeModal(e) {
     }
 }
 
-// 4. ROZWIJALNY PANEL OCHRONY WZROKU (TEMATY)
+// 4. PANEL TEMATÓW
 function toggleDropdown() {
     document.getElementById('themeDropdown').classList.toggle('open');
 }
@@ -1049,7 +1056,7 @@ function toggleFullscreen() {
     }
 }
 
-// 6. NAWIGACJA (SKOK DO PODANEJ STRONY)
+// 6. NAWIGACJA
 function jumpToPage() {
     const pageNum = document.getElementById('pageInput').value;
     if (pageNum == 1) {
