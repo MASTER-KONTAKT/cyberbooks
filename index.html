@@ -459,6 +459,47 @@
             display: none !important;
         }
 
+        /* Styl przycisku usuwania z biblioteki */
+        .btn-remove-library {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 3;
+            background: rgba(239, 68, 68, 0.2);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .btn-remove-library:hover {
+            background: #ef4444;
+            color: white;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+            transform: scale(1.1);
+        }
+
+        /* Pokazuj przycisk usuwania TYLKO w sekcji Moja Biblioteka */
+        #my-library-section .btn-remove-library {
+            display: flex !important;
+        }
+
+        /* Ukrywaj plakietkę poziomu w sekcji Moja Biblioteka, żeby nie nakładała się na przycisk "X" */
+        #my-library-section .level-badge {
+            display: none !important;
+        }
+
         /* --- MODAL / POPUP GLASSMORPHISM --- */
         .modal-overlay {
             position: fixed;
@@ -623,6 +664,7 @@
                 <div class="book-card" data-level="A1" data-book-id="toms_new_start">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">A1</div>
                         <img src="Toms.png" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="szablon.html">Czytaj e-book</button></div>
@@ -634,6 +676,7 @@
                 <div class="book-card" data-level="A1" data-book-id="lucky_the_dog">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">A1</div>
                         <img src="pies.png" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="LuckytheDog.html">Czytaj e-book</button></div>
@@ -645,6 +688,7 @@
                 <div class="book-card" data-level="A2" data-book-id="cold_footsteps">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">A2</div>
                         <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="ColdFootsteps.html">Czytaj e-book</button></div>
@@ -656,6 +700,7 @@
                 <div class="book-card" data-level="B1" data-book-id="behind_closed_doors">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">B1</div>
                         <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="BehindClosedDoors.html">Czytaj e-book</button></div>
@@ -667,6 +712,7 @@
                 <div class="book-card" data-level="C2" data-book-id="deceptive_minds">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">C2</div>
                         <img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="DeceptiveMinds.html">Czytaj e-book</button></div>
@@ -689,6 +735,7 @@
                 <div class="book-card" data-level="A1+" data-book-id="the_red_bag_chase">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">A1+</div>
                         <img src="bag.png" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="TheRedBagChase.html">Czytaj e-book</button></div>
@@ -700,6 +747,7 @@
                 <div class="book-card" data-level="B2" data-book-id="terminal_velocity">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">B2</div>
                         <img src="https://images.unsplash.com/photo-1554188718-d807d544866c?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="TerminalVelocity.html">Czytaj e-book</button></div>
@@ -711,6 +759,7 @@
                 <div class="book-card" data-level="A1" data-book-id="the_chase">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">A1</div>
                         <img src="https://images.unsplash.com/photo-1536924940846-227afb31e2a5?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="TheChase.html">Czytaj e-book</button></div>
@@ -722,6 +771,7 @@
                 <div class="book-card" data-level="C1" data-book-id="apex_hunter">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">C1</div>
                         <img src="https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="ApexHunter.html">Czytaj e-book</button></div>
@@ -733,6 +783,7 @@
                 <div class="book-card" data-level="B2" data-book-id="code_name_phoenix">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">B2</div>
                         <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="CodeNamePhoenix.html">Czytaj e-book</button></div>
@@ -750,6 +801,7 @@
                 <div class="book-card" data-level="A1" data-book-id="english_grammar_basics">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">A1</div>
                         <img src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="EnglishGrammarBasics.html">Czytaj e-book</button></div>
@@ -761,6 +813,7 @@
                 <div class="book-card" data-level="B1" data-book-id="everyday_idioms">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">B1</div>
                         <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="EverydayIdioms.html">Czytaj e-book</button></div>
@@ -772,6 +825,7 @@
                 <div class="book-card" data-level="B2" data-book-id="business_english_guide">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">B2</div>
                         <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="BusinessEnglishGuide.html">Czytaj e-book</button></div>
@@ -783,6 +837,7 @@
                 <div class="book-card" data-level="C1" data-book-id="advanced_essay_writing">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">C1</div>
                         <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="AdvancedEssayWriting.html">Czytaj e-book</button></div>
@@ -794,6 +849,7 @@
                 <div class="book-card" data-level="A2" data-book-id="phonetics_for_beginners">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">A2</div>
                         <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="PhoneticsBeginners.html">Czytaj e-book</button></div>
@@ -811,6 +867,7 @@
                 <div class="book-card" data-level="B1" data-book-id="chronicles_of_eloria">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">B1</div>
                         <img src="https://images.unsplash.com/photo-1514894780887-121968d00567?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="ChroniclesEloria.html">Czytaj e-book</button></div>
@@ -822,6 +879,7 @@
                 <div class="book-card" data-level="C1" data-book-id="the_mages_legacy">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">C1</div>
                         <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="TheMagesLegacy.html">Czytaj e-book</button></div>
@@ -833,6 +891,7 @@
                 <div class="book-card" data-level="A2" data-book-id="the_lost_kingdom">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">A2</div>
                         <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="TheLostKingdom.html">Czytaj e-book</button></div>
@@ -844,6 +903,7 @@
                 <div class="book-card" data-level="B2" data-book-id="shadow_bound">
                     <div class="cover-wrapper">
                         <button class="btn-add-library" title="Dodaj do biblioteki">+</button>
+                        <button class="btn-remove-library" title="Usuń z biblioteki">✕</button>
                         <div class="level-badge">B2</div>
                         <img src="https://images.unsplash.com/photo-1560942485-b2a11cc13456?q=80&w=400&auto=format&fit=crop" class="book-cover">
                         <div class="hover-action"><button class="btn-read" data-href="ShadowBound.html">Czytaj e-book</button></div>
@@ -933,7 +993,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyCNg0JnAgAH39y9D-8vhJKwQ10JYxx5Z0s",
@@ -1066,10 +1126,11 @@
             myLibrarySection.style.display = 'block';
         });
 
-        // Funkcja nadpisująca kliknięcia akcji "Czytaj" oraz "Dodaj do biblioteki" na kartach e-booków
+        // Funkcja nadpisująca kliknięcia akcji "Czytaj", "Dodaj do biblioteki" oraz "Usuń z biblioteki"
         function bindCardEvents(element) {
             const readBtn = element.querySelector('.btn-read');
             const addBtn = element.querySelector('.btn-add-library');
+            const removeBtn = element.querySelector('.btn-remove-library');
 
             if (readBtn) {
                 readBtn.addEventListener('click', (e) => {
@@ -1109,6 +1170,44 @@
                         } catch (err) {
                             console.error("Błąd zapisu postępu:", err);
                             showModal("Błąd", "Nie udało się zapisać książki w bazie danych.");
+                        }
+                    }
+                });
+            }
+
+            if (removeBtn) {
+                removeBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const bookCard = removeBtn.closest('.book-card');
+                    const bookId = bookCard.getAttribute('data-book-id');
+
+                    if (currentUser && bookId) {
+                        try {
+                            const userDocRef = doc(db, "users", currentUser.uid);
+                            // Usuwamy ID książki z tabeli w Firestore
+                            await updateDoc(userDocRef, {
+                                startedBooks: arrayRemove(bookId)
+                            });
+                            
+                            // Płynne usunięcie karty z widoku bez przeładowania strony
+                            bookCard.style.transition = 'all 0.4s ease';
+                            bookCard.style.opacity = '0';
+                            bookCard.style.transform = 'scale(0.8)';
+                            setTimeout(() => {
+                                bookCard.remove();
+                                // Jeśli usunięto ostatnią książkę, pokaż komunikat o pustej bibliotece
+                                const grid = document.getElementById('my-library-grid');
+                                if (grid.children.length === 0) {
+                                    grid.innerHTML = '<div class="empty-library-msg">Nie masz jeszcze żadnych rozpoczętych książek. Kliknij "+" przy książce w sekcji głównej!</div>';
+                                }
+                            }, 400);
+
+                            showModal("Usunięto", "Książka została usunięta z Twojej biblioteki.");
+                        } catch (err) {
+                            console.error("Błąd podczas usuwania książki:", err);
+                            showModal("Błąd", "Nie udało się usunąć książki z bazy danych.");
                         }
                     }
                 });
