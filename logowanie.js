@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence, sendEmailVerification, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -68,18 +68,9 @@ function translateError(code) {
             return 'Ten adres e-mail jest już przypisany do innego konta.';
         case 'auth/weak-password':
             return 'Hasło musi składać się z minimum 6 znaków.';
-        case 'unverified-email':
-            return '⚠️ Twój adres e-mail nie został jeszcze zweryfikowany! Kliknij w link wysłany na Twoją skrzynkę pocztową .';
         default:
             return 'Wystąpił nieoczekiwany błąd. Spróbuj ponownie.';
     }
-}
-
-// Funkcja pomocnicza do obsługi "Zapamiętaj mnie"
-async function applyPersistenceSetting() {
-    const rememberMeChecked = document.getElementById('remember-me').checked;
-    const selectedPersistence = rememberMeChecked ? browserLocalPersistence : browserSessionPersistence;
-    await setPersistence(auth, selectedPersistence);
 }
 
 // LOGOWANIE
@@ -90,20 +81,12 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     const password = document.getElementById('login-password').value;
 
     try {
-        // Zastosowanie wybranego typu sesji (Zapamiętaj mnie)
-        await applyPersistenceSetting();
+        // Utrzymanie zalogowanego użytkownika (Local Persistence)
+        await setPersistence(auth, browserLocalPersistence);
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Blokada: Jeśli użytkownik nie aktywował konta przez e-mail, nie wpuszczamy go
-        if (!user.emailVerified) {
-            showAlert(translateError('unverified-email'));
-            await signOut(auth); // Wylogowanie sesji, żeby nie zalogowało w tle
-            return;
-        }
         
         // Zapewnienie, że dokument użytkownika istnieje w Firestore
-        const userDocRef = doc(db, "users", user.uid);
+        const userDocRef = doc(db, "users", userCredential.user.uid);
         const docSnap = await getDoc(userDocRef);
         if (!docSnap.exists()) {
             await setDoc(userDocRef, { startedBooks: [] });
@@ -123,30 +106,20 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     const password = document.getElementById('register-password').value;
 
     try {
-        await applyPersistenceSetting();
+        await setPersistence(auth, browserLocalPersistence);
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Wysłanie linku aktywacyjnego na podany adres e-mail
-        await sendEmailVerification(user);
         
         // Tworzenie profilu i bazy Mojej Biblioteki w Firestore
-        await setDoc(doc(db, "users", user.uid), {
+        await setDoc(doc(db, "users", userCredential.user.uid), {
             email: email,
             createdAt: new Date().toISOString(),
             startedBooks: []
         });
 
-        // Wylogowujemy świeżo utworzone konto, dopóki e-mail nie zostanie potwierdzony
-        await signOut(auth);
-
-        // Wyświetlenie komunikatu o wysłanej wiadomości
-        showAlert("🚀 Została wysłana wiadomość potwierdzająca maila! Kliknij w link aktywacyjny w swojej skrzynce, aby konto zaczęło działać.", "success");
-        
-        // Opcjonalne automatyczne przełączenie na panel logowania po 4 sekundach
+        showAlert("Konto utworzone pomyślnie! Przekierowywanie...", "success");
         setTimeout(() => {
-            tabLogin.click();
-        }, 4000);
+            window.location.href = 'index.html';
+        }, 1500);
 
     } catch (error) {
         showAlert(translateError(error.code));
