@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -68,21 +68,34 @@ function translateError(code) {
             return 'Ten adres e-mail jest już przypisany do innego konta.';
         case 'auth/weak-password':
             return 'Hasło musi składać się z minimum 6 znaków.';
+        case 'brak-email':
+            return 'Wpisz adres e-mail, aby otrzymać link logowania.';
         default:
             return 'Wystąpił nieoczekiwany błąd. Spróbuj ponownie.';
     }
 }
 
-// LOGOWANIE
+// Dynamiczne ustawianie sesji (Zapamiętaj mnie)
+async function handlePersistence() {
+    const rememberMe = document.getElementById('remember-me').checked;
+    const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
+    await setPersistence(auth, persistenceType);
+}
+
+// TRADYCYJNE LOGOWANIE HASŁEM
 document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     clearAlert();
     const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
 
+    if (!password) {
+        showAlert('Wpisz hasło lub użyj logowania bezhasłowego poniżej.');
+        return;
+    }
+
     try {
-        // Utrzymanie zalogowanego użytkownika (Local Persistence)
-        await setPersistence(auth, browserLocalPersistence);
+        await handlePersistence();
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         
         // Zapewnienie, że dokument użytkownika istnieje w Firestore
@@ -98,6 +111,79 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     }
 });
 
+// LOGOWANIE LINKIEM NA E-MAIL (PASSWORDLESS)
+document.getElementById('btn-send-link').addEventListener('click', async () => {
+    clearAlert();
+    const email = document.getElementById('login-email').value.trim();
+
+    if (!email) {
+        showAlert(translateError('brak-email'));
+        return;
+    }
+
+    const actionCodeSettings = {
+        // Powrót dokładnie na ten sam plik logowania
+        url: window.location.origin + window.location.pathname,
+        handleCodeInApp: true,
+    };
+
+    try {
+        await handlePersistence();
+        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+        // Zapisujemy e-mail w przeglądarce, by uniknąć ponownego pytania po powrocie
+        window.localStorage.setItem('emailForSignIn', email);
+        showAlert("🚀 Link logowania został wysłany! Sprawdź swoją skrzynkę pocztową.", "success");
+    } catch (error) {
+        showAlert(translateError(error.code));
+    }
+});
+
+// PRZECHWYTYWANIE POWROTU Z POCZTY ELEKTRONICZNEJ
+async function checkEmailSignInLink() {
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+        let email = window.localStorage.getItem('emailForSignIn');
+        
+        if (!email) {
+            email = window.prompt('Wprowadź swój e-mail w celu weryfikacji urządzenia:');
+        }
+
+        if (!email) {
+            showAlert('Weryfikacja została anulowana.');
+            return;
+        }
+
+        try {
+            const result = await signInWithEmailLink(auth, email, window.location.href);
+            window.localStorage.removeItem('emailForSignIn');
+            
+            // Czyszczenie linku z brzydkich parametrów Firebase
+            window.history.replaceState({}, document.title, window.location.pathname);
+            
+            // Konfiguracja bazy w Firestore dla nowego użytkownika logującego się linkiem
+            const userDocRef = doc(db, "users", result.user.uid);
+            const docSnap = await getDoc(userDocRef);
+            if (!docSnap.exists()) {
+                await setDoc(userDocRef, {
+                    email: email,
+                    createdAt: new Date().toISOString(),
+                    startedBooks: []
+                });
+            }
+
+            showAlert("🎉 Zalogowano pomyślnie! Przekierowywanie...", "success");
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+        } catch (error) {
+            showAlert("Obydwa kody weryfikacyjne wygasły lub link został już zużyty.");
+            console.error(error);
+        }
+    }
+}
+
+// Automatyczny start sprawdzania linku e-mail po otwarciu strony
+checkEmailSignInLink();
+
 // REJESTRACJA
 document.getElementById('register-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -106,7 +192,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     const password = document.getElementById('register-password').value;
 
     try {
-        await setPersistence(auth, browserLocalPersistence);
+        await handlePersistence();
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         
         // Tworzenie profilu i bazy Mojej Biblioteki w Firestore
