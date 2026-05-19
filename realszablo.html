@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberBooks Reader Pro - Zaawansowany Czytnik</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Tematy kolorystyczne (Zmienne CSS) --- */
+        :root {
+            /* Domyślny Czarny (Dark Mode) */
+            --bg-main: #0d0e12;
+            --bg-interface: rgba(22, 24, 33, 0.85);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #e2e8f0;
+            --text-interface: #ffffff;
+            --text-muted: #9ca3af;
+            --accent: #a252fa;
+            --accent-glow: rgba(162, 82, 250, 0.3);
+            --book-bg: #0d0e12;
+            --book-text: #e2e8f0;
+            --book-font: 'Merriweather', serif;
+        }
+
+        body.theme-gray {
+            --bg-main: #2d3139;
+            --bg-interface: rgba(53, 58, 68, 0.9);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #e1e4ea;
+            --text-interface: #ffffff;
+            --text-muted: #a0a5b1;
+            --book-bg: #2d3139;
+            --book-text: #e1e4ea;
+        }
+
+        body.theme-light {
+            --bg-main: #f8fafc;
+            --bg-interface: rgba(255, 255, 255, 0.9);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --text-main: #1e293b;
+            --text-interface: #0f172a;
+            --text-muted: #64748b;
+            --book-bg: #f8fafc;
+            --book-text: #1e293b;
+        }
+
+        body.theme-sepia {
+            --bg-main: #f4edd9;
+            --bg-interface: rgba(235, 226, 204, 0.95);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --text-main: #2c2519;
+            --text-interface: #1e170c;
+            --text-muted: #7d725f;
+            --book-bg: #f4edd9;
+            --book-text: #2c2519;
+        }
+
+        /* --- Reset i bazy --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, transform 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Pasek Nawigacyjny --- */
+        header {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 0.8rem 5%;
+            background: var(--bg-interface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Przycisk akcji interfejsu */
+        .btn-nav {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-interface);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-nav:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--text-muted);
+        }
+
+        .btn-nav.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        /* Pola numeryczne stron */
+        .page-jumper {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .page-input {
+            width: 50px;
+            padding: 0.4rem;
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-interface);
+            text-align: center;
+            font-size: 0.88rem;
+            outline: none;
+        }
+
+        /* --- Panel Ochrony Wzroku (Rozwijane Menu) --- */
+        .dropdown-wrapper {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 130%;
+            right: 0;
+            background: var(--bg-interface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 0.8rem;
+            width: 260px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 150;
+        }
+
+        .dropdown-wrapper.open .dropdown-menu {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .theme-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-interface);
+            font-weight: 500;
+        }
+
+        .theme-option:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        body.theme-light .theme-option:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .theme-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .healthy-tag {
+            font-size: 0.72rem;
+            color: #2ecc71;
+            font-weight: 600;
+            margin-left: auto;
+            margin-right: 8px;
+        }
+
+        /* --- Kolumna Tekstu --- */
+        .reader-container {
+            max-width: 740px; /* Perfekcyjna szerokość do skupienia wzroku */
+            margin: 0 auto;
+            padding: 4rem 1.5rem 8rem;
+            background-color: var(--book-bg);
+        }
+
+        .book-content {
+            font-family: var(--book-font);
+            font-size: 1.25rem;
+            line-height: 1.9;
+            color: var(--book-text);
+            text-align: justify;
+        }
+
+        .book-content h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.2rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-interface);
+        }
+
+        .book-content p {
+            margin-bottom: 1.6rem;
+            text-indent: 1.5rem;
+        }
+
+        /* Separator stron */
+        .page-break {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 4rem 0;
+            position: relative;
+        }
+
+        .page-break::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: var(--border-color);
+            z-index: 1;
+        }
+
+        .page-num {
+            background: var(--bg-main);
+            padding: 0 1.5rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            z-index: 2;
+            letter-spacing: 1px;
+        }
+
+        /* --- Obsługa Aktywnego Tłumacza --- */
+        body.translator-active .book-content p span.word {
+            cursor: help;
+            border-bottom: 1px dashed var(--accent);
+            padding: 0 1px;
+        }
+
+        body.translator-active .book-content p span.word:hover {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        /* --- Okno Modalne Słownika --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--bg-interface);
+            border: 1px solid var(--border-color);
+            padding: 2.2rem;
+            border-radius: 24px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.open .modal {
+            transform: scale(1);
+        }
+
+        .modal h3 {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal .word-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-interface);
+            margin-bottom: 0.8rem;
+        }
+
+        .modal .word-translation {
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+            padding: 0.6rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-close {
+            padding: 0.6rem 1.8rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* --- Responsywność --- */
+        @media (max-width: 768px) {
+            header { padding: 0.8rem 3%; }
+            .btn-nav span { display: none; } /* Ukryj opisy tekstowe przycisków na mobile */
+            .reader-container { padding: 2rem 1rem 4rem; } /* Zanikanie marginesów bocznych */
+            .book-content { font-size: 1.15rem; line-height: 1.8; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+
+            <div class="nav-group">
+                <a href="sdfdsf.html" class="btn-nav return-btn" style="text-decoration: none;">
+                    ⬅️ <span>Strona główna</span>
+                </a>
+            </div>
+            
+            <div class="nav-group">
+                <div class="page-jumper">
+                    <input type="number" id="pageInput" class="page-input" min="1" max="2" value="1">
+                    <button class="btn-nav" onclick="jumpToPage()">Idź</button>
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <div class="dropdown-wrapper" id="themeDropdown">
+                    <button class="btn-nav" onclick="toggleDropdown()">🎨 <span>Styl ekranu</span></button>
+                    <div class="dropdown-menu">
+                        <div class="theme-option" onclick="changeTheme('dark')">
+                            <span>Ciemny (Dark)</span>
+                            <div class="theme-dot" style="background: #0d0e12;"></div>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('gray')">
+                            <span>Szary (Muted)</span>
+                            <div class="theme-dot" style="background: #2d3139;"></div>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('light')">
+                            <span>Jasny (Light)</span>
+                            <div class="theme-dot" style="background: #f8fafc;"></div>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('sepia')">
+                            <span>Sepia</span>
+                            <span class="healthy-tag">(Zdrowy ✨)</span>
+                            <div class="theme-dot" style="background: #f4edd9;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-nav" id="fullscreenBtn" onclick="toggleFullscreen()">🔲 <span>Pełny ekran</span></button>
+            </div>
+
+            <div class="nav-group">
+                <button class="btn-nav" id="translatorToggle" onclick="toggleTranslatorMode()">🌐 Tłumacz słowo</button>
+            </div>
+
+        </div>
+    </header>
+
+    <div class="reader-container">
+        <article class="book-content" id="bookContent">
+            
+            <div id="page-1">
+                <h2>Chapter 1: The New City</h2>
+                <p>Tom opens his eyes. He is in a new city. The city is big and very beautiful. There are many tall buildings and green trees. The sun is hot in the blue sky. Tom is happy but he is also a little tired.</p>
+                <p>He has a small blue suitcase in his hand. In the suitcase, there are three shirts, two pairs of pants, and a map. He looks at the map. "Where is my new house?" Tom asks himself. He walks down the street. The street is busy with people and cars.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-2">Strona 2</span>
+            </div>
+
+            <div id="page-2">
+                <p>Tom sees a small cafe. The cafe has small round tables outside. A woman is drinking coffee and reading a book. Tom walks to the cafe because he is thirsty. He wants a glass of cold water or a cup of hot tea.</p>
+                <p>A waiter comes to Tom. The waiter is a young man with a nice smile. "Hello," the waiter says. "Can I help you?" Tom smiles back. "Yes, please. Can I have a glass of water and a chicken sandwich?" Tom says. He sits down at a table.</p>
+            </div>
+
+            <div class="page-break">
+                <span class="page-num" id="page-marker-3">Strona 3</span>
+            </div>
+
+            <div id="page-3">
+                <p>The waiter brings the water and the sandwich. The sandwich is very good, and the water is cold. Tom eats slowly and looks at the people. A girl is walking with a big brown dog. The dog is very friendly. It wags its tail.</p>
+                <p>Tom takes his map again. He shows the map to the waiter. "Excuse me," Tom asks. "Where is Green Street?" The waiter looks at the map and points his finger. "Go straight, then turn left at the big supermarket. Green Street is there."</p>
+            </div>
+
+
+     </article>
+    </div>
+
+    <div class="modal-overlay" id="translateModal" onclick="closeModal(event)">
+        <div class="modal">
+            <h3>Lokalny Słownik</h3>
+            <div class="word-title" id="modalWord">Słowo</div>
+            <div class="word-translation" id="modalTranslation">Tłumaczenie</div>
+            <button class="btn-close" onclick="document.getElementById('translateModal').classList.remove('open')">Zamknij</button>
+        </div>
+    </div>
+
+    <script>
+// 1. DYNAMICZNE POBIERANIE SŁOWNIKA Z PLIKU JSON
+let localDictionary = {};
+
+async function loadDictionary() {
+    try {
+        const response = await fetch('slownik.json');
+        if (!response.ok) {
+            throw new Error(`Problem z plikiem słownika: ${response.status}`);
+        }
+        localDictionary = await response.json();
+    } catch (error) {
+        console.error('Nie udało się załadować słownika z pliku JSON:', error);
+    }
+}
+
+// 2. PRZYGOTOWANIE TEKSTU (TOKENIZACJA)
+function initWordTokenization() {
+    const paragraphs = document.querySelectorAll('.book-content p');
+    paragraphs.forEach(p => {
+        const text = p.innerText;
+        const tokens = text.split(/(\s+)/);
+        
+        const processedTokens = tokens.map(token => {
+            if (/[a-zA-Z]/.test(token)) {
+                // Wyciągamy litery i apostrofy, usuwamy resztę interpunkcji dookoła
+                const cleanWord = token.replace(/[^a-zA-Z']/g, '');
+                const punctuation = token.replace(/[a-zA-Z']/g, '');
+                
+                return `<span class="word" onclick="handleWordClick('${cleanWord}')">${cleanWord}</span>${punctuation}`;
+            }
+            return token;
+        });
+        p.innerHTML = processedTokens.join('');
+    });
+}
+
+// 3. INTERAKTYWNY SYSTEM TŁUMACZENIA
+let isTranslatorActive = false;
+
+function toggleTranslatorMode() {
+    isTranslatorActive = !isTranslatorActive;
+    const btn = document.getElementById('translatorToggle');
+    if (isTranslatorActive) {
+        document.body.classList.add('translator-active');
+        btn.classList.add('active');
+    } else {
+        document.body.classList.remove('translator-active');
+        btn.classList.remove('active');
+    }
+}
+
+function handleWordClick(word) {
+    if (!isTranslatorActive) return;
+
+    // Standaryzacja słowa: małe litery, odcięcie apostrofu (np. tom's -> tom)
+    let searchWord = word.toLowerCase().replace(/[^a-z]/g, '').trim();
+    let fallbackWord = word.toLowerCase().split("'")[0].replace(/[^a-z]/g, '').trim();
+
+    let translation = null;
+
+    if (localDictionary[searchWord]) {
+        translation = localDictionary[searchWord];
+    } else if (localDictionary[fallbackWord]) {
+        translation = localDictionary[fallbackWord];
+    }
+
+    const modalWord = document.getElementById('modalWord');
+    const modalTranslation = document.getElementById('modalTranslation');
+    const modalOverlay = document.getElementById('translateModal');
+
+    modalWord.innerText = word;
+
+    const googleUrl = `https://translate.google.com/?sl=en&tl=pl&text=${encodeURIComponent(word)}&op=translate`;
+
+    if (translation) {
+        modalTranslation.innerHTML = `
+            <div style="color: #2ecc71; font-weight: 500; margin-bottom: 15px;">
+                ${translation}
+            </div>
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 12px;">
+            <a href="${googleUrl}" target="_blank" style="display: inline-block; font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 600; padding: 4px 10px; background: rgba(162, 82, 250, 0.1); border-radius: 6px;">
+                🔍 Pełne tłumaczenie w Google
+            </a>
+        `;
+    } else {
+        modalTranslation.innerHTML = `
+            <div style="font-size: 0.95rem; color: #e74c3c; margin-bottom: 12px; background: rgba(231, 76, 60, 0.1); padding: 8px; border-radius: 8px;">
+                Brak tłumaczenia w bazie podręcznej
+            </div>
+            <a href="${googleUrl}" target="_blank" style="display: inline-block; font-size: 0.9rem; color: var(--accent); text-decoration: underline; font-weight: 600; margin-top: 5px;">
+                🔍 Sprawdź w Google Translate
+            </a>
+        `;
+    }
+
+    modalOverlay.classList.add('open');
+}
+
+function closeModal(e) {
+    if (e.target.id === 'translateModal') {
+        document.getElementById('translateModal').classList.remove('open');
+    }
+}
+
+// 4. ROZWIJALNY PANEL OCHRONY WZROKU
+function toggleDropdown() {
+    document.getElementById('themeDropdown').classList.toggle('open');
+}
+
+function changeTheme(themeName) {
+    document.body.classList.remove('theme-dark', 'theme-gray', 'theme-light', 'theme-sepia');
+    if (themeName !== 'dark') {
+        document.body.classList.add(`theme-${themeName}`);
+    }
+    document.getElementById('themeDropdown').classList.remove('open');
+}
+
+window.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('themeDropdown');
+    if (dropdown && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('open');
+    }
+});
+
+// 5. TRYB PEŁNOEKRANOWY (FULLSCREEN)
+function toggleFullscreen() {
+    const btn = document.getElementById('fullscreenBtn');
+    
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+            btn.classList.add('active');
+            btn.innerHTML = `🔲 <span>Zamknij pełny ekran</span>`;
+        }).catch(err => {
+            console.error(`Błąd Fullscreen: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen().then(() => {
+            btn.classList.remove('active');
+            btn.innerHTML = `🔲 <span>Pełny ekran</span>`;
+        });
+    }
+}
+
+// 6. NAWIGACJA (SKOK DO STRONY)
+function jumpToPage() {
+    const pageNum = document.getElementById('pageInput').value;
+    if (pageNum == 1) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+        const marker = document.getElementById(`page-marker-${pageNum}`);
+        if (marker) marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+// 7. WERYFIKACJA FIREBASE + INICJALIZACJA STRONY
+(function() {
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.innerHTML = `
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCNg0JnAgAH39y9D-8vhJKwQ10JYxx5Z0s",
+          authDomain: "cyberbook-83464.firebaseapp.com",
+          projectId: "cyberbook-83464",
+          storageBucket: "cyberbook-83464.firebasestorage.app",
+          messagingSenderId: "93288968489",
+          appId: "1:93288968489:web:61a2651a867903dff769c8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Ukrywamy treść na czas weryfikacji tożsamości
+        document.body.style.opacity = '0';
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'logowanie.html';
+            } else {
+                // Użytkownik zalogowany -> najpierw pobieramy słownik z JSON, potem przygotowujemy tekst
+                await loadDictionary();
+                initWordTokenization();
+
+                // Pokazujemy w pełni przygotowaną stronę
+                document.body.style.opacity = '1';
+                document.body.style.transition = 'opacity 0.4s ease';
+            }
+        });
+    `;
+    document.head.appendChild(script);
+})();
+</script>
+</body>
+</html>
