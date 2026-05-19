@@ -800,360 +800,75 @@
             <button class="btn-close" onclick="document.getElementById('translateModal').classList.remove('open')">Zamknij</button>
         </div>
     </div>
+<script>
+// 1. DYNAMICZNE POBIERANIE SŁOWNIKA + TOTALNE OCZYSZCZANIE KLUCZY
+let localDictionary = {};
 
-    <script>
+async function loadDictionary() {
+    try {
+        const response = await fetch('slownik.json');
+        if (!response.ok) {
+            throw new Error(`Problem z plikiem słownika: ${response.status}`);
+        }
+        const data = await response.json();
+        
+        localDictionary = {};
+        for (let key in data) {
+            // Czyścimy klucz w JSON zostawiając absolutnie tylko małe litery i prosty apostrof
+            let cleanKey = key
+                .normalize('NFD')
+                .replace(/[\u2018\u2019]/g, "'") // Zamiana zakrzywionych apostrofów na proste
+                .replace(/[^a-zA-Z']/g, '')     // Usunięcie WSZYSTKIEGO co nie jest literą lub apostrofem
+                .toLowerCase();
+            
+            if (cleanKey) {
+                localDictionary[cleanKey] = data[key];
+            }
+        }
+        console.log('Słownik załadowany i pancernie oczyszczony.');
+    } catch (error) {
+        console.error('Nie udało się załadować słownika z pliku JSON:', error);
+    }
+}
 
-     const localDictionary = {
-    "a": "przedimek nieokreślony (oznacza 'jakiś jeden', używany przed rzeczownikami)",
-    "about": "o / na temat",
-    "after": "po / za",
-    "afternoon": "popołudnie",
-    "again": "znowu / ponownie",
-    "alone": "sam / samotnie",
-    "and": "i / oraz",
-    "animals": "zwierzęta",
-    "angry": "zły / gniewny",
-    "answers": "odpowiada",
-    "any": "żaden / jakikolwiek",
-    "are": "są",
-    "arrive": "przybywać / docierać",
-    "arrives": "dociera / przybywa",
-    "as": "gdy / jako",
-    "asks": "pyta",
-    "at": "w / o (np. o godzinie lub konkretnym miejscu)",
-    "back": "z powrotem / tył",
-    "bag": "torba",
-    "ball": "piłka",
-    "be": "być",
-    "bear": "niedźwiedź / miś pluszowy",
-    "beautiful": "piękny",
-    "because": "ponieważ / bo",
-    "bed": "łóżko",
-    "bedroom": "sypialnia",
-    "behind": "za / z tyłu",
-    "big": "duży",
-    "bird": "ptak",
-    "black": "czarny",
-    "blanket": "koc",
-    "blue": "niebieski",
-    "bone": "kość",
-    "book": "książka",
-    "bowl": "miska",
-    "box": "pudełko / skrzynka",
-    "bright": "jasny / lśniący",
-    "brown": "brązowy",
-    "but": "ale",
-    "butterfly": "motyl",
-    "by": "obok / przy / przez",
-    "calm": "spokojny",
-    "can": "móc / potrafić",
-    "car": "samochód",
-    "cars": "samochody",
-    "cat": "kot",
-    "catch": "złapać / schwytać",
-    "chair": "krzesło",
-    "changes": "zmienia (np. ubrania)",
-    "children": "dzieci",
-    "clean": "czysty",
-    "clothes": "ubrania",
-    "closes": "zamyka",
-    "coffee": "kawa",
-    "cold": "zimny",
-    "colors": "kolory",
-    "comes": "przychodzi / nadchodzi",
-    "comfortable": "wygodny",
-    "completely": "całkowicie / zupełnie",
-    "confused": "zdezorientowany",
-    "cup": "filiżanka / kubek",
-    "curious": "ciekawy / zaciekawiony",
-    "cute": "uroczy / słodki",
-    "dark": "ciemny / ciemno",
-    "day": "dzień",
-    "deep": "głęboki",
-    "desperately": "rozpaczliwie",
-    "dinner": "obiad / obiadokolacja",
-    "disappears": "znika",
-    "do": "czasownik posiłkowy (używany do przeczeń i pytań)",
-    "does": "forma czasownika 'do' (użyta w 'does not catch' - nie łapie)",
-    "dog": "pies",
-    "dogs": "psy",
-    "door": "drzwi",
-    "down": "w dół",
-    "downstairs": "na dół",
-    "dreams": "śni / marzy / sny",
-    "drinks": "pije",
-    "drops": "upuszcza",
-    "dries": "susz / wyciera",
-    "ducks": "kaczki",
-    "ears": "uszy",
-    "eats": "je",
-    "empty": "pusty",
-    "end": "koniec",
-    "enters": "wchodzi do",
-    "evening": "wieczór",
-    "every": "każdy",
-    "everything": "wszystko",
-    "excited": "podekscytowany",
-    "eyes": "oczy",
-    "fabric": "materiał / tkanina",
-    "family": "rodzina",
-    "far": "daleko",
-    "fast": "szybko",
-    "favorite": "ulubiony",
-    "feels": "czuje / czuje się",
-    "feet": "stopy",
-    "fence": "płot / ogrodzenie",
-    "finds": "znajduje",
-    "finished": "skończony / skończył",
-    "five": "pięć",
-    "floor": "podłoga",
-    "flowers": "kwiaty",
-    "flies": "leci / lata",
-    "food": "jedzenie",
-    "for": "dla / przez (np. przez pięć minut)",
-    "found": "znaleziony",
-    "friend": "przyjaciel",
-    "friends": "przyjaciele",
-    "friendly": "przyjacielski / przyjazny",
-    "fridge": "lodówka",
-    "from": "z / od",
-    "funny": "śmieszny / zabawny",
-    "garden": "ogród",
-    "girl": "dziewczynka",
-    "gives": "daje",
-    "glass": "szkło / szklany",
-    "goes": "idzie",
-    "gone": "miniony / odszedł (np. the rain is gone - deszcz minął)",
-    "good": "dobry",
-    "goodbye": "do widzenia / żegnaj",
-    "goodnight": "dobranoc",
-    "grass": "trawa",
-    "green": "zielony",
-    "grey": "szary",
-    "hair": "włosy",
-    "hand": "ręka / dłoń",
-    "hands": "ręce",
-    "happy": "szczęśliwy",
-    "hat": "kapelusz / czapka",
-    "has": "ma",
-    "he": "on",
-    "healthy": "zdrowy",
-    "hear": "słyszeć",
-    "hears": "słyszy",
-    "heart": "serce",
-    "heavy": "ciężki",
-    "her": "jej",
-    "here": "tutaj",
-    "his": "jego",
-    "hole": "dziura / nora",
-    "hot": "gorący",
-    "house": "dom",
-    "hungry": "głodny",
-    "in": "w / w środku",
-    "inside": "wewnątrz / w środku",
-    "is": "jest",
-    "it": "to / ono",
-    "jumps": "skacze",
-    "kitchen": "kuchnia",
-    "lake": "jezioro",
-    "lamp": "lampa",
-    "large": "duży / wielki",
-    "later": "później",
-    "laughs": "śmieje się",
-    "leaves": "odchodzi / zostawia",
-    "let's": "wyrażenie 'chodźmy / zróbmy coś'",
-    "life": "życie",
-    "light": "światło",
-    "likes": "lubi",
-    "listens": "słucha",
-    "live": "żyć / mieszkać",
-    "living room": "salon / pokój dzienny",
-    "long": "długi",
-    "looks": "patrzy",
-    "loud": "głośny",
-    "loves": "kocha / uwielbia",
-    "low": "nisko / niski",
-    "lucky": "W tym wypadku IMIE PSA ale tez mający szczęście / szczęściarz",
-    "lunch": "lunch / drugie śniadanie",
-    "makes": "robi / przygotowuje",
-    "man": "mężczyzna",
-    "many": "wiele / dużo",
-    "meat": "mięso",
-    "meow": "miau (odgłos kota)",
-    "minutes": "minuty",
-    "moon": "księżyc",
-    "more": "więcej / dalej",
-    "morning": "poranek / rano",
-    "mouse": "mysz",
-    "mouth": "pysk / usta",
-    "movie": "film",
-    "name": "imię / nazwa",
-    "near": "blisko / obok",
-    "new": "nowy",
-    "newspaper": "gazeta",
-    "nice": "miły / sympatyczny",
-    "night": "noc",
-    "no": "nie / żaden",
-    "nobody": "nikt",
-    "nose": "nos",
-    "not": "nie",
-    "now": "teraz",
-    "o'clock": "godzina (używane przy podawaniu pełnych godzin)",
-    "of": "słowo łączące (oznacza przynależność)",
-    "off": "wyłączony",
-    "oh": "o! / ach!",
-    "old": "stary / lat (np. five years old - ma pięć lat)",
-    "on": "na",
-    "one": "jeden",
-    "only": "tylko",
-    "open": "otworzyć / otwarty",
-    "opens": "otwiera",
-    "orange": "pomarańczowy",
-    "other": "inny / inni",
-    "out": "na zewnątrz",
-    "outside": "na zewnątrz / na dworze",
-    "over": "nad / przez / skończony",
-    "park": "park",
-    "pasta": "makaron",
-    "peaceful": "spokojny",
-    "people": "ludzie",
-    "pet": "głaskać",
-    "pets": "głaska (liczba pojedyncza od pet)",
-    "pink": "różowy",
-    "place": "miejsce",
-    "plays": "bawi się",
-    "purple": "fioletowy",
-    "puts": "kładzie / umieszcza",
-    "quiet": "cichy / cicho",
-    "rain": "deszcz",
-    "rainbow": "tęcza",
-    "reads": "czyta",
-    "red": "czerwony",
-    "rests": "odpoczywa",
-    "right": "właściwy / prawo (np. right there - właśnie tam)",
-    "rolls": "turla się / robi przewrót",
-    "room": "pokój",
-    "rug": "dywanik / chodnik",
-    "runs": "biega",
-    "safe": "bezpieczny",
-    "sandwich": "kanapka",
-    "says": "mówi",
-    "see": "widzieć / do zobaczenia",
-    "sees": "widzi",
-    "seven": "siedem",
-    "she": "ona",
-    "shows": "pokazuje",
-    "sings": "śpiewa",
-    "sits": "siada / siedzi",
-    "six": "sześć",
-    "sky": "niebo",
-    "sleeps": "śpi",
-    "sleepy": "śpiący",
-    "small": "mały",
-    "smiles": "uśmiecha się",
-    "snack": "przekąska",
-    "sniffs": "wącha / niucha",
-    "so": "więc / tak bardzo",
-    "sofa": "kanapa / sofa",
-    "soft": "miękki",
-    "some": "trochę / jakieś",
-    "song": "piosenka",
-    "special": "specjalny / wyjątkowy",
-    "stands": "wstaje / stoi",
-    "stars": "gwiazdy",
-    "stays": "zostaje / przebywa",
-    "stop": "zatrzymać się",
-    "stops": "zatrzymuje się",
-    "story": "historia / opowiadanie",
-    "sudden": "nagły",
-    "sun": "słońce",
-    "surprise": "niesniespodzianka",
-    "table": "stół",
-    "tail": "ogon",
-    "takes": "bierze / zabiera",
-    "talk": "rozmawiać",
-    "tall": "wysoki",
-    "tea": "herbata",
-    "television": "telewizja",
-    "ten": "dziesięć",
-    "the": "przedimek określony",
-    "there": "tam (w konstrukcji 'there is/are' oznacza: jest / są)",
-    "they": "oni",
-    "thirsty": "spragniony",
-    "this": "ten / to",
-    "throws": "rzuca",
-    "tired": "zmęczony",
-    "to": "do / aby",
-    "today": "dzisiaj",
-    "together": "razem",
-    "tomorrow": "jutro",
-    "too": "też / zbyt",
-    "towel": "ręcznik",
-    "toy": "zabawka",
-    "toys": "zabawki",
-    "treat": "smakołyk / rarytas",
-    "tree": "drzewo",
-    "trees": "drzewa",
-    "turns": "zmienia / obraca / włącza (np. turns on)",
-    "two": "dwa",
-    "under": "pod",
-    "very": "bardzo",
-    "wags": "macha (np. ogonem)",
-    "wakes": "budzi się",
-    "walk": "spacer / spacerować",
-    "wall": "ściana",
-    "wants": "chce",
-    "warm": "ciepły",
-    "was": "był",
-    "water": "woda",
-    "way": "droga / sposób",
-    "we": "my",
-    "weather": "pogoda",
-    "well": "dobrze",
-    "wet": "mokry",
-    "what": "co / jaki",
-    "white": "biały",
-    "who": "kto",
-    "with": "z",
-    "window": "okno",
-    "woof": "hau (odgłos psa)",
-    "years": "lata",
-    "yellow": "żółty",
-    "yes": "tak",
-    "you": "ty / wy"
+// Funkcja pomocnicza – bezwzględny filtr zostawiający TYLKO czyste litery angielskie i apostrof
+function superCleanWord(word) {
+    if (!word) return '';
+    return word
+        .normalize('NFD')               // Rozbija ukryte znaki diakrytyczne i ligatury binarne
+        .replace(/[\u2018\u2019]/g, "'") // Ujednolica apostrofy drukarskie na proste
+        .replace(/[^a-zA-Z']/g, '')     // Wymazuje każdy znak specjalny, cyfrę, spację, tabulator, niewidoczny bajt
+        .trim();
+}
 
-    
-};
-
-      
-
-// Przygotowanie tekstu - pakowanie każdego słowa w tagi span.word
+// 2. PRZYGOTOWANIE TEKSTU (TOKENIZACJA SŁÓW)
 function initWordTokenization() {
     const paragraphs = document.querySelectorAll('.book-content p');
     paragraphs.forEach(p => {
-        const text = p.innerText;
-        const tokens = text.split(/(\s+)/);
+        // Zamieniamy wszelkie białe znaki (entery, tabulatory, potrójne spacje) na pojedyncze, klasyczne spacje
+        let text = p.innerText.replace(/\s+/g, ' ');
+        
+        // Dzielimy tekst na pojedyncze wyrazy
+        const tokens = text.split(' ');
         
         const processedTokens = tokens.map(token => {
-            if (/[a-zA-Z]/.test(token)) {
-                // Wyciągamy litery i apostrofy, usuwamy resztę interpunkcji dookoła
-                const cleanWord = token.replace(/[^a-zA-Z']/g, '');
-                const punctuation = token.replace(/[a-zA-Z']/g, '');
-                
+            const cleanWord = superCleanWord(token);
+            
+            // Jeśli po agresywnym oczyszczeniu słowo nadal istnieje, robimy z niego klikalny span
+            if (cleanWord.length > 0) {
+                // Znaki interpunkcyjne stojące przy słowie (np. przecinek, kropka, myślnik) wyciągamy na zewnątrz spana
+                const punctuation = token.replace(/[a-zA-Z\u2018\u2019']/g, '').trim();
                 return `<span class="word" onclick="handleWordClick('${cleanWord}')">${cleanWord}</span>${punctuation}`;
             }
             return token;
         });
-        p.innerHTML = processedTokens.join('');
+        
+        // Łączymy tekst z powrotem standardowymi spacjami
+        p.innerHTML = processedTokens.join(' ');
     });
 }
 
-// Uruchomienie tokenizacji słów
-initWordTokenization();
-
-// ==========================================
-// 2. INTERAKTYWNY SYSTEM TŁUMACZENIA NA STRONIE
-// ==========================================
+// 3. INTERAKTYWNY SYSTEM TŁUMACZENIA
 let isTranslatorActive = false;
 
 function toggleTranslatorMode() {
@@ -1171,32 +886,29 @@ function toggleTranslatorMode() {
 function handleWordClick(word) {
     if (!isTranslatorActive) return;
 
-    // Standaryzacja słowa: małe litery i usunięcie dziwnych znaków niebędących literami
-    let searchWord = word.toLowerCase().replace(/[^a-z]/g, '').trim();
-    // Odcięcie ewentualnego apostrofu (np. tom's -> tom)
-    let fallbackWord = word.toLowerCase().split("'")[0].replace(/[^a-z]/g, '').trim();
+    // Przepuszczamy kliknięte słowo przez nasz pancerny filtr i zamieniamy na małe litery
+    let searchWord = superCleanWord(word).toLowerCase();
+    
+    // Obsługa form z końcówką dopasowania (np. "bed's" spróbuje też znaleźć "bed")
+    let fallbackWord = searchWord.split("'")[0];
 
     let translation = null;
 
-    // Szukamy w naszym słowniku
+    // Szukamy dopasowania w czystej bazie danych
     if (localDictionary[searchWord]) {
         translation = localDictionary[searchWord];
     } else if (localDictionary[fallbackWord]) {
         translation = localDictionary[fallbackWord];
     }
 
-    // Pobieramy elementy okienka modalnego ze strony
     const modalWord = document.getElementById('modalWord');
     const modalTranslation = document.getElementById('modalTranslation');
     const modalOverlay = document.getElementById('translateModal');
 
-    // Ustawiamy nagłówek okienka na kliknięte słowo
     modalWord.innerText = word;
 
-    // Generujemy uniwersalny link do Google Translate dla klikniętego słowa
     const googleUrl = `https://translate.google.com/?sl=en&tl=pl&text=${encodeURIComponent(word)}&op=translate`;
 
-    // Opcja A: Słowo JEST w bazie danych
     if (translation) {
         modalTranslation.innerHTML = `
             <div style="color: #2ecc71; font-weight: 500; margin-bottom: 15px;">
@@ -1207,9 +919,7 @@ function handleWordClick(word) {
                 🔍 Pełne tłumaczenie w Google
             </a>
         `;
-    } 
-    // Opcja B: Słowa NIE MA w bazie danych
-    else {
+    } else {
         modalTranslation.innerHTML = `
             <div style="font-size: 0.95rem; color: #e74c3c; margin-bottom: 12px; background: rgba(231, 76, 60, 0.1); padding: 8px; border-radius: 8px;">
                 Brak tłumaczenia w bazie podręcznej
@@ -1220,7 +930,6 @@ function handleWordClick(word) {
         `;
     }
 
-    // Otwieramy okienko na ekranie
     modalOverlay.classList.add('open');
 }
 
@@ -1230,20 +939,16 @@ function closeModal(e) {
     }
 }
 
-// ==========================================
-// 3. ROZWIJALNY PANEL OCHRONY WZROKU
-// ==========================================
+// 4. PANEL TEMATÓW
 function toggleDropdown() {
     document.getElementById('themeDropdown').classList.toggle('open');
 }
 
 function changeTheme(themeName) {
     document.body.classList.remove('theme-dark', 'theme-gray', 'theme-light', 'theme-sepia');
-    
     if (themeName !== 'dark') {
         document.body.classList.add(`theme-${themeName}`);
     }
-    
     document.getElementById('themeDropdown').classList.remove('open');
 }
 
@@ -1254,9 +959,7 @@ window.addEventListener('click', function(e) {
     }
 });
 
-// ==========================================
-// 4. TRYB PEŁNOEKRANOWY (FULLSCREEN)
-// ==========================================
+// 5. TRYB PEŁNOEKRANOWY (FULLSCREEN)
 function toggleFullscreen() {
     const btn = document.getElementById('fullscreenBtn');
     
@@ -1275,7 +978,7 @@ function toggleFullscreen() {
     }
 }
 
-// Skok do podanej strony
+// 6. NAWIGACJA
 function jumpToPage() {
     const pageNum = document.getElementById('pageInput').value;
     if (pageNum == 1) {
@@ -1286,9 +989,8 @@ function jumpToPage() {
     }
 }
 
-
-              (function() {
-    // Dynamiczne wstrzyknięcie Firebase Auth i sprawdzenie uprawnień dostępu
+// 7. WERYFIKACJA FIREBASE + INICJALIZACJA STRONY
+(function() {
     const script = document.createElement('script');
     script.type = 'module';
     script.innerHTML = `
@@ -1307,15 +1009,14 @@ function jumpToPage() {
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Ukrywamy treść na czas weryfikacji tożsamości
         document.body.style.opacity = '0';
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (!user) {
-                // Jeśli brak autoryzacji, natychmiast wyrzucamy na logowanie
                 window.location.href = 'logowanie.html';
             } else {
-                // Autoryzacja pomyślna - pokazujemy zawartość podstrony
+                await loadDictionary();
+                initWordTokenization();
                 document.body.style.opacity = '1';
                 document.body.style.transition = 'opacity 0.4s ease';
             }
@@ -1323,6 +1024,6 @@ function jumpToPage() {
     `;
     document.head.appendChild(script);
 })();
-    </script>
+</script>
 </body>
 </html>
