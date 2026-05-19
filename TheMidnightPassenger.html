@@ -879,7 +879,7 @@
     </div>
 
 <script>
-// 1. DYNAMICZNE POBIERANIE SŁOWNIKA Z PLIKU JSON
+// 1. DYNAMICZNE POBIERANIE SŁOWNIKA Z PLIKU JSON + USUWANIE UKRYTYCH ZNAKÓW
 let localDictionary = {};
 
 async function loadDictionary() {
@@ -888,11 +888,27 @@ async function loadDictionary() {
         if (!response.ok) {
             throw new Error(`Problem z plikiem słownika: ${response.status}`);
         }
-        localDictionary = await response.json();
-        console.log('Słownik załadowany poprawnie.');
+        const data = await response.json();
+        
+        // Czyszczenie bazy: bezlitośnie usuwamy zwykłe spacji oraz twarde spacje Unicode (\xA0, \uFEFF)
+        localDictionary = {};
+        for (let key in data) {
+            let cleanKey = key.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '').toLowerCase();
+            localDictionary[cleanKey] = data[key];
+        }
+        console.log('Słownik załadowany i oczyszczony z ukrytych znaków.');
     } catch (error) {
         console.error('Nie udało się załadować słownika z pliku JSON:', error);
     }
+}
+
+// Funkcja pomocnicza do ujednolicania tekstu z książki
+function cleanAndNormalizeWord(word) {
+    if (!word) return '';
+    return word
+        .replace(/[\u2018\u2019]/g, "'") // Zamienia zakrzywione apostrofy ’ na proste '
+        .replace(/[^a-zA-Z']/g, '')     // Usuwa kropki, przecinki, pytajniki, zostawia tylko litery i apostrof
+        .trim();
 }
 
 // 2. PRZYGOTOWANIE TEKSTU (TOKENIZACJA SŁÓW)
@@ -903,12 +919,14 @@ function initWordTokenization() {
         const tokens = text.split(/(\s+)/);
         
         const processedTokens = tokens.map(token => {
-            if (/[a-zA-Z]/.test(token)) {
-                // Wyciągamy litery i apostrofy, usuwamy resztę interpunkcji dookoła
-                const cleanWord = token.replace(/[^a-zA-Z']/g, '');
-                const punctuation = token.replace(/[a-zA-Z']/g, '');
+            if (/[a-zA-Z\u2018\u2019]/.test(token)) {
+                const cleanWord = cleanAndNormalizeWord(token);
                 
-                return `<span class="word" onclick="handleWordClick('${cleanWord}')">${cleanWord}</span>${punctuation}`;
+                // Jeśli po oczyszczeniu coś zostało, robimy z tego klikalne słowo
+                if (cleanWord.length > 0) {
+                    const punctuation = token.replace(/[a-zA-Z\u2018\u2019']/g, '');
+                    return `<span class="word" onclick="handleWordClick('${cleanWord}')">${cleanWord}</span>${punctuation}`;
+                }
             }
             return token;
         });
@@ -934,26 +952,21 @@ function toggleTranslatorMode() {
 function handleWordClick(word) {
     if (!isTranslatorActive) return;
 
-    // Oczyszczenie słowa z ewentualnych znaków specjalnych
-    let cleanWord = word.replace(/[^a-zA-Z']/g, '').trim();
+    // Pobranie czystego słowa, usunięcie spacji/twardych spacji i sprowadzenie do małych liter
+    let searchWord = cleanAndNormalizeWord(word)
+        .replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '')
+        .toLowerCase();
     
-    // Przygotowanie różnych wariantów do przeszukania bazy JSON
-    let originalWord = cleanWord; // np. "Tom", "Chapter"
-    let lowerWord = cleanWord.toLowerCase(); // np. "tom", "chapter"
-    let fallbackWord = lowerWord.split("'")[0]; // np. "tom" (z formy tom's)
-    let capitalizedWord = cleanWord.charAt(0).toUpperCase() + cleanWord.slice(1).toLowerCase(); // np. "Tom"
+    // Alternatywa na wypadek formy z końcówką 's (np. tom's -> tom)
+    let fallbackWord = searchWord.split("'")[0];
 
     let translation = null;
 
-    // Szukamy dopasowania w bazie na 4 sposoby (od najbardziej precyzyjnego)
-    if (localDictionary[originalWord]) {
-        translation = localDictionary[originalWord];
-    } else if (localDictionary[lowerWord]) {
-        translation = localDictionary[lowerWord];
+    // Szukamy dopasowania w wyczyszczonej bazie
+    if (localDictionary[searchWord]) {
+        translation = localDictionary[searchWord];
     } else if (localDictionary[fallbackWord]) {
         translation = localDictionary[fallbackWord];
-    } else if (localDictionary[capitalizedWord]) {
-        translation = localDictionary[capitalizedWord];
     }
 
     const modalWord = document.getElementById('modalWord');
@@ -1064,19 +1077,14 @@ function jumpToPage() {
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Ukrywamy treść na czas weryfikacji tożsamości użytkownika
         document.body.style.opacity = '0';
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
-                // Brak sesji -> przekierowanie do logowania
                 window.location.href = 'logowanie.html';
             } else {
-                // Zalogowano pomyślnie -> ładujemy bazę JSON w tle, potem przygotowujemy słowa
                 await loadDictionary();
                 initWordTokenization();
-
-                // Pokazujemy gotową stronę z płynnym przejściem
                 document.body.style.opacity = '1';
                 document.body.style.transition = 'opacity 0.4s ease';
             }
