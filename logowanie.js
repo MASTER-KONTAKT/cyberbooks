@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence, sendEmailVerification, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -53,7 +53,7 @@ tabRegister.addEventListener('click', () => {
     clearAlert();
 });
 
-// POPRAWKA 1: Słownik tłumaczeń błędów z angielskiego na polski (Strona już nie "milczy")
+// Tłumaczenie błędów Firebase na język polski
 function translateError(code) {
     switch (code) {
         case 'auth/invalid-email':
@@ -68,22 +68,21 @@ function translateError(code) {
             return 'Ten adres e-mail jest już przypisany do innego konta.';
         case 'auth/weak-password':
             return 'Hasło musi składać się z minimum 6 znaków.';
-        case 'niezweryfikowany':
-            return '⚠️ Twój adres e-mail nie został jeszcze aktywowany! Sprawdź skrzynkę, weszliśmy tam z linkiem potwierdzającym.';
+        case 'unverified-email':
+            return '⚠️ Twój adres e-mail nie został jeszcze zweryfikowany! Kliknij w link wysłany na Twoją skrzynkę pocztową.';
         default:
             return 'Wystąpił nieoczekiwany błąd. Spróbuj ponownie.';
     }
 }
 
-// POPRAWKA 2: Pełna kontrola nad sesją (Mechanizm Zapamiętaj mnie)
-async function handlePersistence() {
-    const rememberMe = document.getElementById('remember-me').checked;
-    // Jeśli zaznaczone -> local (pamięta po zamknięciu przeglądarki), jeśli nie -> session (zapomina po zamknięciu karty)
-    const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
-    await setPersistence(auth, persistenceType);
+// Funkcja pomocnicza do obsługi "Zapamiętaj mnie"
+async function applyPersistenceSetting() {
+    const rememberMeChecked = document.getElementById('remember-me').checked;
+    const selectedPersistence = rememberMeChecked ? browserLocalPersistence : browserSessionPersistence;
+    await setPersistence(auth, selectedPersistence);
 }
 
-// --- LOGOWANIE Z BLOKADĄ KONT BEZ WERYFIKACJI ---
+// LOGOWANIE
 document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     clearAlert();
@@ -91,18 +90,19 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     const password = document.getElementById('login-password').value;
 
     try {
-        await handlePersistence();
+        // Zastosowanie wybranego typu sesji (Zapamiętaj mnie)
+        await applyPersistenceSetting();
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // POPRAWKA 3 (Część Logowania): Jeśli użytkownik nie przeszedł weryfikacji mailowej, wyrzucamy go
+        // Blokada: Jeśli użytkownik nie aktywował konta przez e-mail, nie wpuszczamy go
         if (!user.emailVerified) {
-            showAlert(translateError('niezweryfikowany'));
-            await signOut(auth); // Natychmiastowe usunięcie błędnej sesji
+            showAlert(translateError('unverified-email'));
+            await signOut(auth); // Wylogowanie sesji, żeby nie zalogowało w tle
             return;
         }
         
-        // Jeśli jest zweryfikowany, dbamy o poprawną strukturę w bazie danych
+        // Zapewnienie, że dokument użytkownika istnieje w Firestore
         const userDocRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(userDocRef);
         if (!docSnap.exists()) {
@@ -115,7 +115,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     }
 });
 
-// --- REJESTRACJA Z WYSYŁANIEM LINKU NA MAILA ---
+// REJESTRACJA
 document.getElementById('register-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     clearAlert();
@@ -123,30 +123,30 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     const password = document.getElementById('register-password').value;
 
     try {
-        await handlePersistence();
+        await applyPersistenceSetting();
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        
-        // POPRAWKA 3 (Część Rejestracji): Wymuszenie wysłania prawdziwego kodu aktywacyjnego od Firebase
-        await sendEmailVerification(user);
 
-        // Zapis podstawowych danych użytkownika w Firestore
+        // Wysłanie linku aktywacyjnego na podany adres e-mail
+        await sendEmailVerification(user);
+        
+        // Tworzenie profilu i bazy Mojej Biblioteki w Firestore
         await setDoc(doc(db, "users", user.uid), {
             email: email,
             createdAt: new Date().toISOString(),
             startedBooks: []
         });
 
-        // Wylogowujemy go od razu. Konto jest zamrożone dopóki nie kliknie w maila
+        // Wylogowujemy świeżo utworzone konto, dopóki e-mail nie zostanie potwierdzony
         await signOut(auth);
 
-        // Wyświetlamy ładny, zielony ekran sukcesu informujący o konieczności kliknięcia w link
-        showAlert("🚀 Konto utworzone! Na Twój adres e-mail wysłaliśmy link potwierdzający. Kliknij go, aby aktywować profil i móc się zalogować.", "success");
+        // Wyświetlenie komunikatu o wysłanej wiadomości
+        showAlert("🚀 Została wysłana wiadomość potwierdzająca maila! Kliknij w link aktywacyjny w swojej skrzynce, aby konto zaczęło działać.", "success");
         
-        // Przełączenie użytkownika z powrotem na zakładkę Logowania po 5 sekundach
+        // Opcjonalne automatyczne przełączenie na panel logowania po 4 sekundach
         setTimeout(() => {
             tabLogin.click();
-        }, 5000);
+        }, 4000);
 
     } catch (error) {
         showAlert(translateError(error.code));
