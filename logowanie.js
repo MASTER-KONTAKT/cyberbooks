@@ -1,5 +1,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    setPersistence, 
+    browserLocalPersistence,
+    sendEmailVerification, // <-- Dodany import do wysyłania maili
+    signOut                 // <-- Dodany import do wylogowywania sesji
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -84,9 +92,17 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         // Utrzymanie zalogowanego użytkownika (Local Persistence)
         await setPersistence(auth, browserLocalPersistence);
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // KROK WERYFIKACJI: Sprawdzamy czy e-mail został potwierdzony
+        if (!user.emailVerified) {
+            showAlert("Twoje konto nie zostało jeszcze aktywowane. Kliknij w link weryfikacyjny wysłany na Twój e-mail.");
+            await signOut(auth); // Natychmiast wylogowujemy, aby nie utworzyć aktywnej sesji
+            return;
+        }
         
         // Zapewnienie, że dokument użytkownika istnieje w Firestore
-        const userDocRef = doc(db, "users", userCredential.user.uid);
+        const userDocRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(userDocRef);
         if (!docSnap.exists()) {
             await setDoc(userDocRef, { startedBooks: [] });
@@ -108,18 +124,31 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     try {
         await setPersistence(auth, browserLocalPersistence);
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // 1. Wysyłanie wiadomości e-mail z linkem aktywacyjnym
+        await sendEmailVerification(user);
         
-        // Tworzenie profilu i bazy Mojej Biblioteki w Firestore
-        await setDoc(doc(db, "users", userCredential.user.uid), {
+        // 2. Tworzenie profilu i bazy Mojej Biblioteki w Firestore
+        await setDoc(doc(db, "users", user.uid), {
             email: email,
             createdAt: new Date().toISOString(),
             startedBooks: []
         });
 
-        showAlert("Konto utworzone pomyślnie! Przekierowywanie...", "success");
+        // 3. Wylogowanie użytkownika (żeby system nie wpuścił go automatycznie po rejestracji)
+        await signOut(auth);
+
+        showAlert("Konto utworzone pomyślnie! Wysłaliśmy link weryfikacyjny. Sprawdź pocztę (i folder spam).", "success");
+        
+        // Automatyczne przełączenie widoku na formularz logowania po 4 sekundach
         setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 1500);
+            tabRegister.classList.remove('active');
+            tabLogin.classList.add('active');
+            panelRegister.classList.remove('active');
+            panelLogin.classList.add('active');
+            clearAlert();
+        }, 4000);
 
     } catch (error) {
         showAlert(translateError(error.code));
