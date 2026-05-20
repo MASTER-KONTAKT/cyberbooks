@@ -229,7 +229,7 @@
             gap: 1rem;
             box-shadow: 0 10px 20px rgba(0,0,0,0.15);
             
-            /* Naprawa: Panel przyklejony pod paskiem nawigacyjnym, przewija się wraz ze stroną na górze */
+            /* Panel przyklejony pod paskiem nawigacyjnym, przewija się wraz ze stroną na górze */
             position: fixed;
             top: 50px; /* Wysokość zbliżona do paska header */
             left: 0;
@@ -357,22 +357,12 @@
             z-index: 2000;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(162, 82, 250, 0.4);
-            max-width: 320px;
+            max-width: 90vw; /* Zapobiega wychodzeniu poza ekran na bardzo wąskich telefonach */
             width: max-content;
-            transform: translateX(-50%);
             transition: none;
         }
 
-        #tooltip::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 6px;
-            border-style: solid;
-            border-color: #171520 transparent transparent transparent;
-        }
+        /* Usunięto pseudo-element ::after (strzałkę), aby uniknąć błędów wizualnych przy przesunięciach bocznych */
 
         .tooltip-translation {
             margin-bottom: 8px;
@@ -523,7 +513,8 @@
     <div class="reader-container">
         <article class="book-content" id="bookContent">
             
-       <div id="page-1">
+                   
+            <div id="page-1">
                 <h2>Chapter 1: Lucky</h2>
                 <p>Lucky is a dog. He is a small dog. Lucky is white and very cute. He has a small black nose. He has two big ears. Lucky is happy today. He is in his house.</p>
                 <p>The house is big. The house is white. Lucky has a bed. The bed is blue. Lucky is on his bed. He is a good dog.</p>
@@ -747,7 +738,7 @@
 
             <div id="page-25">
                 <p>Tom goes to his bedroom. The bedroom is big. Tom is in his bed. The bed is comfortable. "Goodnight, Lucky," says Tom.</p>
-                <p>Lucky hears Tom. Lucky is happy. He is not alone. He is with his friend. The house is very warm</p>
+                <p>Lucky hears Tom. Lucky is happy. He is not alone. He is with his friend. The house is very warm.</p>
             </div>
 
             <div class="page-break">
@@ -887,6 +878,7 @@
                 <p>Lucky is happy. Tom is happy. They live in a big white house. Life is good. Goodbye, Lucky! See you tomorrow!</p>
             </div>
 
+
        </article>
     </div>
 
@@ -959,6 +951,7 @@ async function requestTranslation(textToTranslate, targetElement) {
 
 let activeClickedWordElement = null;
 
+// POPRAWKA: Zaawansowane dynamiczne obliczanie pozycji dymka względem krawędzi ekranu mobilnego
 function positionTooltip(element) {
     const tooltip = document.getElementById('tooltip');
     if (!element || tooltip.style.display !== 'block') return;
@@ -967,8 +960,25 @@ function positionTooltip(element) {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
-    tooltip.style.left = (rect.left + scrollLeft + (rect.width / 2)) + 'px';
-    tooltip.style.top = (rect.top + scrollTop - tooltip.offsetHeight - 12) + 'px';
+    const windowWidth = window.innerWidth;
+    const tooltipWidth = tooltip.offsetWidth;
+    const padding = 10; // Bezpieczny margines od krawędzi ekranu w pikselach
+
+    // Centrowanie domyślne względem słowa
+    let leftPosition = rect.left + scrollLeft + (rect.width / 2) - (tooltipWidth / 2);
+    let topPosition = rect.top + scrollTop - tooltip.offsetHeight - 12;
+
+    // Korekta lewej krawędzi ekranu
+    if (leftPosition < padding) {
+        leftPosition = padding;
+    }
+    // Korekta prawej krawędzi ekranu
+    else if (leftPosition + tooltipWidth > windowWidth - padding) {
+        leftPosition = windowWidth - tooltipWidth - padding;
+    }
+
+    tooltip.style.left = leftPosition + 'px';
+    tooltip.style.top = topPosition + 'px';
 }
 
 // Obsługa kliknięcia w słowo
