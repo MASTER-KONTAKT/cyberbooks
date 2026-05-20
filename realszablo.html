@@ -6,7 +6,7 @@
     <title>CyberBooks Reader Pro - Zaawansowany Czytnik</title>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- Tematy kolorystyczne (Zmienne CSS) --- */
+        /* --- Tematy kolorystyczne (Zmiennes CSS) --- */
         :root {
             --bg-main: #0d0e12;
             --bg-interface: rgba(22, 24, 33, 0.85);
@@ -240,9 +240,10 @@
             text-indent: 1.5rem;
         }
 
+        /* KLUCZOWA NAPRAWA: display: inline sprawia, że spacje w justify działają naturalnie! */
         .clickable-word {
             color: var(--word-interactive);
-            display: inline-block; /* Lepsze obliczanie pozycji elementu */
+            display: inline; 
             transition: color 0.2s ease, background-color 0.2s ease;
         }
 
@@ -311,11 +312,10 @@
             border: 1px solid rgba(162, 82, 250, 0.4);
             max-width: 320px;
             width: max-content;
-            transform: translateX(-50%); /* Centrowanie względem wyznaczonego punktu */
-            transition: none; /* Wyłączamy animacje zmiany pozycji, żeby nie klatkowało przy otwieraniu */
+            transform: translateX(-50%);
+            transition: none;
         }
 
-        /* Mała strzałka pod dymkiem wskazująca słowo */
         #tooltip::after {
             content: "";
             position: absolute;
@@ -442,7 +442,6 @@
        </article>
     </div>
 
-    <!-- Zaawansowany Tooltip -->
     <div id="tooltip">
         <div class="tooltip-translation" id="tooltipText">Ładowanie...</div>
         <button class="btn-sentence-tr" id="translateSentenceBtn">Rozwiń do całego zdania 🔍</button>
@@ -502,9 +501,27 @@ async function requestTranslation(textToTranslate, targetElement) {
         });
         
         targetElement.innerText = finalTranslation;
+        return true;
     } catch (error) {
         targetElement.innerText = 'Błąd połączenia';
+        return false;
     }
+}
+
+// Globalna zmienna przechowująca element klikniętego słowa w celu ponownych kalkulacji pozycji
+let activeClickedWordElement = null;
+
+function positionTooltip(element) {
+    const tooltip = document.getElementById('tooltip');
+    if (!element || tooltip.style.display !== 'block') return;
+
+    const rect = element.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+    // Pozycjonowanie dymku dokładnie nad słowem z uwzględnieniem jego aktualnej dynamicznej wysokości
+    tooltip.style.left = (rect.left + scrollLeft + (rect.width / 2)) + 'px';
+    tooltip.style.top = (rect.top + scrollTop - tooltip.offsetHeight - 12) + 'px';
 }
 
 // Obsługa kliknięcia w słowo
@@ -514,31 +531,26 @@ bookContent.addEventListener('click', function(e) {
     if (e.target.classList.contains('clickable-word')) {
         e.stopPropagation();
         
+        activeClickedWordElement = e.target;
         const tooltip = document.getElementById('tooltip');
         const tooltipText = document.getElementById('tooltipText');
         const sentenceBtn = document.getElementById('translateSentenceBtn');
 
-        // Pobieramy absolutne współrzędne klikniętego słowa na stronie
-        const rect = e.target.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-
-        // Wyświetlamy dymek najpierw, aby przeglądarka mogła wyliczyć jego wysokość
         tooltip.style.display = 'block';
         tooltipText.innerText = 'Tłumaczenie słowa...';
         sentenceBtn.style.display = 'block';
 
-        // Precyzyjne pozycjonowanie dymku NAD słowem (środek poziomo, oraz wyżej o wysokość dymku + margines)
-        tooltip.style.left = (rect.left + scrollLeft + (rect.width / 2)) + 'px';
-        tooltip.style.top = (rect.top + scrollTop - tooltip.offsetHeight - 10) + 'px';
+        // Wstępne ustawienie pozycji dymku
+        positionTooltip(activeClickedWordElement);
 
-        // Oczyszczamy pojedyncze słowo z interpunkcji
         const cleanWord = e.target.innerText.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\"\'\?]/g,"");
-        
         const parentSentenceBlock = e.target.closest('.sentence-block');
         currentSentenceText = parentSentenceBlock ? parentSentenceBlock.getAttribute('data-sentence') : "";
 
-        requestTranslation(cleanWord, tooltipText);
+        requestTranslation(cleanWord, tooltipText).then(() => {
+            // Ponowne dopasowanie pozycji po wstawieniu przetłumaczonego tekstu słowa
+            positionTooltip(activeClickedWordElement);
+        });
     }
 });
 
@@ -547,18 +559,16 @@ document.getElementById('translateSentenceBtn').addEventListener('click', functi
     e.stopPropagation();
     if (!currentSentenceText) return;
 
-    const tooltip = document.getElementById('tooltip');
     const tooltipText = document.getElementById('tooltipText');
     this.style.display = 'none';
     tooltipText.innerText = 'Tłumaczenie całego zdania...';
 
-    // Przeliczenie pozycji dymku, ponieważ schowanie przycisku może zmienić jego wysokość
-    const activeWord = document.querySelector('.clickable-word:hover') || e.target; 
-    
+    // Przeliczenie natychmiastowe pozycji (dymek się zmniejszył, bo schowaliśmy przycisk)
+    positionTooltip(activeClickedWordElement);
+
     requestTranslation(currentSentenceText, tooltipText).then(() => {
-        // Ponowna korekta wysokości po załadowaniu dłuższego tekstu zdania
-        const currentTop = parseFloat(tooltip.style.top);
-        // Pobieramy element, który wywołał tooltip (szukamy na podstawie zapisanego kontekstu, jeśli to możliwe)
+        // Ostateczne przeliczenie pozycji (tekst zdania może być długi i dymek urośnie w pionie)
+        positionTooltip(activeClickedWordElement);
     });
 });
 
@@ -567,6 +577,7 @@ document.addEventListener('click', function(e) {
     const tooltip = document.getElementById('tooltip');
     if (!tooltip.contains(e.target) && !e.target.classList.contains('clickable-word')) {
         tooltip.style.display = 'none';
+        activeClickedWordElement = null;
     }
 });
 
