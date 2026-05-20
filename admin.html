@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberBooks - Panel Monitorowania Live</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #090a0f;
+            --bg-card: #12141c;
+            --border: rgba(255, 255, 255, 0.06);
+            --text-main: #f1f5f9;
+            --text-muted: #64748b;
+            --accent: #a252fa;
+            --accent-glow: rgba(162, 82, 250, 0.3);
+            --online: #2ecc71;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Ekran Blokady (Logowanie) --- */
+        #auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #090a0f;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .login-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .login-box h2 { margin-bottom: 0.5rem; font-size: 1.6rem; }
+        .login-box p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 2rem; }
+
+        .input-group { margin-bottom: 1.2rem; text-align: left; }
+        .input-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; font-weight: 500; }
+        .input-group input {
+            width: 100%; padding: 0.8rem 1rem; background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border); border-radius: 8px; color: #fff;
+            outline: none; font-size: 0.95rem;
+        }
+        .input-group input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+
+        .btn-login {
+            width: 100%; padding: 0.8rem; background: var(--accent); border: none;
+            border-radius: 8px; color: #fff; font-weight: 600; cursor: pointer;
+            margin-top: 1rem; box-shadow: 0 4px 15px var(--accent-glow);
+        }
+        #login-error { color: #e74c3c; font-size: 0.85rem; margin-top: 1rem; display: none; }
+
+        /* --- Główny Panel --- */
+        #admin-panel {
+            display: none;
+            padding: 2rem 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
+        }
+
+        .stats-counter {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid var(--online);
+            color: var(--online);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
+            color: var(--text-main); padding: 0.5rem 1.2rem; border-radius: 50px; cursor: pointer;
+        }
+        .btn-logout:hover { background: #e74c3c; border-color: #e74c3c; }
+
+        /* --- Układ Siatki (Dashboard) --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (min-width: 992px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 2fr; /* Lewo: Statystyki stron, Prawo: Szczegółowa lista ludzi */
+            }
+        }
+
+        .panel-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .panel-box h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1.2rem;
+            color: var(--text-main);
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            padding-bottom: 0.6rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* --- Elementy statystyk podstron --- */
+        .page-stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            margin-bottom: 0.6rem;
+            border: 1px solid transparent;
+        }
+        
+        .page-stat-item .page-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            max-width: 75%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .page-stat-item .page-count {
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 20px;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* --- Tabela --- */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td { padding: 1rem; font-size: 0.9rem; }
+        th {
+            background: rgba(0,0,0,0.15);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+        tr { border-bottom: 1px solid var(--border); }
+        tr:last-child { border: none; }
+
+        .badge-online {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(46, 204, 113, 0.1); color: var(--online);
+            padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+        }
+        .badge-online::before { content: ''; width: 6px; height: 6px; background: var(--online); border-radius: 50%; }
+
+        .page-tag {
+            background: rgba(162, 82, 250, 0.08);
+            border: 1px solid rgba(162, 82, 250, 0.2);
+            padding: 4px 8px; border-radius: 6px;
+            font-size: 0.82rem; color: #bfa3f7;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="auth-overlay">
+        <div class="login-box">
+            <h2>Panel Monitorowania</h2>
+            <p>Wymagana autoryzacja administratora</p>
+            
+            <div class="input-group">
+                <label for="admin-email">E-mail</label>
+                <input type="email" id="admin-email" placeholder="admin@twojadomena.pl">
+            </div>
+
+            <div class="input-group">
+                <label for="admin-password">Hasło</label>
+                <input type="password" id="admin-password" placeholder="••••••••">
+            </div>
+
+            <button class="btn-login" onclick="loginAdmin()">Autoryzuj sesję</button>
+            <div id="login-error">Niepoprawne dane logowania.</div>
+        </div>
+    </div>
+
+    <div id="admin-panel">
+        <header>
+            <div>
+                <h1 style="font-size: 1.6rem;">Analityka Użytkowników Live</h1>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Podgląd struktury ruchu w czasie rzeczywistym</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <div class="stats-counter">
+                    🟢 ŁĄCZNIE ONLINE: <span id="total-online-count">0</span>
+                </div>
+                <button class="btn-logout" onclick="logoutAdmin()">Wyloguj</button>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            
+            <div class="panel-box">
+                <h3>Ruch na podstronach <span style="font-size:0.75rem; color: var(--text-muted); font-weight:400;">(Grupowanie)</span></h3>
+                <div id="pages-stats-container">
+                    <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center;">Brak danych do pogrupowania...</p>
+                </div>
+            </div>
+
+            <div class="panel-box">
+                <h3>Lista aktywnych sesji</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Użytkownik</th>
+                                <th>Lokalizacja (Podstrona)</th>
+                                <th>Status</th>
+                                <th>Czas</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-live-tbody">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-muted);">Brak aktywnych sesji...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNg0JnAgAH39y9D-8vhJKwQ10JYxx5Z0s",
+      authDomain: "cyberbook-83464.firebaseapp.com",
+      projectId: "cyberbook-83464",
+      storageBucket: "cyberbook-83464.firebasestorage.app",
+      messagingSenderId: "93288968489",
+      appId: "1:93288968489:web:61a2651a867903dff769c8",
+      databaseURL: "https://cyberbook-83464-default-rtdb.firebaseio.com/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    window.loginAdmin = function() {
+        const email = document.getElementById('admin-email').value;
+        const password = document.getElementById('admin-password').value;
+        const errorDiv = document.getElementById('login-error');
+
+        signInWithEmailAndPassword(auth, email, password).catch(() => {
+            errorDiv.style.display = 'block';
+        });
+    }
+
+    window.logoutAdmin = function() {
+        signOut(auth).then(() => { window.location.reload(); });
+    }
+
+    onAuthStateChanged(auth, (user) => {
+        const overlay = document.getElementById('auth-overlay');
+        const panel = document.getElementById('admin-panel');
+        if (user) {
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 500);
+            panel.style.display = 'block';
+            startLiveTracking();
+        } else {
+            overlay.style.display = 'flex';
+            panel.style.display = 'none';
+        }
+    });
+
+    // --- RDZEŃ ANALITYKI LIVE ---
+    function startLiveTracking() {
+        const statusRef = ref(db, 'status');
+
+        onValue(statusRef, (snapshot) => {
+            const data = snapshot.val();
+            const tbody = document.getElementById('users-live-tbody');
+            const pagesContainer = document.getElementById('pages-stats-container');
+            const totalCounter = document.getElementById('total-online-count');
+            
+            if (!data) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Brak aktywnych sesji...</td></tr>`;
+                pagesContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 0.85rem; text-align: center;">Brak aktywnego ruchu.</p>`;
+                totalCounter.innerText = "0";
+                return;
+            }
+
+            let tableHtml = "";
+            let onlineCount = 0;
+            
+            // Słownik do zliczania użytkowników na poszczególnych stronach
+            // Klucz: Tytuł strony, Wartość: Liczba osób
+            let pageStats = {};
+
+            Object.keys(data).forEach(uid => {
+                const userSession = data[uid];
+                
+                if (userSession.state === "online") {
+                    onlineCount++;
+
+                    const email = userSession.email || "Anonimowy czytelnik";
+                    const pageLocation = userSession.page || "Strona główna";
+                    
+                    // Zliczanie do statystyk grupowych podstron
+                    if (!pageStats[pageLocation]) {
+                        pageStats[pageLocation] = 0;
+                    }
+                    pageStats[pageLocation]++;
+
+                    let timeString = "Teraz";
+                    if(userSession.last_changed) {
+                        timeString = new Date(userSession.last_changed).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+                    }
+
+                    tableHtml += `
+                        <tr>
+                            <td><strong style="color:#fff; font-size:0.88rem;">${email}</strong></td>
+                            <td><span class="page-tag">${pageLocation}</span></td>
+                            <td><span class="badge-online">Aktywny</span></td>
+                            <td><span style="color:var(--text-muted); font-size:0.8rem;">${timeString}</span></td>
+                        </tr>
+                    `;
+                }
+            });
+
+            // 1. Renderowanie tabeli szczegółowej (prawa strona)
+            if(onlineCount === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Wszyscy czytelnicy są offline...</td></tr>`;
+            } else {
+                tbody.innerHTML = tableHtml;
+            }
+            
+            totalCounter.innerText = onlineCount;
+
+            // 2. Renderowanie statystyk grupowych podstron (lewa strona)
+            let pagesHtml = "";
+            const sortedPages = Object.keys(pageStats).sort((a,b) => pageStats[b] - pageStats[a]); // Sortuj od najpopularniejszej
+            
+            if(sortedPages.length === 0) {
+                pagesHtml = `<p style="color: var(--text-muted); font-size: 0.85rem; text-align: center;">Brak aktywnego ruchu.</p>`;
+            } else {
+                sortedPages.forEach(pageName => {
+                    pagesHtml += `
+                        <div class="page-stat-item">
+                            <span class="page-name" title="${pageName}">${pageName}</span>
+                            <span class="page-count">${pageStats[pageName]} os.</span>
+                        </div>
+                    `;
+                });
+            }
+            pagesContainer.innerHTML = pagesHtml;
+        });
+    }
+</script>
+</body>
+</html>
