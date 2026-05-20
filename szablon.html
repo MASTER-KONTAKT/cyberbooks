@@ -6,9 +6,8 @@
     <title>CyberBooks Reader Pro - Zaawansowany Czytnik</title>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- Tematy kolorystyczne (Zmienne CSS) --- */
+        /* --- Tematy kolorystyczne (Zmiennes CSS) --- */
         :root {
-            /* Domyślny Czarny (Dark Mode) */
             --bg-main: #0d0e12;
             --bg-interface: rgba(22, 24, 33, 0.85);
             --border-color: rgba(255, 255, 255, 0.08);
@@ -20,6 +19,7 @@
             --book-bg: #0d0e12;
             --book-text: #e2e8f0;
             --book-font: 'Merriweather', serif;
+            --word-interactive: #e2e8f0;
         }
 
         body.theme-gray {
@@ -31,6 +31,7 @@
             --text-muted: #a0a5b1;
             --book-bg: #2d3139;
             --book-text: #e1e4ea;
+            --word-interactive: #e1e4ea;
         }
 
         body.theme-light {
@@ -42,6 +43,7 @@
             --text-muted: #64748b;
             --book-bg: #f8fafc;
             --book-text: #1e293b;
+            --word-interactive: #1e293b;
         }
 
         body.theme-sepia {
@@ -53,6 +55,7 @@
             --text-muted: #7d725f;
             --book-bg: #f4edd9;
             --book-text: #2c2519;
+            --word-interactive: #2c2519;
         }
 
         /* --- Reset i bazy --- */
@@ -100,7 +103,6 @@
             gap: 1rem;
         }
 
-        /* Przycisk akcji interfejsu */
         .btn-nav {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-color);
@@ -127,7 +129,6 @@
             box-shadow: 0 0 15px var(--accent-glow);
         }
 
-        /* Pola numeryczne stron */
         .page-jumper {
             display: flex;
             align-items: center;
@@ -146,7 +147,7 @@
             outline: none;
         }
 
-        /* --- Panel Ochrony Wzroku (Rozwijane Menu) --- */
+        /* --- Panel Ochrony Wzroku --- */
         .dropdown-wrapper {
             position: relative;
         }
@@ -195,10 +196,6 @@
             background: rgba(255, 255, 255, 0.06);
         }
 
-        body.theme-light .theme-option:hover {
-            background: rgba(0, 0, 0, 0.04);
-        }
-
         .theme-dot {
             width: 18px;
             height: 18px;
@@ -216,7 +213,7 @@
 
         /* --- Kolumna Tekstu --- */
         .reader-container {
-            max-width: 740px; /* Perfekcyjna szerokość do skupienia wzroku */
+            max-width: 740px;
             margin: 0 auto;
             padding: 4rem 1.5rem 8rem;
             background-color: var(--book-bg);
@@ -241,6 +238,33 @@
         .book-content p {
             margin-bottom: 1.6rem;
             text-indent: 1.5rem;
+        }
+
+        /* KLUCZOWA NAPRAWA: display: inline sprawia, że spacje w justify działają naturalnie! */
+        .clickable-word {
+            color: var(--word-interactive);
+            display: inline; 
+            transition: color 0.2s ease, background-color 0.2s ease;
+        }
+
+        body.translator-active .clickable-word {
+            cursor: help;
+            color: #bfa3f7; 
+        }
+        body.theme-light.translator-active .clickable-word {
+            color: #5c32a6;
+        }
+        body.theme-sepia.translator-active .clickable-word {
+            color: #7240b8;
+        }
+
+        body.translator-active .clickable-word:hover {
+            background-color: rgba(162, 82, 250, 0.15);
+            border-radius: 4px;
+        }
+
+        .sentence-block {
+            display: inline;
         }
 
         /* Separator stron */
@@ -273,100 +297,63 @@
             letter-spacing: 1px;
         }
 
-        /* --- Obsługa Aktywnego Tłumacza --- */
-        body.translator-active .book-content p span.word {
-            cursor: help;
-            border-bottom: 1px dashed var(--accent);
-            padding: 0 1px;
-        }
-
-        body.translator-active .book-content p span.word:hover {
-            background: var(--accent-glow);
-            color: var(--accent);
-        }
-
-        /* --- Okno Modalne Słownika --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            z-index: 2000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal-overlay.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .modal {
-            background: var(--bg-interface);
-            border: 1px solid var(--border-color);
-            padding: 2.2rem;
-            border-radius: 24px;
-            max-width: 420px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-            transform: scale(0.8);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .modal-overlay.open .modal {
-            transform: scale(1);
-        }
-
-        .modal h3 {
-            font-size: 1.1rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.5rem;
-        }
-
-        .modal .word-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-interface);
-            margin-bottom: 0.8rem;
-        }
-
-        .modal .word-translation {
-            font-size: 1.3rem;
-            font-weight: 500;
-            color: #2ecc71;
-            background: rgba(46, 204, 113, 0.1);
-            padding: 0.6rem;
+        /* --- Inteligentny Tooltip nad słowem --- */
+        #tooltip {
+            position: absolute;
+            background: #171520;
+            color: #ffffff;
+            padding: 12px 16px;
             border-radius: 12px;
-            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: none;
+            z-index: 2000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(162, 82, 250, 0.4);
+            max-width: 320px;
+            width: max-content;
+            transform: translateX(-50%);
+            transition: none;
         }
 
-        .btn-close {
-            padding: 0.6rem 1.8rem;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-weight: 600;
+        #tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: #171520 transparent transparent transparent;
+        }
+
+        .tooltip-translation {
+            margin-bottom: 8px;
+            line-height: 1.4;
+            text-align: center;
+        }
+
+        .btn-sentence-tr {
+            display: block;
+            width: 100%;
+            background: rgba(162, 82, 250, 0.2);
+            border: 1px solid var(--accent);
+            color: #e2e8f0;
+            padding: 5px 10px;
+            font-size: 0.78rem;
+            border-radius: 6px;
             cursor: pointer;
+            font-weight: 600;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 5px;
+            transition: all 0.2s ease;
         }
 
-        /* --- Responsywność --- */
-        @media (max-width: 768px) {
-            header { padding: 0.8rem 3%; }
-            .btn-nav span { display: none; } /* Ukryj opisy tekstowe przycisków na mobile */
-            .reader-container { padding: 2rem 1rem 4rem; } /* Zanikanie marginesów bocznych */
-            .book-content { font-size: 1.15rem; line-height: 1.8; }
+        .btn-sentence-tr:hover {
+            background: var(--accent);
+            color: #fff;
         }
     </style>
 </head>
@@ -376,14 +363,17 @@
         <div class="nav-container">
 
             <div class="nav-group">
-                <a href="index.html" class="btn-nav return-btn" style="text-decoration: none;">
+                <a href="sdfdsf.html" class="btn-nav return-btn" style="text-decoration: none;">
                     ⬅️ <span>Strona główna</span>
                 </a>
+            </div>
+            <div id="online-counter" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9rem; color: #2ecc71; font-weight: bold; background: rgba(46, 204, 113, 0.1); padding: 4px 10px; border-radius: 20px; margin-left: 10px;">
+                🟢 Online: <span id="active-users-count">1</span>
             </div>
             
             <div class="nav-group">
                 <div class="page-jumper">
-                    <input type="number" id="pageInput" class="page-input" min="1" max="2" value="1">
+                    <input type="number" id="pageInput" class="page-input" min="1" max="3" value="1">
                     <button class="btn-nav" onclick="jumpToPage()">Idź</button>
                 </div>
             </div>
@@ -416,7 +406,7 @@
             </div>
 
             <div class="nav-group">
-                <button class="btn-nav" id="translatorToggle" onclick="toggleTranslatorMode()">🌐</button>
+                <button class="btn-nav" id="translatorToggle" onclick="toggleTranslatorMode()">🌐 Tłumacz słowo</button>
             </div>
 
         </div>
@@ -425,10 +415,10 @@
     <div class="reader-container">
         <article class="book-content" id="bookContent">
             
-            <div id="page-1">
-                <h2>Chapter 1:<br> The New City</h2>
-                <p>Tom opens his eyes. He is in a new city. The city is big and very beautiful. There are many tall buildings and green trees. The sun is hot in the blue sky. Tom is happy but he is also a little tired.</p>
-                <p>He has a small blue suitcase in his hand. In the suitcase, there are three shirts, two pairs of pants, and a map. He looks at the map. "Where is my new house?" Tom asks himself. He walks down the street. The street is busy with people and cars.</p>
+           <div id="page-1">
+                <h2>Chapter 1: Lucky</h2>
+                <p>Lucky is a dog. He is a small dog. Lucky is white and very cute. He has a small black nose. He has two big ears. Lucky is happy today. He is in his house.</p>
+                <p>The house is big. The house is white. Lucky has a bed. The bed is blue. Lucky is on his bed. He is a good dog.</p>
             </div>
 
             <div class="page-break">
@@ -436,8 +426,8 @@
             </div>
 
             <div id="page-2">
-                <p>Tom sees a small cafe. The cafe has small round tables outside. A woman is drinking coffee and reading a book. Tom walks to the cafe because he is thirsty. He wants a glass of cold water or a cup of hot tea.</p>
-                <p>A waiter comes to Tom. The waiter is a young man with a nice smile. "Hello," the waiter says. "Can I help you?" Tom smiles back. "Yes, please. Can I have a glass of water and a chicken sandwich?" Tom says. He sits down at a table.</p>
+                <p>It is morning. The sun is in the sky. The sun is yellow. The sky is blue. Lucky opens his eyes. He is happy. "Woof!" says Lucky.</p>
+                <p>Lucky is hungry. He wants food. He goes to the kitchen. The kitchen is clean. Lucky sees his bowl. The bowl is red.</p>
             </div>
 
             <div class="page-break">
@@ -445,8 +435,8 @@
             </div>
 
             <div id="page-3">
-                <p>The waiter brings the water and the sandwich. The sandwich is very good, and the water is cold. Tom eats slowly and looks at the people. A girl is walking with a big brown dog. The dog is very friendly. It wags its tail.</p>
-                <p>Tom takes his map again. He shows the map to the waiter. "Excuse me," Tom asks. "Where is Green Street?" The waiter looks at the map and points his finger. "Go straight, then turn left at the big supermarket. Green Street is there."</p>
+                <p>There is food in the bowl. The food is brown. Lucky eats the food. The food is good. Lucky is not hungry now. He is happy.</p>
+                <p>Lucky sees a ball. The ball is green. Lucky likes the ball. It is his favorite toy. He takes the ball in his mouth.</p>
             </div>
 
             <div class="page-break">
@@ -454,9 +444,9 @@
             </div>
 
             <div id="page-4">
-                <h2>Chapter 2:<br>  The Small Apartment</h2>
-                <p>Tom thanks the waiter and pays for the food. He walks down the street. He sees the big supermarket. It has a lot of fruit and vegetables outside. Apples, bananas, and oranges look delicious. Tom turns left after the supermarket.</p>
-                <p>Now he is on Green Street. It is a quiet street with many small houses and apartment buildings. Tom looks at the numbers on the doors. Number ten, number twelve, number fourteen. "Ah, here it is! Number sixteen," Tom says happily.</p>
+                <h2>Chapter 2: The Garden</h2>
+                <p>Lucky goes to the door. The door is big. A man opens the door. The man is Tom. Tom is Lucky's friend. Tom is tall. He is a nice man.</p>
+                <p>Lucky and Tom go to the garden. The garden is green. There are many trees. The trees are big. There are flowers. The flowers are red and yellow.</p>
             </div>
 
             <div class="page-break">
@@ -464,8 +454,8 @@
             </div>
 
             <div id="page-5">
-                <p>Tom takes a small silver key from his pocket. He opens the big front door. Inside, it is clean and warm. He walks up the stairs to the second floor. His apartment is number 2B. He opens the door and walks inside his new home.</p>
-                <p>The apartment is small but very nice. There is a big window in the living room. The sun shines through the window. There is a comfortable grey sofa, a small television, and a white table with two chairs. Tom puts his suitcase on the floor.</p>
+                <p>Lucky runs in the garden. He is very fast. Tom plays with Lucky. Tom throws the green ball. Lucky runs to the ball. He is a happy dog.</p>
+                <p>Lucky sees a cat. The cat is black. The cat is on a tree. The cat is small. "Meow!" says the cat. Lucky looks at the cat.</p>
             </div>
 
             <div class="page-break">
@@ -473,8 +463,8 @@
             </div>
 
             <div id="page-6">
-                <p>Tom walks into the kitchen. The kitchen has a fridge, a cooker, and a small sink. He opens the fridge, but it is empty. There is no milk, no cheese, and no juice. "I need to go to the supermarket," Tom thinks. He is tired, but he needs food for dinner.</p>
-                <p>He goes to the bedroom. There is a big bed with white pillows and a large wardrobe for his clothes. He looks out the bedroom window. He can see a beautiful park with flowers and a small lake. "I like this place," Tom says and smiles.</p>
+                <p>Lucky is not angry. He is a friendly dog. The cat is not afraid. The cat is happy on the tree. Lucky sits on the grass. The grass is soft.</p>
+                <p>Tom sits on a chair. The chair is brown. Tom reads a book. The book is small. Lucky is near Tom. The garden is very quiet.</p>
             </div>
 
             <div class="page-break">
@@ -482,9 +472,8 @@
             </div>
 
             <div id="page-7">
-                <h2>Chapter 3: <br> Shopping for Food</h2>
-                <p>Tom takes his wallet and leaves the apartment. He walks back to the big supermarket on the corner. Inside the supermarket, it is very big and there are many people. Tom takes a small shopping basket. He walks to the fruit section.</p>
-                <p>He takes four red apples and five yellow bananas. He puts them in his basket. Next, he goes to the dairy section. He needs milk for his breakfast. He takes a bottle of milk, a packet of yellow cheese, and some butter.</p>
+                <p>Lucky sees a bird. The bird is small. The bird is blue. The bird is in the sky. The bird sings a song. Lucky listens to the bird.</p>
+                <p>The bird is beautiful. Lucky wants to play, but the bird is far. Lucky stays on the grass. He is a calm dog.</p>
             </div>
 
             <div class="page-break">
@@ -492,8 +481,9 @@
             </div>
 
             <div id="page-8">
-                <p>Tom walks down the bread aisle. The smell of fresh bread is wonderful. He chooses a long brown loaf of bread. He also wants something for dinner tonight. He decides to buy some pasta and a bottle of red tomato sauce. "Pasta is easy to cook," he thinks.</p>
-                <p>Tom goes to the checkout. A nice woman counts his items. "That is fifteen pounds, please," she says. Tom gives her the money. She puts the food into a big paper bag. "Thank you. Have a nice day!" she says. Tom says thank you and takes his bag.</p>
+                <h2>Chapter 3: The Park</h2>
+                <p>Tom stands up. "Let's go to the park, Lucky!" says Tom. Lucky is excited. He jumps. He likes the park. The park is big.</p>
+                <p>Tom takes a bag. The bag is black. There is water in the bag. There is a snack in the bag. They walk to the park.</p>
             </div>
 
             <div class="page-break">
@@ -501,8 +491,8 @@
             </div>
 
             <div id="page-9">
-                <p>When Tom walks outside, the sky is grey now. It is not sunny anymore. "Oh no, I think it is going to rain," Tom says. He walks fast. Small drops of water start to fall from the sky. He runs the last few meters to his apartment building.</p>
-                <p>He gets inside just in time. Outside, the rain is heavy now. Tom goes up to his apartment. He is safe and dry. He puts the food on the kitchen table. He takes a big glass and drinks some milk. It tastes good and fresh.</p>
+                <p>The park is near. They see many people. They see children. The children are happy. They play with a ball. The ball is orange.</p>
+                <p>Lucky sees other dogs. There is a big dog. The big dog is brown. There is a small dog. The small dog is black. Lucky is friendly.</p>
             </div>
 
             <div class="page-break">
@@ -510,9 +500,8 @@
             </div>
 
             <div id="page-10">
-                <h2>Chapter 4: <br> A New Friend</h2>
-                <p>The next morning, the sun is shining again. The birds are singing in the trees outside. Tom wakes up at seven o'clock. He feels great. He goes to the kitchen and makes a cup of coffee. He eats some bread with cheese and an apple.</p>
-                <p>Today is Saturday. Tom does not have work today. He wants to explore the beautiful park near his house. He puts on his blue jeans, a white t-shirt, and his comfortable running shoes. He grabs his keys and goes downstairs.</p>
+                <p>Lucky plays with the dogs. They run on the grass. They are very fast. Tom looks at Lucky. Tom is happy. The park is a good place.</p>
+                <p>There is a lake in the park. The water is blue. There are ducks. The ducks are white. Lucky looks at the ducks. He is curious.</p>
             </div>
 
             <div class="page-break">
@@ -520,8 +509,8 @@
             </div>
 
             <div id="page-11">
-                <p>The park is very close. Tom crosses the street and enters through a big black gate. The park is full of green grass and colorful flowers. There are red roses and yellow tulips. Children are playing with a ball, and people are walking happily.</p>
-                <p>Tom walks near the small lake. He sees some white ducks swimming in the water. He sits down on a green wooden bench to watch them. Suddenly, a small white football rolls to his feet. A little boy runs towards him to get the ball.</p>
+                <p>Lucky goes to the water. The water is cold. Lucky drinks the water. He is not thirsty now. Tom gives Lucky a snack. The snack is good.</p>
+                <p>Lucky sits under a tree. The tree is big. It is warm today. The sun is hot. Lucky is tired. He rests for five minutes.</p>
             </div>
 
             <div class="page-break">
@@ -529,8 +518,8 @@
             </div>
 
             <div id="page-12">
-                <p>Tom picks up the ball and gives it to the boy with a smile. "Here you go," Tom says. "Thank you!" the boy says and runs back to his friends. A woman walks to the bench. She is the boy's mother. "Thank you," she says to Tom. "My son loves football."</p>
-                <p>"You are welcome," Tom answers. "I am Tom. I am new in this city." The woman smiles warmly. "Nice to meet you, Tom. My name is Anna. Welcome to our city! It is a beautiful place to live, and the people here are very kind."</p>
+                <p>A girl comes to Lucky. The girl is small. Her name is Lily. Lily is five years old. She is a nice girl. She has a hat. The hat is pink.</p>
+                <p>"Can I pet the dog?" asks Lily. Tom smiles. "Yes," says Tom. Lily pets Lucky. Lucky is happy. He likes Lily.</p>
             </div>
 
             <div class="page-break">
@@ -538,9 +527,8 @@
             </div>
 
             <div id="page-13">
-                <h2>Chapter 5:<br>  A Conversation</h2>
-                <p>Anna sits down on the bench. She is very friendly. "Where are you from, Tom?" she asks. "I am from a small town near the sea," Tom answers. "But I have a new job here in the city. I start my work on Monday morning."</p>
-                <p>"Oh, that is wonderful! What is your job?" Anna asks. "I am a computer teacher," Tom says. "I teach children how to use computers and how to write simple programs. I love my job because children learn very fast."</p>
+                <p>Lily has a toy. The toy is a bear. The bear is brown. Lily shows the bear to Lucky. Lucky sniffs the bear. It is a funny toy.</p>
+                <p>Lily says goodbye. Tom and Lucky walk more. The park is very beautiful. They see flowers. The flowers are purple.</p>
             </div>
 
             <div class="page-break">
@@ -548,8 +536,9 @@
             </div>
 
             <div id="page-14">
-                <p>Anna looks surprised and happy. "Really? That is amazing! My son Leo needs a computer teacher. He loves games and wants to learn more about computers. Do you have time for private lessons on the weekend?" she asks.</p>
-                <p>Tom thinks for a moment. He wants to help and make some new friends. "Yes, I can do that," Tom says. "I am free on Saturday mornings." Anna is very glad. She takes a piece of paper and writes her telephone number on it.</p>
+                <h2>Chapter 4: The Rain</h2>
+                <p>The sky is not blue now. The sky is grey. The sun is not there. Lucky looks at the sky. Tom looks at the sky. "Oh no," says Tom.</p>
+                <p>It is rain. The rain is cold. Lucky is wet. Tom is wet. They run to the house. The house is far. They run fast.</p>
             </div>
 
             <div class="page-break">
@@ -557,8 +546,8 @@
             </div>
 
             <div id="page-15">
-                <p>"Here is my number," Anna says, giving the paper to Tom. "Call me next week, and we can talk about the details. Now I must go. Leo is hungry, and we need to have lunch. Goodbye, Tom! It was very nice to meet you today."</p>
-                <p>"Goodbye, Anna. Nice to meet you too," Tom says. He watches Anna and Leo walk away. Tom feels very happy. He has a new friend and a student already. The city is a very good place for him. He stands up and continues his walk.</p>
+                <p>Lucky is a fast dog. Tom is fast too. They arrive at the door. Tom opens the door. They are in the house now. The house is warm.</p>
+                <p>Tom takes a towel. The towel is white. Tom dries Lucky. Lucky is not wet now. He is clean. Lucky is happy in the house.</p>
             </div>
 
             <div class="page-break">
@@ -566,9 +555,8 @@
             </div>
 
             <div id="page-16">
-                <h2>Chapter 6:<br>  Exploring the Town</h2>
-                <p>Tom walks out of the park. He wants to see more of the city center. He walks for twenty minutes and arrives at a big square. In the middle of the square, there is a large, old fountain with beautiful stone statues. Water is splashing everywhere.</p>
-                <p>Around the square, there are many interesting shops. There is a big bookstore, a clothing store, a music shop, and a cinema. Tom loves books, so he walks into the bookstore. The shop is quiet and smells like old paper and tea.</p>
+                <p>Tom dries his hair. He changes his clothes. Tom is warm now. He goes to the kitchen. He makes tea. The tea is hot. The tea is in a cup.</p>
+                <p>Lucky is on the floor. He is near Tom. Lucky is happy. The rain is outside. It is loud. But the house is quiet.</p>
             </div>
 
             <div class="page-break">
@@ -576,8 +564,8 @@
             </div>
 
             <div id="page-17">
-                <p>There are thousands of books on the wooden shelves. Tom looks at the history section, then the fiction section. He finds an interesting book about the history of the city. The book has many old black and white photographs of the streets.</p>
-                <p>Tom takes the book to the counter. A man with big glasses stands there. "This is a very good book," the man says. "It tells the story of our city from one hundred years ago." Tom pays for the book. He wants to read it at home tonight.</p>
+                <p>Lucky sees his ball. The ball is green. He plays in the living room. The room is big. There is a rug. The rug is soft. The rug is red.</p>
+                <p>Lucky rolls on the rug. He is a funny dog. Tom looks at Lucky and laughs. "You are a good dog, Lucky," says Tom.</p>
             </div>
 
             <div class="page-break">
@@ -585,8 +573,8 @@
             </div>
 
             <div id="page-18">
-                <p>Tom leaves the bookstore and looks at his watch. It is four o'clock in the afternoon. He feels a little tired from all the walking. He decides to take a bus back to his apartment. He sees a red bus stop near the square.</p>
-                <p>He waits for five minutes. Bus number twelve arrives. Tom gets on the bus and buys a ticket from the driver. He sits near the window. The bus moves slowly through the traffic. Tom looks at the shops and houses as they pass by.</p>
+                <p>The rain stops. The sun is back. The garden is wet. Lucky looks out the window. The window is clean. Lucky sees a rainbow.</p>
+                <p>The rainbow is beautiful. It has many colors. It has red, orange, yellow, green, blue, and purple. Lucky is curious.</p>
             </div>
 
             <div class="page-break">
@@ -594,9 +582,9 @@
             </div>
 
             <div id="page-19">
-                <h2>Chapter 7: <br> A Quiet Evening</h2>
-                <p>Tom arrives at his apartment building. He walks up the stairs and opens his door. The apartment is quiet and peaceful. He puts his new book on the table. He changes his clothes into comfortable grey sweatpants and a warm sweater.</p>
-                <p>He goes to the kitchen to cook dinner. Tonight he is making the pasta he bought yesterday. He boils some water in a pot, adds the pasta, and heats the tomato sauce. The dinner smells very good. He puts the pasta on a white plate.</p>
+                <h2>Chapter 5: Evening</h2>
+                <p>It is six o'clock. It is evening. The sun is low in the sky. The sky is orange and pink. Lucky is hungry again. He wants dinner.</p>
+                <p>Tom goes to the fridge. The fridge is big. Tom takes some meat. The meat is for Lucky. Lucky loves meat. He waits for his food.</p>
             </div>
 
             <div class="page-break">
@@ -604,8 +592,8 @@
             </div>
 
             <div id="page-20">
-                <p>Tom sits at the kitchen table and eats his dinner. The pasta is hot and delicious. After dinner, he washes his plate and fork in the sink. He likes to keep his kitchen clean. Then, he makes a cup of sweet chamomile tea.</p>
-                <p>He sits on the grey sofa with his tea and his new history book. He opens the first page. The photographs are beautiful. He reads about the old trains and the first houses in the city. The city has a very interesting story.</p>
+                <p>Lucky eats his dinner. He is a happy dog. Tom eats his dinner too. Tom has pasta. The pasta is hot. Tom sits at the table.</p>
+                <p>Lucky is finished. He drinks some water. He is a clean dog. He sits near the sofa. The sofa is big and grey.</p>
             </div>
 
             <div class="page-break">
@@ -613,8 +601,8 @@
             </div>
 
             <div id="page-21">
-                <p>At ten o'clock, Tom feels very sleepy. He closes the book and turns off the television. He checks the door to see if it is locked. Then he goes to the bedroom. The bed is soft and comfortable. He falls asleep very quickly.</p>
-                <p>He dreams about the park, the ducks, and his new job. He is excited about the future. Tomorrow is Sunday, another day to rest before his big week begins. The night is quiet and dark outside his window.</p>
+                <p>Tom goes to the sofa. He is tired. He turns on the television. The television is big. There is a movie. The movie is about animals.</p>
+                <p>Lucky looks at the television. He sees a dog. The dog is brown. Lucky is confused. He looks behind the television. There is no dog there.</p>
             </div>
 
             <div class="page-break">
@@ -622,9 +610,8 @@
             </div>
 
             <div id="page-22">
-                <h2>Chapter 8:<br>  Sunday Plans</h2>
-                <p>Tom wakes up early on Sunday morning. The sun is not fully up yet, and the sky is a soft pink color. Tom likes mornings because they are very calm. He does some light exercises in the living room to stretch his body.</p>
-                <p>He makes breakfast: two fried eggs, some toast with butter, and a glass of orange juice. While eating, he thinks about his clothes for Monday. "I need to look professional for my first day at the new school," Tom says to himself.</p>
+                <p>Tom laughs. "It is a movie, Lucky," says Tom. Lucky sits on the sofa. He is near Tom. It is very warm and nice. Lucky is a happy dog.</p>
+                <p>The house is dark now. Tom turns on a lamp. The lamp is small. The light is soft. It is a peaceful evening.</p>
             </div>
 
             <div class="page-break">
@@ -632,8 +619,8 @@
             </div>
 
             <div id="page-23">
-                <p>He opens his large wardrobe in the bedroom. He chooses a nice blue shirt and dark grey trousers. He looks at the shirt. It has some wrinkles. "I need to iron this shirt," Tom thinks. He finds an iron in the utility closet.</p>
-                <p>Tom irons his shirt carefully. Now it looks perfect. He hangs it up in the wardrobe. He also cleans his black leather shoes until they shine. Now his clothes are ready for Monday morning. Tom feels prepared and confident.</p>
+                <p>Lucky finds his blanket. The blanket is blue. Lucky takes the blanket to the rug. He is sleepy. He closes his eyes for a moment.</p>
+                <p>Tom is sleepy too. He turns off the television. It is very quiet. The rain is gone. The sky is dark.</p>
             </div>
 
             <div class="page-break">
@@ -641,8 +628,9 @@
             </div>
 
             <div id="page-24">
-                <p>In the afternoon, Tom goes for a short walk around his neighborhood. He wants to find the best way to get to the school. The school is not very far. It is only a fifteen-minute walk from his apartment building.</p>
-                <p>He finds the school easily. It is a big modern building with large windows and a big playground for the kids. There is a sign that says "Green Valley Primary School". Tom stands outside and looks at it. "This is where I work now," he thinks.</p>
+                <h2>Chapter 6: Night</h2>
+                <p>It is nine o'clock. It is night. The moon is in the sky. The moon is white. There are stars. The stars are small and bright.</p>
+                <p>Lucky is in his bed. The bed is blue and soft. Lucky has his ball. The ball is green. Lucky is a safe dog.</p>
             </div>
 
             <div class="page-break">
@@ -650,9 +638,8 @@
             </div>
 
             <div id="page-25">
-                <h2>Chapter 9: <br> The First Day</h2>
-                <p>Monday morning arrives. Tom's alarm clock rings at six o'clock. Tom jumps out of bed. He is excited and a little nervous. He takes a hot shower, shaves, and puts on his clean blue shirt and grey trousers. He looks good.</p>
-                <p>He eats a quick breakfast of cereal and milk. He puts his laptop, a notebook, and a blue pen into his black bag. He locks his apartment door and walks down the stairs. The morning air is cool and fresh.</p>
+                <p>Tom goes to his bedroom. The bedroom is big. Tom is in his bed. The bed is comfortable. "Goodnight, Lucky," says Tom.</p>
+                <p>Lucky hears Tom. Lucky is happy. He is not alone. He is with his friend. The house is very warm.</p>
             </div>
 
             <div class="page-break">
@@ -660,8 +647,8 @@
             </div>
 
             <div id="page-26">
-                <p>Tom walks to the school. He sees many children walking with their parents. The children have colorful school bags on their backs. They are laughing and talking. Tom enters the school through the main glass doors.</p>
-                <p>He goes to the main office. A pleasant woman is sitting behind a desk. "Hello," Tom says. "My name is Tom Harrison. I am the new computer teacher." The woman smiles. "Welcome, Mr. Harrison! I am Sarah, the school secretary."</p>
+                <p>Lucky dreams. He dreams about the park. He dreams about the green ball. He dreams about the blue bird. He is a happy dog in his dreams.</p>
+                <p>The night is long. It is very quiet outside. There are no cars. There are no people. Only Lucky and Tom in the house.</p>
             </div>
 
             <div class="page-break">
@@ -669,8 +656,8 @@
             </div>
 
             <div id="page-27">
-                <p>Sarah gives Tom a plastic badge with his name on it and a set of keys. "Your computer room is room number twenty-four on the second floor," she explains. "The principal, Mr. Davis, wants to see you at nine o'clock in his office."</p>
-                <p>Tom thanks Sarah and walks to the second floor. He finds room twenty-four and opens the door with his key. The room is big and bright. There are twenty modern computers on clean white desks. There is also a big whiteboard on the wall.</p>
+                <p>Lucky wakes up. He hears a sound. It is a small sound. Lucky is curious. He goes to the kitchen. He looks around.</p>
+                <p>It is a mouse! The mouse is very small. The mouse is grey. The mouse sees Lucky. The mouse runs fast.</p>
             </div>
 
             <div class="page-break">
@@ -678,9 +665,8 @@
             </div>
 
             <div id="page-28">
-                <h2>Chapter 10:<br>  Meeting the Principal</h2>
-                <p>Tom turns on the main computer to check the system. Everything works perfectly. The internet is fast, and the screens are clean. At five minutes to nine, Tom walks down to the principal's office on the first floor.</p>
-                <p>He knocks on the door. "Come in," a strong voice says. Tom enters the room. Mr. Davis is an older man with grey hair and a friendly face. He is wearing a dark suit. He stands up and shakes Tom's hand warmly.</p>
+                <p>Lucky does not catch the mouse. He is a friendly dog. The mouse goes to a small hole. The hole is in the wall. Lucky goes back to his bed.</p>
+                <p>Lucky is sleepy again. He lies down. He feels safe. The house is his home. Tom is his family.</p>
             </div>
 
             <div class="page-break">
@@ -688,8 +674,9 @@
             </div>
 
             <div id="page-29">
-                <p>"Good morning, Mr. Harrison," Mr. Davis says. "Welcome to Green Valley School. We are very happy to have you here. Our students want to learn about computers, and I know you are an excellent teacher."</p>
-                <p>"Thank you, Mr. Davis," Tom says. "I am very happy to be here. The computer room looks wonderful, and I have many interesting lessons ready for the children." Mr. Davis smiles and nods his head in approval.</p>
+                <h2>Chapter 7: A New Day</h2>
+                <p>It is morning again. The sun is yellow. The sky is blue. Lucky is seven years old. He is a happy dog. He jumps out of bed.</p>
+                <p>Tom is in the kitchen. Tom has coffee. The coffee is hot. "Good morning, Lucky!" says Tom. Lucky wags his tail.</p>
             </div>
 
             <div class="page-break">
@@ -697,8 +684,8 @@
             </div>
 
             <div id="page-30">
-                <p>"Excellent," Mr. Davis says. "Your first class starts at ten o'clock. They are the youngest students, seven years old. Keep it simple and fun today." Tom agrees. He takes his schedule and leaves the principal's office.</p>
-                <p>He goes back to room twenty-four. He sits at his desk and prepares his presentation. He wants to show the children the basic parts of a computer: the monitor, the mouse, the keyboard, and the main computer box.</p>
+                <p>They go to the garden. The grass is wet. There is water on the flowers. The flowers are beautiful. Lucky runs and jumps.</p>
+                <p>Today is a special day. Tom has a surprise. Lucky is curious. What is the surprise? Lucky looks at Tom.</p>
             </div>
 
             <div class="page-break">
@@ -706,9 +693,8 @@
             </div>
 
             <div id="page-31">
-                <h2>Chapter 11: <br> The First Lesson</h2>
-                <p>At ten o'clock, the door opens. A group of young children walks into the room. They look curious and excited. They look at the computers and then at Tom. "Good morning, everyone!" Tom says with a loud, friendly voice.</p>
-                <p>"Good morning!" the children reply together. Tom tells them to sit down at the desks. One boy and one girl sit at each computer. Tom stands near the whiteboard. "My name is Mr. Harrison, and I am your new teacher," he says.</p>
+                <p>Tom has a box. The box is big. The box is red. Tom puts the box on the grass. "Open it, Lucky!" says Tom.</p>
+                <p>Lucky sniffs the box. He pushes the box. The box opens. There is a new toy! The toy is a bone. The bone is white.</p>
             </div>
 
             <div class="page-break">
@@ -716,8 +702,8 @@
             </div>
 
             <div id="page-32">
-                <p>Tom points to his screen. "Today, we are going to learn about the computer mouse," Tom says. "The mouse is like your digital hand. When you move the mouse, the little arrow on the screen moves too. Let us try it together."</p>
-                <p>The children look at their mice. They start to move them around. Some children laugh as the arrows dance on the screens. Tom walks around the room to help a small girl who is having trouble. "Hold it gently like this," Tom shows her.</p>
+                <p>Lucky loves the bone. He takes the bone to his bed. He is a very happy dog. Tom is happy too. He likes to see Lucky happy.</p>
+                <p>They go for a walk. They see a friend. The friend is a woman. Her name is Mary. Mary has a dog. The dog is small and brown.</p>
             </div>
 
             <div class="page-break">
@@ -725,8 +711,8 @@
             </div>
 
             <div id="page-33">
-                <p>Next, Tom shows them a simple drawing game on the computer. The children use the mouse to paint pictures of houses, animals, and suns. They enjoy the game very much. The classroom is full of happy sounds and clicking noises.</p>
-                <p>The lesson finishes at eleven o'clock. "Time to go, children," Tom says. "Please turn off your screens." The children stand up. "Thank you, Mr. Harrison! The lesson was great!" a little boy says. Tom smiles. "See you next week!"</p>
+                <p>The dogs play together. They are friends. Mary and Tom talk. They talk about the park. They talk about the weather. The weather is good.</p>
+                <p>Lucky is tired after the walk. He goes to his house. He drinks water. He is a good dog. He is a healthy dog.</p>
             </div>
 
             <div class="page-break">
@@ -734,9 +720,8 @@
             </div>
 
             <div id="page-34">
-                <h2>Chapter 12: <br> Lunch and a Call</h2>
-                <p>Tom has a break for one hour. He goes to the staff room on the first floor. There is a small kitchen with a coffee machine and a microwave. Other teachers are sitting on comfortable chairs, drinking tea and talking about their classes.</p>
-                <p>Tom meets Linda, the art teacher, and James, the maths teacher. They are very welcoming. Tom eats his chicken and rice lunch that he brought from home. He enjoys talking to his new colleagues. They give him helpful tips about the school.</p>
+                <p>Lucky sits in the sun. The sun is warm. Lucky feels good. He is a white dog in the yellow sun. He looks very beautiful.</p>
+                <p>Tom makes lunch. Tom has a sandwich. Lucky has a dog treat. The treat is small and brown. Lucky eats the treat fast.</p>
             </div>
 
             <div class="page-break">
@@ -744,8 +729,8 @@
             </div>
 
             <div id="page-35">
-                <p>After lunch, Tom remembers the paper in his wallet. It is Anna's phone number. He takes his phone out and decides to call her. The phone rings three times before Anna answers. "Hello?" her voice says over the phone.</p>
-                <p>"Hello, Anna. This is Tom, the computer teacher from the park," Tom says. "Oh, hello Tom! How are you? How is your first day at work?" Anna asks kindly. "It is going very well, thank you. My first class was wonderful," Tom replies.</p>
+                <p>The afternoon is quiet. Lucky sleeps on the rug. The rug is soft and red. Tom reads a newspaper. The house is very peaceful.</p>
+                <p>Lucky wakes up at four o'clock. He wants to play. He takes his green ball to Tom. Tom plays with Lucky for ten minutes.</p>
             </div>
 
             <div class="page-break">
@@ -753,8 +738,8 @@
             </div>
 
             <div id="page-36">
-                <p>"That is great to hear," Anna says. "Are you still available to teach Leo this Saturday?" Tom answers, "Yes, absolutely. Is ten o'clock in the morning okay for you?" Anna says that ten o'clock is perfect for them.</p>
-                <p>She gives Tom her home address. She lives on Bluebird Lane, which is very close to Tom's apartment. "Thank you, Tom. Leo is very excited about the class," Anna says. "You are welcome. See you on Saturday," Tom says and hangs up.</p>
+                <p>They go outside again. The garden is big. There is a fence. The fence is white. Lucky cannot go outside the fence.</p>
+                <p>Lucky is safe in the garden. He sees a butterfly. The butterfly is yellow. It flies over the flowers. Lucky looks at the butterfly.</p>
             </div>
 
             <div class="page-break">
@@ -762,9 +747,8 @@
             </div>
 
             <div id="page-37">
-                <h2>Chapter 13:<br>  A Good Start</h2>
-                <p>Tom teaches two more classes in the afternoon. The older students learn about typing on the keyboard. They practice typing their names and short sentences. Tom is patient and helps everyone who makes mistakes.</p>
-                <p>At half past three, the school day ends. The children leave the building, and the school becomes very quiet. Tom cleans his room, turns off all the computers, and locks the door. He walks down to the main office to return the keys.</p>
+                <p>The evening comes again. The sun is low. The sky is pink. Lucky and Tom are in the living room. They are happy.</p>
+                <p>Lucky is a small dog with a big heart. He loves Tom. Tom loves Lucky. They are a happy family.</p>
             </div>
 
             <div class="page-break">
@@ -772,8 +756,8 @@
             </div>
 
             <div id="page-38">
-                <p>"Have a good evening, Mr. Harrison," Sarah says from behind her desk. "Thank you, Sarah. You too," Tom says. He walks out of the school. The afternoon sun is warm, and he feels very satisfied with his first day.</p>
-                <p>He walks back to his apartment slowly. He thinks about his life in this new city. Only a few days ago, he was alone and knew nobody. Now, he has an apartment, a great job, friendly colleagues, and new friends in the park.</p>
+                <p>The day is finished. Lucky is sleepy. He goes to his blue bed. He has his new bone. He has his green ball. He is a lucky dog.</p>
+                <p>His name is Lucky because he is a lucky dog. He has a home. He has a friend. He has food and toys.</p>
             </div>
 
             <div class="page-break">
@@ -781,8 +765,8 @@
             </div>
 
             <div id="page-39">
-                <p>He arrives at his building and checks his mailbox. There is a small letter inside. It is a welcome card from the building manager. "Welcome to Green Street! We hope you love your apartment," the note says. Tom smiles at the kind message.</p>
-                <p>He goes up to his room and puts his bag down. He feels at home now. He opens the window to let the fresh air inside. He hears the soft sounds of the city and the distant laughter of children playing in the park across the street.</p>
+                <p>Tom says "Goodnight" again. The lamp is off. The house is dark. The moon is bright. Lucky is safe.</p>
+                <p>Lucky closes his eyes. He is happy. He is white. He is cute. He is Lucky. The end of the day is here.</p>
             </div>
 
             <div class="page-break">
@@ -790,783 +774,45 @@
             </div>
 
             <div id="page-40">
-                <h2>Chapter 14:<br>  Happy Future</h2>
-                <p>Tom knows that his new life is just beginning. There will be busy days and quiet days, but he is ready for everything. He feels lucky to be a teacher and to help people learn every day. He looks forward to his weekend lesson with Leo.</p>
-                <p>He sits down at his white table with a glass of cold orange juice. He looks at his history book and then out at the beautiful green park. "This is a good city," Tom whispers to himself with a peaceful smile. "This is my home now."</p>
+                <h2>The End</h2>
+                <p>This is the story of Lucky. Lucky is a good dog. Every day is a happy day for Lucky. He likes the sun. He likes the park. He likes Tom.</p>
+                <p>Lucky is happy. Tom is happy. They live in a big white house. Life is good. Goodbye, Lucky! See you tomorrow!</p>
             </div>
 
-     </article>
+       </article>
     </div>
 
-    <div class="modal-overlay" id="translateModal" onclick="closeModal(event)">
-        <div class="modal">
-            <h3>Lokalny Słownik</h3>
-            <div class="word-title" id="modalWord">Słowo</div>
-            <div class="word-translation" id="modalTranslation">Tłumaczenie</div>
-            <button class="btn-close" onclick="document.getElementById('translateModal').classList.remove('open')">Zamknij</button>
-        </div>
+    <div id="tooltip">
+        <div class="tooltip-translation" id="tooltipText">Ładowanie...</div>
+        <button class="btn-sentence-tr" id="translateSentenceBtn">Rozwiń do całego zdania 🔍</button>
     </div>
 
-    <script>
-        // ==========================================
-        // 1. AUTORSKA BAZA DANYCH SŁOWNIKA (MOCK DATA)
-        // ==========================================
-      const localDictionary = {
-    // SŁOWA Z DUŻEJ LITERY (Początki zdań i nazwy własne)
-    "Tom": "Tom (imię głównego bohatera)",
-    "Tom's": "Toma (forma dzierżawcza, np. Tom's house - dom Toma)",
-    "Green": "Zielona (część nazwy ulicy 'Green Street' lub szkoły)",
-    "Street": "Ulica",
-    "Chapter": "Rozdział",
-    "The": "Przedimek określony (wskazuje na konkretną rzecz, nie tłumaczy się bezpośrednio)",
-    "A": "Przedimek nieokreślony (oznacza 'jakiś jeden', używany przed rzeczownikami)",
-    "An": "Przedimek nieokreślony (to samo co 'A', używane przed samogłoskami, np. An English reader)",
-    "New": "Nowy / Nowa",
-    "City": "Miasto",
-    "He": "On",
-    "In": "W / w środku",
-    "Where": "Gdzie",
-    "Excuse": "Przepraszam (w zwrocie 'Excuse me' - proszę mi wybaczyć)",
-    "Apartment": "Mieszkanie",
-    "Number": "Numer",
-    "Ah": "Ach! / Och! (wykrzyknik)",
-    "I": "Ja",
-    "Shopping": "Zakupy / kupowanie",
-    "Apples": "Jabłka (liczba mnoga)",
-    "Bananas": "Banany (liczba mnoga)",
-    "Next": "Następnie / kolejny",
-    "Pasta": "Makaron",
-    "Thank": "Dziękować (w 'Thank you' - Dziękuję Ci)",
-    "When": "Kiedy",
-    "Oh": "Och! (wykrzyknik)",
-    "Saturday": "Sobota",
-    "Today": "Dzisiaj",
-    "Valley": "Dolina (część nazwy szkoły 'Green Valley')",
-    "School": "Szkoła",
-    "Suddenly": "Nagle",
-    "Here": "Tutaj / Oto",
-    "Anna": "Anna (imię)",
-    "happy": "szczęście/ szcześliwy",
-    "My": "Mój / Moja / Moje",
-    "Nice": "Miło / Miły (np. 'Nice to meet you' - Miło cię poznać)",
-    "Welcome": "Witamy / Witaj",
-    "Conversation": "Rozmowa",
-    "What": "Co / Jaki",
-    "Really": "Naprawdę?",
-    "Leo": "Leo (imię chłopca)",
-    "Do": "Czasownik posiłkowy służący do zadawania pytań (nie tłumaczy się go bezpośrednio na początku pytania)",
-    "Goodbye": "Do widzenia / Żegnaj",
-    "Exploring": "Odkrywanie / Zwiedzanie",
-    "Town": "Miasteczko / Miasto",
-    "Around": "Wokół / dookoła",
-    "Bus": "Autobus",
-    "Evening": "Wieczór",
-    "Tonight": "Dziś wieczorem",
-    "After": "Po / Potem",
-    "At": "O (w odniesieniu do czasu, np. 'At ten o'clock' - O godzinie dziesiątej)",
-    "Sunday": "Niedziela",
-    "Plans": "Plany",
-    "While": "Podczas gdy / Podczas",
-    "Monday": "Poniedziałek",
-    "Harrison": "Harrison (nazwisko Toma)",
-    "Mr.": "Pan (skrót przed nazwiskiem)",
-    "Sarah": "Sarah (imię sekretarki)",
-    "Your": "Twój / Twoja / Twoje",
-    "Principal": "Dyrektor szkoły",
-    "Davis": "Davis (nazwisko dyrektora)",
-    "Meeting": "Spotkanie / Spotykać",
-    "Good": "Dzień dobry (w 'Good morning' lub 'Good afternoon')",
-    "We": "My",
-    "Keep": "Trzymaj / Zachowaj (w sensie: 'Keep it simple' - niech to będzie proste)",
-    "Lesson": "Lekcja",
-    "Everyone": "Wszyscy",
-    "Hold": "Trzymaj (np. w dłoni)",
-    "Time": "Czas",
-    "Please": "Proszę",
-    "Lunch": "Lunch / Lekki obiad",
-    "Linda": "Linda (imię nauczycielki)",
-    "James": "James (imię nauczyciela)",
-    "Are": "Jesteś / Jesteście / Są (forma czasownika 'to be')",
-    "Bluebird": "Nazwa własna ulicy (Bluebird Lane)",
-    "Lane": "Alejka / Dróżka (część adresu)",
-    "See": "Do zobaczenia (w 'See you')",
-    "Start": "Początek / Start",
-    "Happy": "Szczęśliwy / Wesoły",
-    "Future": "Przyszłość",
-    "Reader": "Czytanka / Książka do nauki czytania",
-    "Learners": "Uczniowie / Osoby uczące się",
+<script>
+let currentSentenceText = "";
 
-    // SŁOWA Z MAŁEJ LITERY (Występujące w środku zdań)
-    "opens": "otwiera",
-    "eyes": "oczy",
-    "is": "jest",
-    "new": "nowy / nowa",
-    "city": "miasto",
-    "big": "duży / wielki",
-    "and": "i / oraz",
-    "very": "bardzo",
-    "beautiful": "piękny / piękna",
-    "there": "tam (w konstrukcji 'there are/is' oznacza: znajdują się / jest)",
-    "are": "są / jesteście",
-    "many": "wiele / dużo",
-    "tall": "wysoki / wysokie",
-    "buildings": "budynki",
-    "green": "zielony / zielone",
-    "trees": "drzewa",
-    "sun": "słońce",
-    "hot": "gorący / gorąco",
-    "blue": "niebieski / błękitny",
-    "sky": "niebo",
-    "but": "ale",
-    "he": "on",
-    "also": "także / również",
-    "little": "trochę (w wyrażeniu 'a little tired' - trochę zmęczony)",
-    "tired": "zmęczony",
-    "has": "ma",
-    "small": "mały / mała",
-    "suitcase": "walizka",
-    "his": "jego",
-    "hand": "dłoń / ręka",
-    "three": "trzy",
-    "shirts": "koszule",
-    "two": "dwa / dwie",
-    "pairs": "pary",
-    "of": "Słowo łączące, oznacza przynależność (czegoś do czegoś) – np. 'loaf of bread' (bochenek chleba)",
-    "pants": "spodnie",
-    "map": "mapa",
-    "looks": "patrzy / zerka",
-    "at": "na (np. looks at the map - patrzy na mapę)",
-    "my": "mój / moja",
-    "house": "dom",
-    "asks": "pyta",
-    "himself": "siebie samego ('he asks himself' - pyta samego siebie)",
-    "walks": "chodzi / spaceruje / idzie",
-    "down": "w dół (np. down the street - wzdłuż ulicy)",
-    "street": "ulica",
-    "busy": "ruchliwy / zajęty",
-    "with": "z / ze",
-    "people": "ludzie",
-    "cars": "samochody (liczba mnoga)",
-    "sees": "widzi",
-    "cafe": "kawiarnia",
-    "round": "okrągły / okrągłe",
-    "tables": "stoliki / stoły",
-    "outside": "na zewnątrz",
-    "drinking": "pije / pijąca",
-    "coffee": "kawa / kawę",
-    "reading": "czyta / czytająca",
-    "book": "książka / książkę",
-    "because": "ponieważ / bo",
-    "thirsty": "spragniony (chce mu się pić)",
-    "wants": "chce",
-    "glass": "szklanka / szklankę",
-    "cold": "zimny / zimna / zimne",
-    "water": "woda / wodę",
-    "or": "lub / albo",
-    "cup": "filiżanka / filiżankę",
-    "tea": "herbata / herbatę",
-    "waiter": "kelner",
-    "comes": "podchodzi / przychodzi",
-    "to": "do (wskazuje kierunek, np. to Tom - do Toma)",
-    "young": "młody",
-    "man": "mężczyzna",
-    "nice": "miły / ładny",
-    "smile": "uśmiech",
-    "hello": "cześć / dzień dobry",
-    "says": "mówi",
-    "can": "mogę / możesz / potrafię",
-    "help": "pomóc",
-    "you": "tobie / ciebie / panu / pani",
-    "smiles": "uśmiecha się",
-    "yes": "tak",
-    "please": "proszę",
-    "have": "mieć / poprosić o (w kontekście zamawiania jedzenia: 'Can I have...' - Czy mogę prosić...)",
-    "chicken": "kurczak / kurczakiem",
-    "sandwich": "kanapka / kanapkę",
-    "sits": "siada",
-    "brings": "przynosi",
-    "food": "jedzenie",
-    "delicious": "pyszny / pyszne",
-    "eats": "je",
-    "slowly": "powoli",
-    "girl": "dziewczyna",
-    "walking": "spaceruje / spacerująca",
-    "brown": "brązowy",
-    "Dog": "pies",
-    "friendly": "przyjacielski / sympatyczny",
-    "it": "to / ono (odnosi się do rzeczy lub zwierząt, np. do psa)",
-    "wags": "macha (ogonem)",
-    "its": "swój / jego (w odniesieniu do zwierząt/rzeczy, np. its tail - swój ogon)",
-    "tail": "ogon",
-    "takes": "bierze / wyciąga",
-    "again": "znowu / ponownie",
-    "shows": "pokazuje",
-    "me": "mnie / mi",
-    "turn": "skręć",
-    "left": "w lewo",
-    "supermarket": "supermarket",
-    "thanks": "dziękuje",
-    "pays": "płaci",
-    "for": "za (np. pays for the food - płaci za jedzenie)",
-    "fruit": "owoce",
-    "vegetables": "warzywa",
-    "look": "wyglądają",
-    "oranges": "pomarańcze",
-    "after": "po / za (np. after the supermarket - za supermarketem)",
-    "now": "teraz",
-    "on": "na",
-    "houses": "domy",
-    "apartment": "mieszkanie",
-    "numbers": "numery",
-    "doors": "drzwi (liczba mnoga)",
-    "ten": "dziesięć",
-    "twelve": "dwanaście",
-    "fourteen": "czternaście",
-    "sixteen": "szesnaście",
-    "happily": "szczęśliwie / z radością",
-    "silver": "srebrny",
-    "key": "klucz",
-    "from": "z (np. from his pocket - z jego kieszeni)",
-    "pocket": "kieszeń / kieszeni",
-    "front": "główny / przedni (np. front door - drzwi wejściowe)",
-    "inside": "w środku / do środka",
-    "clean": "czysty",
-    "warm": "ciepły",
-    "up": "w górę (np. up the stairs - w górę po schodach)",
-    "stairs": "schody",
-    "floor": "piętro",
-    "home": "dom (w znaczeniu ogniska domowego)",
-    "living": "pokój dzienny (w połączeniu 'living room' - salon)",
-    "room": "pokój",
-    "shines": "świeci",
-    "through": "przez",
-    "comfortable": "wygodny",
-    "grey": "szary",
-    "sofa": "kanapa",
-    "television": "telewizor",
-    "white": "biały",
-    "chairs": "krzesła",
-    "puts": "kładzie / stawia",
-    "kitchen": "kuchnia",
-    "fridge": "lodówka / lodówki",
-    "cooker": "kuchenka",
-    "sink": "zlew / zlewozmywak",
-    "milk": "mleko",
-    "cheese": "ser",
-    "juice": "sok",
-    "need": "potrzebować / musieć",
-    "thinks": "myśli",
-    "dinner": "obiad / kolacja",
-    "bedroom": "sypialnia",
-    "bed": "łóżko",
-    "pillows": "poduszki",
-    "wardrobe": "szafa",
-    "clothes": "ubrania",
-    "out": "na zewnątrz (w połączeniu 'out the window' - przez okno)",
-    "park": "park",
-    "flowers": "kwiaty",
-    "lake": "jezioro",
-    "like": "lubię / podoba mi się",
-    "this": "ten / to / ta",
-    "place": "miejsce",
-    "wallet": "portfel",
-    "leaves": "wychodzi z / opuszcza",
-    "back": "z powrotem",
-    "corner": "róg / zakręt",
-    "shopping": "zakupowy (np. shopping basket - koszyk na zakupy)",
-    "basket": "koszyk",
-    "section": "dział / sekcja",
-    "four": "cztery",
-    "red": "czerwony / czerwone",
-    "five": "pięć",
-    "yellow": "żółty / żółte",
-    "them": "je / ich (zaimek, np. puts them - kładzie je)",
-    "dairy": "nabiałowy (dairy section - dział nabiału)",
-    "bottle": "butelka / butelkę",
-    "packet": "paczka / pakiet",
-    "some": "trochę / jakieś",
-    "butter": "masło",
-    "bread": "chleb / chleba",
-    "aisle": "alejka (między półkami w sklepie)",
-    "chooses": "wybiera",
-    "long": "długi",
-    "loaf": "bochenek",
-    "something": "coś",
-    "decides": "decyduje",
-    "sauce": "sos",
-    "easy": "łatwy / prosty",
-    "cook": "gotować",
-    "checkout": "kasa (w sklepie)",
-    "counts": "liczy",
-    "items": "artykuły / rzeczy",
-    "that": "to (np. 'That is fifteen pounds' - To wynosi 15 funtów)",
-    "fifteen": "piętnaście",
-    "pounds": "funty (waluta)",
-    "her": "jej / jej dłoń",
-    "money": "pieniądze",
-    "she": "ona",
-    "paper": "papierowy (np. paper bag - papierowa torba)",
-    "bag": "torba / torbę",
-    "have": "miej (w życzeniu: 'Have a nice day' - Miłego dnia)",
-    "day": "dzień",
-    "walks": "idzie / spaceruje",
-    "grey": "szary",
-    "anymore": "już nie (w zdaniach przeczących)",
-    "going": "zamierzać (w konstrukcji 'going to rain' - będzie padać)",
-    "rain": "padać / deszcz",
-    "fast": "szybko",
-    "drops": "krople",
-    "start": "zaczynają",
-    "fall": "spadać / padać",
-    "runs": "biegnie",
-    "last": "ostatnie",
-    "few": "kilka",
-    "meters": "metry",
-    "gets": "dociera / dostaje się (gets inside - wchodzi do środka)",
-    "just": "właśnie / w samą porę ('just in time')",
-    "time": "pora / czas",
-    "heavy": "ciężki (w odniesieniu do deszczu: ulewny / mocny)",
-    "safe": "bezpieczny",
-    "dry": "suchy",
-    "tastes": "smakuje",
-    "fresh": "świeży",
-    "morning": "poranek / rano",
-    "birds": "ptaki",
-    "singing": "śpiewają / śpiewające",
-    "wakes": "budzi się ('wakes up')",
-    "seven": "siedem",
-    "o'clock": "godzina (używane przy pełnych godzinach, np. seven o'clock)",
-    "feels": "czuje się",
-    "great": "świetnie / wspaniale",
-    "makes": "robi / przygotowuje",
-    "jeans": "dżinsy",
-    "t-shirt": "koszulka z krótkim rękawem",
-    "running": "do biegania (running shoes - buty sportowe)",
-    "shoes": "buty",
-    "grabs": "łapie / chwyta",
-    "keys": "klucze",
-    "downstairs": "na dół / schodzi na dół",
-    "close": "blisko",
-    "crosses": "przechodzi przez / przekracza",
-    "enters": "wchodzi do",
-    "black": "czarny",
-    "gate": "brama",
-    "full": "pełny / pełen",
-    "grass": "trawa / trawy",
-    "roses": "róże",
-    "tulips": "tulipany",
-    "children": "dzieci",
-    "playing": "bawią się / grające",
-    "ball": "piłka / piłką",
-    "talking": "rozmawiają",
-    "near": "blisko / obok",
-    "ducks": "kaczki",
-    "swimming": "pływają / pływające",
-    "bench": "ławka / ławce",
-    "watch": "oglądać / obserwować",
-    "football": "piłka nożna (w znaczeniu samej piłki do gry)",
-    "rolls": "toczy się",
-    "feet": "stopy (liczba mnoga od foot)",
-    "towards": "w kierunku / stronę",
-    "him": "niego / jemu",
-    "picks": "podnosi ('picks up')",
-    "gives": "daje / podaje",
-    "son": "syn",
-    "loves": "kocha / uwielbia",
-    "welcome": "proszę bardzo / nie ma za co (w 'you are welcome')",
-    "answers": "odpowiada",
-    "our": "nasz / naszego",
-    "kind": "mili / uprzejmi",
-    "sat": "siedział",
-    "from": "z",
-    "job": "praca / stanowisko",
-    "starts": "zaczyna",
-    "work": "praca",
-    "computer": "komputerowy (np. computer teacher - nauczyciel informatyki)",
-    "teacher": "nauczyciel",
-    "teach": "uczę",
-    "how": "jak",
-    "use": "używać",
-    "write": "pisać",
-    "simple": "proste",
-    "programs": "programy",
-    "love": "kocham / uwielbiam",
-    "learn": "uczą się",
-    "surprised": "zaskoczona",
-    "amazing": "niesamowite / zdumiewające",
-    "games": "gry",
-    "more": "więcej",
-    "about": "o / na temat",
-    "computers": "komputery",
-    "time": "czas",
-    "private": "prywatne",
-    "lessons": "lekcje",
-    "weekend": "weekend",
-    "think": "myśleć",
-    "moment": "moment / chwilę",
-    "make": "zrobić / poznać",
-    "free": "wolny (mający czas)",
-    "mornings": "poranki",
-    "glad": "zadowolona",
-    "piece": "kawałek / kartka (np. piece of paper)",
-    "writes": "zapisuje",
-    "telephone": "telefoniczny (telephone number - numer telefonu)",
-    "giving": "dając / podając",
-    "call": "zadzwoń",
-    "week": "tydzień / w przyszłym tygodniu",
-    "talk": "porozmawiać",
-    "details": "szczegóły",
-    "must": "muszę",
-    "go": "iść",
-    "hungry": "głodny",
-    "lunch": "obiad",
-    "watches": "obserwuje / patrzy na",
-    "away": "stąd (walk away - odchodzić)",
-    "already": "już",
-    "stands": "wstaje ('stands up')",
-    "continues": "kontynuuje",
-    "walk": "spacer / wędrówkę",
-    "out": "z / na zewnątrz",
-    "twenty": "dwadzieścia",
-    "minutes": "minuty",
-    "arrives": "dociera / przybywa",
-    "square": "plac / rynek",
-    "middle": "środek / środku",
-    "large": "duża / wielka",
-    "old": "stara",
-    "fountain": "fontanna",
-    "stone": "kamienne",
-    "statues": "posągi",
-    "splashing": "pryska / pluska",
-    "everywhere": "wszędzie",
-    "shops": "sklepy",
-    "bookstore": "księgarnia",
-    "clothing": "odzieżowy (clothing store - sklep z ubraniami)",
-    "store": "sklep",
-    "music": "muzyczny",
-    "shop": "sklep",
-    "cinema": "kino",
-    "books": "książki",
-    "shelves": "półki",
-    "history": "historia / historyczny",
-    "fiction": "fikcja / literatura piękna",
-    "finds": "znajduje",
-    "black": "czarny",
-    "photographs": "fotografie",
-    "counter": "lada (sklepowa)",
-    "glasses": "okulary",
-    "stands": "stoi",
-    "tells": "opowiada",
-    "story": "historia",
-    "one": "jeden",
-    "hundred": "sto",
-    "years": "lat / lata",
-    "ago": "temu (np. one hundred years ago - sto lat temu)",
-    "read": "czytać",
-    "watch": "zegarek (na rękę)",
-    "four": "czwarta (w odniesieniu do godziny)",
-    "afternoon": "popołudnie / popołudniu",
-    "decides": "decyduje",
-    "waits": "czeka",
-    "gets": "wsiada ('gets on')",
-    "buys": "kupuje",
-    "ticket": "bilet",
-    "driver": "kierowca",
-    "window": "okno",
-    "moves": "porusza się / jedzie",
-    "traffic": "ruch uliczny",
-    "pass": "mijają / przejeżdżają obok",
-    "by": "obok (pass by - mijać)",
-    "peaceful": "spokojne",
-    "changes": "zmienia (ubranie)",
-    "sweatpants": "spodnie dresowe",
-    "sweater": "sweter",
-    "cooking": "gotować / gotowanie",
-    "bought": "kupił (czas przeszły od buy)",
-    "yesterday": "wczoraj",
-    "boils": "gotuje (doprowadza do wrzenia)",
-    "pot": "garnek",
-    "adds": "dodaje",
-    "heats": "podgrzewać",
-    "plate": "talerz",
-    "washes": "myje",
-    "fork": "widelec",
-    "keeps": "lubi trzymać / utrzymuje",
-    "sweet": "słodka",
-    "chamomile": "rumianek / rumiankową",
-    "sofa": "kanapa",
-    "first": "pierwszą",
-    "page": "strona / stronę",
-    "trains": "pociągi",
-    "closes": "zamyka",
-    "turns": "wyłącza / gasi ('turns off')",
-    "checks": "sprawdza",
-    "locked": "zamknięte (na klucz)",
-    "then": "wtedy / potem",
-    "sleepy": "śpiący",
-    "quickly": "szybko",
-    "dreams": "śni",
-    "excited": "podekscytowany",
-    "rest": "odpocząć",
-    "before": "zanim / przed",
-    "begins": "zacznie się / zaczyna",
-    "night": "noc",
-    "dark": "ciemna",
-    "early": "wcześnie",
-    "pink": "różowy",
-    "color": "kolor",
-    "calm": "spokojne / ciche",
-    "does": "robi / wykonuje",
-    "light": "lekkie",
-    "exercises": "ćwiczenia",
-    "stretch": "rozciągnąć",
-    "body": "ciało",
-    "breakfast": "śniadanie",
-    "fried": "smażone",
-    "eggs": "jajka",
-    "toast": "tost",
-    "orange": "pomarańczowy (juice - sok pomarańczowy)",
-    "eating": "jedzenie / podczas jedzenia",
-    "professional": "profesjonalnie",
-    "large": "dużą",
-    "wardrobe": "szafa",
-    "dark": "ciemnoszare",
-    "trousers": "spodnie",
-    "wrinkles": "zagniecenia / zmarszczki",
-    "iron": "wyprasować / żelazko",
-    "finds": "znajduje",
-    "utility": "gospodarczy (utility closet - schowek na narzędzia/żelazko)",
-    "closet": "szafa / schowek",
-    "irons": "prasuje",
-    "perfect": "idealnie",
-    "hangs": "wiesza ('hangs it up')",
-    "cleans": "czyści",
-    "leather": "skórzane",
-    "shine": "błyszczą / lśnić",
-    "prepared": "przygotowany",
-    "confident": "pewny siebie",
-    "short": "krótki",
-    "neighborhood": "okolica",
-    "way": "droga / sposób",
-    "get": "dotrzeć",
-    "only": "tylko",
-    "fifteen-minute": "piętnastominutowy",
-    "modern": "nowoczesny",
-    "windows": "okna",
-    "playground": "plac zabaw",
-    "kids": "dzieciaki / dzieci",
-    "sign": "szyld / znak",
-    "primary": "podstawowa (Primary School - szkoła podstawowa)",
-    "outside": "na zewnątrz",
-    "works": "pracuję / działa",
-    "alarm": "budzik",
-    "rings": "dzwoni",
-    "six": "szósta",
-    "jumps": "wyskakuje",
-    "bed": "łóżka",
-    "nervous": "zestresowany / nerwowy",
-    "shower": "prysznic",
-    "shaves": "goli się",
-    "cereal": "płatki",
-    "laptop": "laptop",
-    "notebook": "zeszyt",
-    "pen": "długopis",
-    "locks": "zamyka (na klucz)",
-    "air": "powietrze",
-    "cool": "chłodne",
-    "school": "szkoła / szkoły",
-    "parents": "rodzice",
-    "school bags": "plecaki szkolne",
-    "backs": "plecy / plecach",
-    "laughing": "śmieją się",
-    "main": "główne",
-    "glass": "szklane",
-    "office": "biuro / sekretariat",
-    "pleasant": "sympatyczna / przyjemna",
-    "sitting": "siedzi / siedząca",
-    "behind": "za",
-    "desk": "biurko",
-    "secretary": "sekretarka",
-    "plastic": "plastikowy",
-    "badge": "identyfikator",
-    "set": "zestaw",
-    "keys": "kluczy",
-    "twenty-four": "dwadzieścia cztery",
-    "second": "drugim",
-    "floor": "piętrze",
-    "explains": "wyjaśnia",
-    "office": "biuro / gabinet",
-    "whiteboard": "tablica (suchościeralna)",
-    "wall": "ścianie",
-    "system": "system",
-    "everything": "wszystko",
-    "perfectly": "idealnie",
-    "internet": "internet",
-    "screens": "ekrany",
-    "five": "za pięć (w określeniu czasu)",
-    "nine": "dziewiąta",
-    "knocks": "puka",
-    "strong": "silny / mocny",
-    "voice": "głos",
-    "older": "starszy",
-    "hair": "włosy / włosami",
-    "face": "twarz / twarzą",
-    "suit": "garnitur",
-    "shakes": "ściska / podaje ('shakes Tom's hand')",
-    "warmly": "ciepło / serdecznie",
-    "excellent": "doskonały",
-    "teacher": "nauczyciel",
-    "lessons": "lekcje",
-    "nods": "kiwa (głową)",
-    "approval": "aprobata / uznanie",
-    "schedule": "harmonogram / plan lekcji",
-    "presentation": "prezentacja / prezentację",
-    "basic": "podstawowe",
-    "parts": "części",
-    "monitor": "monitor",
-    "mouse": "myszka / myszkę",
-    "keyboard": "klawiatura / klawiaturę",
-    "box": "skrzynka (jednostka centralna komputera)",
-    "group": "grupa",
-    "walks": "wchodzi",
-    "curious": "ciekawe / zaciekawione",
-    "together": "razem",
-    "reply": "odpowiadają",
-    "sit": "usiąść",
-    "desks": "biurka / ławki",
-    "each": "każdy / przy każdym",
-    "points": "wskazuje / pokazuje",
-    "digital": "cyfrowa / cyfrowy",
-    "arrow": "strzałka / kursor",
-    "try": "spróbować",
-    "mice": "myszki (liczba mnoga od mouse)",
-    "arrows": "strzałki / kursory",
-    "dance": "tańczą",
-    "around": "po",
-    "trouble": "problem / kłopot",
-    "gently": "delikatnie",
-    "drawing": "do rysowania (drawing game - gra w rysowanie)",
-    "paint": "malować",
-    "pictures": "obrazki",
-    "animals": "zwierzęta",
-    "suns": "słońca",
-    "enjoy": "lubią / czerpią radość",
-    "classroom": "klasa (sala lekcyjna)",
-    "sounds": "dźwięki",
-    "clicking": "klikanie / klikające",
-    "noises": "odgłosy",
-    "finishes": "kończy się",
-    "eleven": "jedenasta",
-    "turn": "wyłączyć",
-    "off": "wyłączone (w połączeniu z turn: turn off - wyłączyć)",
-    "break": "przerwa / przerwę",
-    "hour": "godzina / godzinę",
-    "staff": "nauczycielski (staff room - pokój nauczycielski)",
-    "machine": "ekspres (np. coffee machine)",
-    "microwave": "mikrofalówka",
-    "other": "inni",
-    "teachers": "nauczyciele",
-    "art": "plastyka / sztuka",
-    "maths": "matematyka",
-    "colleagues": "koledzy z pracy",
-    "rice": "ryż",
-    "brought": "przyniósł",
-    "enjoys": "lubi / sprawia mu przyjemność",
-    "helpful": "pomocne",
-    "tips": "wskazówki / porady",
-    "remembers": "pamięta / przypomina sobie",
-    "phone": "telefon",
-    "rings": "dzwoni",
-    "three": "trzy",
-    "times": "razy",
-    "answers": "odbiera / odpowiada",
-    "over": "przez (np. over the phone - przez telefon)",
-    "kindly": "miło / uprzejmie",
-    "replies": "odpowiada",
-    "hear": "słyszeć (np. 'great to hear' - miło to słyszeć)",
-    "still": "wciąż / nadal",
-    "available": "dostępny",
-    "absolutely": "absolutnie / jak najbardziej",
-    "okay": "w porządku / okej",
-    "perfect": "idealna",
-    "address": "adres",
-    "hangs": "odkłada słuchawkę ('hangs up')",
-    "teaches": "uczy (czasownik)",
-    "typing": "pisanie na klawiaturze",
-    "practice": "ćwiczą",
-    "typing": "wpisywanie / pisanie",
-    "sentences": "zdania",
-    "patient": "cierpliwy",
-    "makes": "robi (błędy)",
-    "mistakes": "błędy",
-    "half": "pół (half past three - wpół do czwartej / 15:30)",
-    "past": "po",
-    "three": "trzeciej",
-    "ends": "kończy się",
-    "becomes": "staje się",
-    "cleans": "sprząta",
-    "return": "zwrócić / oddać",
-    "satisfied": "zadowolony",
-    "life": "życie",
-    "few": "kilka",
-    "days": "dni",
-    "alone": "sam",
-    "knew": "znał / wiedział (czas przeszły od know)",
-    "nobody": "nikogo",
-    "mailbox": "skrzynka na listy",
-    "letter": "list",
-    "card": "kartka",
-    "manager": "zarządca (budynku)",
-    "hope": "mamy nadzieję",
-    "note": "wiadomość / liścik",
-    "message": "wiadomość",
-    "window": "okno",
-    "air": "powietrze",
-    "soft": "delikatne / ciche",
-    "distant": "odległy (np. distant laughter - odległy śmiech)",
-    "laughter": "śmiech",
-    "across": "po drugiej stronie (np. across the street)",
-    "knows": "wie",
-    "beginning": "początek / zaczyna się",
-    "busy": "pracowite / zajęte",
-    "ready": "gotowy",
-    "lucky": "szczęściarzem (mającym szczęście)",
-    "forward": "w przód (w połączeniu 'looks forward to' - wyczekuje)",
-    "whispers": "szepcze",
-    "peaceful": "spokojnym",
-    "my": "Mój / Moja / Moje",
-    "where": "gdzie",
-};
+// --- 1. INTELIGENTNE GENEROWANIE STRUKTURY (ZDANIA + SŁOWA) ---
+const bookContent = document.getElementById('bookContent');
+const paragraphs = bookContent.getElementsByTagName('p');
 
-      
-
-// Przygotowanie tekstu - pakowanie każdego słowa w tagi span.word
-function initWordTokenization() {
-    const paragraphs = document.querySelectorAll('.book-content p');
-    paragraphs.forEach(p => {
-        const text = p.innerText;
-        const tokens = text.split(/(\s+)/);
+for (let p of paragraphs) {
+    const sentences = p.innerText.split(/(?<=[.!?])\s+/);
+    
+    const parsedSentences = sentences.map(sentence => {
+        if (!sentence.trim()) return '';
         
-        const processedTokens = tokens.map(token => {
-            if (/[a-zA-Z]/.test(token)) {
-                // Wyciągamy litery i apostrofy, usuwamy resztę interpunkcji dookoła
-                const cleanWord = token.replace(/[^a-zA-Z']/g, '');
-                const punctuation = token.replace(/[a-zA-Z']/g, '');
-                
-                return `<span class="word" onclick="handleWordClick('${cleanWord}')">${cleanWord}</span>${punctuation}`;
-            }
-            return token;
-        });
-        p.innerHTML = processedTokens.join('');
+        const words = sentence.split(/(\s+)/);
+        const parsedWords = words.map(chunk => {
+            if (chunk.trim() === '') return chunk;
+            return `<span class="clickable-word">${chunk}</span>`;
+        }).join('');
+        
+        return `<span class="sentence-block" data-sentence="${sentence.replace(/"/g, '&quot;')}">${parsedWords}</span>`;
     });
+    
+    p.innerHTML = parsedSentences.join(' ');
 }
 
-// Uruchomienie tokenizacji słów
-initWordTokenization();
-
-// ==========================================
-// 2. INTERAKTYWNY SYSTEM TŁUMACZENIA NA STRONIE
-// ==========================================
+// --- 2. OBSŁUGA TRYBU TŁUMACZA ---
 let isTranslatorActive = false;
 
 function toggleTranslatorMode() {
@@ -1578,85 +824,113 @@ function toggleTranslatorMode() {
     } else {
         document.body.classList.remove('translator-active');
         btn.classList.remove('active');
+        document.getElementById('tooltip').style.display = 'none';
     }
 }
 
-function handleWordClick(word) {
+// --- 3. PROFILOWANE TŁUMACZENIE (SŁOWO LUB ZDANIE) ---
+async function requestTranslation(textToTranslate, targetElement) {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pl&dt=t&q=${encodeURIComponent(textToTranslate)}`;
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        let finalTranslation = "";
+        data[0].forEach(part => {
+            if (part[0]) finalTranslation += part[0];
+        });
+        
+        targetElement.innerText = finalTranslation;
+        return true;
+    } catch (error) {
+        targetElement.innerText = 'Błąd połączenia';
+        return false;
+    }
+}
+
+// Globalna zmienna przechowująca element klikniętego słowa w celu ponownych kalkulacji pozycji
+let activeClickedWordElement = null;
+
+function positionTooltip(element) {
+    const tooltip = document.getElementById('tooltip');
+    if (!element || tooltip.style.display !== 'block') return;
+
+    const rect = element.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+    // Pozycjonowanie dymku dokładnie nad słowem z uwzględnieniem jego aktualnej dynamicznej wysokości
+    tooltip.style.left = (rect.left + scrollLeft + (rect.width / 2)) + 'px';
+    tooltip.style.top = (rect.top + scrollTop - tooltip.offsetHeight - 12) + 'px';
+}
+
+// Obsługa kliknięcia w słowo
+bookContent.addEventListener('click', function(e) {
     if (!isTranslatorActive) return;
+    
+    if (e.target.classList.contains('clickable-word')) {
+        e.stopPropagation();
+        
+        activeClickedWordElement = e.target;
+        const tooltip = document.getElementById('tooltip');
+        const tooltipText = document.getElementById('tooltipText');
+        const sentenceBtn = document.getElementById('translateSentenceBtn');
 
-    // Standaryzacja słowa: małe litery i usunięcie dziwnych znaków niebędących literami
-    let searchWord = word.toLowerCase().replace(/[^a-z]/g, '').trim();
-    // Odcięcie ewentualnego apostrofu (np. tom's -> tom)
-    let fallbackWord = word.toLowerCase().split("'")[0].replace(/[^a-z]/g, '').trim();
+        tooltip.style.display = 'block';
+        tooltipText.innerText = 'Tłumaczenie słowa...';
+        sentenceBtn.style.display = 'block';
 
-    let translation = null;
+        // Wstępne ustawienie pozycji dymku
+        positionTooltip(activeClickedWordElement);
 
-    // Szukamy w naszym słowniku
-    if (localDictionary[searchWord]) {
-        translation = localDictionary[searchWord];
-    } else if (localDictionary[fallbackWord]) {
-        translation = localDictionary[fallbackWord];
+        const cleanWord = e.target.innerText.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\"\'\?]/g,"");
+        const parentSentenceBlock = e.target.closest('.sentence-block');
+        currentSentenceText = parentSentenceBlock ? parentSentenceBlock.getAttribute('data-sentence') : "";
+
+        requestTranslation(cleanWord, tooltipText).then(() => {
+            // Ponowne dopasowanie pozycji po wstawieniu przetłumaczonego tekstu słowa
+            positionTooltip(activeClickedWordElement);
+        });
     }
+});
 
-    // Pobieramy elementy okienka modalnego ze strony
-    const modalWord = document.getElementById('modalWord');
-    const modalTranslation = document.getElementById('modalTranslation');
-    const modalOverlay = document.getElementById('translateModal');
+// Obsługa przycisku tłumacz całe zdanie w dymku
+document.getElementById('translateSentenceBtn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (!currentSentenceText) return;
 
-    // Ustawiamy nagłówek okienka na kliknięte słowo
-    modalWord.innerText = word;
+    const tooltipText = document.getElementById('tooltipText');
+    this.style.display = 'none';
+    tooltipText.innerText = 'Tłumaczenie całego zdania...';
 
-    // Generujemy uniwersalny link do Google Translate dla klikniętego słowa
-    const googleUrl = `https://translate.google.com/?sl=en&tl=pl&text=${encodeURIComponent(word)}&op=translate`;
+    // Przeliczenie natychmiastowe pozycji (dymek się zmniejszył, bo schowaliśmy przycisk)
+    positionTooltip(activeClickedWordElement);
 
-    // Opcja A: Słowo JEST w bazie danych
-    if (translation) {
-        modalTranslation.innerHTML = `
-            <div style="color: #2ecc71; font-weight: 500; margin-bottom: 15px;">
-                ${translation}
-            </div>
-            <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 12px;">
-            <a href="${googleUrl}" target="_blank" style="display: inline-block; font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 600; padding: 4px 10px; background: rgba(162, 82, 250, 0.1); border-radius: 6px;">
-                🔍 Pełne tłumaczenie w Google
-            </a>
-        `;
-    } 
-    // Opcja B: Słowa NIE MA w bazie danych
-    else {
-        modalTranslation.innerHTML = `
-            <div style="font-size: 0.95rem; color: #e74c3c; margin-bottom: 12px; background: rgba(231, 76, 60, 0.1); padding: 8px; border-radius: 8px;">
-                Brak tłumaczenia w bazie podręcznej
-            </div>
-            <a href="${googleUrl}" target="_blank" style="display: inline-block; font-size: 0.9rem; color: var(--accent); text-decoration: underline; font-weight: 600; margin-top: 5px;">
-                🔍 Sprawdź w Google Translate
-            </a>
-        `;
+    requestTranslation(currentSentenceText, tooltipText).then(() => {
+        // Ostateczne przeliczenie pozycji (tekst zdania może być długi i dymek urośnie w pionie)
+        positionTooltip(activeClickedWordElement);
+    });
+});
+
+// Ukrywanie dymku po kliknięciu poza słówko/dymek
+document.addEventListener('click', function(e) {
+    const tooltip = document.getElementById('tooltip');
+    if (!tooltip.contains(e.target) && !e.target.classList.contains('clickable-word')) {
+        tooltip.style.display = 'none';
+        activeClickedWordElement = null;
     }
+});
 
-    // Otwieramy okienko na ekranie
-    modalOverlay.classList.add('open');
-}
-
-function closeModal(e) {
-    if (e.target.id === 'translateModal') {
-        document.getElementById('translateModal').classList.remove('open');
-    }
-}
-
-// ==========================================
-// 3. ROZWIJALNY PANEL OCHRONY WZROKU
-// ==========================================
+// --- 4. ROZWIJALNY PANEL STYLÓW EKRANU ---
 function toggleDropdown() {
     document.getElementById('themeDropdown').classList.toggle('open');
 }
 
 function changeTheme(themeName) {
     document.body.classList.remove('theme-dark', 'theme-gray', 'theme-light', 'theme-sepia');
-    
     if (themeName !== 'dark') {
         document.body.classList.add(`theme-${themeName}`);
     }
-    
     document.getElementById('themeDropdown').classList.remove('open');
 }
 
@@ -1667,9 +941,7 @@ window.addEventListener('click', function(e) {
     }
 });
 
-// ==========================================
-// 4. TRYB PEŁNOEKRANOWY (FULLSCREEN)
-// ==========================================
+// --- 5. TRYB PEŁNOEKRANOWY ---
 function toggleFullscreen() {
     const btn = document.getElementById('fullscreenBtn');
     
@@ -1688,7 +960,7 @@ function toggleFullscreen() {
     }
 }
 
-// Skok do podanej strony
+// --- 6. NAWIGACJA PO STRONACH ---
 function jumpToPage() {
     const pageNum = document.getElementById('pageInput').value;
     if (pageNum == 1) {
@@ -1699,9 +971,8 @@ function jumpToPage() {
     }
 }
 
-
-        (function() {
-    // Dynamiczne wstrzyknięcie Firebase Auth i sprawdzenie uprawnień dostępu
+// --- 7. WERYFIKACJA FIREBASE + INICJALIZACJA STRONY ---
+(function() {
     const script = document.createElement('script');
     script.type = 'module';
     script.innerHTML = `
@@ -1720,15 +991,12 @@ function jumpToPage() {
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Ukrywamy treść na czas weryfikacji tożsamości
         document.body.style.opacity = '0';
 
         onAuthStateChanged(auth, (user) => {
             if (!user) {
-                // Jeśli brak autoryzacji, natychmiast wyrzucamy na logowanie
                 window.location.href = 'logowanie.html';
             } else {
-                // Autoryzacja pomyślna - pokazujemy zawartość podstrony
                 document.body.style.opacity = '1';
                 document.body.style.transition = 'opacity 0.4s ease';
             }
@@ -1736,6 +1004,6 @@ function jumpToPage() {
     `;
     document.head.appendChild(script);
 })();
-    </script>
+</script>
 </body>
 </html>
