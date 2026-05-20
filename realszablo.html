@@ -8,7 +8,6 @@
     <style>
         /* --- Tematy kolorystyczne (Zmienne CSS) --- */
         :root {
-            /* Domyślny Czarny (Dark Mode) */
             --bg-main: #0d0e12;
             --bg-interface: rgba(22, 24, 33, 0.85);
             --border-color: rgba(255, 255, 255, 0.08);
@@ -20,6 +19,7 @@
             --book-bg: #0d0e12;
             --book-text: #e2e8f0;
             --book-font: 'Merriweather', serif;
+            --word-interactive: #e2e8f0; /* Kolor słowa w trybie czytania */
         }
 
         body.theme-gray {
@@ -31,6 +31,7 @@
             --text-muted: #a0a5b1;
             --book-bg: #2d3139;
             --book-text: #e1e4ea;
+            --word-interactive: #e1e4ea;
         }
 
         body.theme-light {
@@ -42,6 +43,7 @@
             --text-muted: #64748b;
             --book-bg: #f8fafc;
             --book-text: #1e293b;
+            --word-interactive: #1e293b;
         }
 
         body.theme-sepia {
@@ -53,6 +55,7 @@
             --text-muted: #7d725f;
             --book-bg: #f4edd9;
             --book-text: #2c2519;
+            --word-interactive: #2c2519;
         }
 
         /* --- Reset i bazy --- */
@@ -100,7 +103,6 @@
             gap: 1rem;
         }
 
-        /* Przycisk akcji interfejsu */
         .btn-nav {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-color);
@@ -127,7 +129,6 @@
             box-shadow: 0 0 15px var(--accent-glow);
         }
 
-        /* Pola numeryczne stron */
         .page-jumper {
             display: flex;
             align-items: center;
@@ -195,10 +196,6 @@
             background: rgba(255, 255, 255, 0.06);
         }
 
-        body.theme-light .theme-option:hover {
-            background: rgba(0, 0, 0, 0.04);
-        }
-
         .theme-dot {
             width: 18px;
             height: 18px;
@@ -228,7 +225,6 @@
             line-height: 1.9;
             color: var(--book-text);
             text-align: justify;
-            transition: color 0.3s ease;
         }
 
         .book-content h2 {
@@ -244,13 +240,32 @@
             text-indent: 1.5rem;
         }
 
-        /* Style dla automatycznie generowanych słów gdy tłumacz jest aktywny */
+        /* Klasa reprezentująca pojedyncze słowo */
+        .clickable-word {
+            color: var(--word-interactive);
+            transition: color 0.2s ease, background-color 0.2s ease;
+        }
+
+        /* REAKCJA: Gdy klikniesz ikonkę tłumacza, słowa DELIKATNIE zmieniają kolor */
         body.translator-active .clickable-word {
             cursor: help;
+            color: #bfa3f7; /* Delikatny pastelowy fiolet sygnalizujący aktywność */
         }
+        body.theme-light.translator-active .clickable-word {
+            color: #5c32a6;
+        }
+        body.theme-sepia.translator-active .clickable-word {
+            color: #7240b8;
+        }
+
         body.translator-active .clickable-word:hover {
-            background-color: rgba(162, 82, 250, 0.2);
+            background-color: rgba(162, 82, 250, 0.15);
             border-radius: 4px;
+        }
+
+        /* Podświetlenie całego zdania przy najechaniu (opcjonalne, super wygląda) */
+        .sentence-block {
+            display: inline;
         }
 
         /* Separator stron */
@@ -283,20 +298,48 @@
             letter-spacing: 1px;
         }
 
-        /* --- Nowoczesny Tooltip do szybkich tłumaczeń --- */
+        /* --- Inteligentny Tooltip z obsługą zdań --- */
         #tooltip {
             position: absolute;
-            background: #1e1b29;
+            background: #171520;
             color: #ffffff;
-            padding: 8px 14px;
-            border-radius: 8px;
+            padding: 12px 16px;
+            border-radius: 12px;
             font-size: 0.95rem;
             font-weight: 500;
             display: none;
             z-index: 2000;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(162, 82, 250, 0.4);
-            pointer-events: none; /* Żeby dymek nie uciekał przy najechaniu */
+            max-width: 320px;
+        }
+
+        .tooltip-translation {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .btn-sentence-tr {
+            display: block;
+            width: 100%;
+            background: rgba(162, 82, 250, 0.2);
+            border: 1px solid var(--accent);
+            color: #e2e8f0;
+            padding: 5px 10px;
+            font-size: 0.78rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-sentence-tr:hover {
+            background: var(--accent);
+            color: #fff;
         }
     </style>
 </head>
@@ -356,7 +399,6 @@
     </header>
 
     <div class="reader-container">
-        <!-- Zgodnie z Twoim kodem: czysty tekst w p, skrypt sam zajmie się resztą -->
         <article class="book-content" id="bookContent">
             
             <div id="page-1">
@@ -386,21 +428,39 @@
        </article>
     </div>
 
-    <!-- Element natychmiastowego dymku tłumaczenia -->
-    <div id="tooltip">Ładowanie...</div>
+    <!-- Zaawansowany Tooltip -->
+    <div id="tooltip">
+        <div class="tooltip-translation" id="tooltipText">Ładowanie...</div>
+        <button class="btn-sentence-tr" id="translateSentenceBtn">Rozwiń do całego zdania 🔍</button>
+    </div>
 
 <script>
-// --- 1. AUTOMATYCZNE GENEROWANIE KLIKALNYCH SŁÓW ---
+// Zmienna przechowująca czysty tekst aktualnie wybranego zdania
+let currentSentenceText = "";
+
+// --- 1. INTELIGENTNE GENEROWANIE STRUKTURY (ZDANIA + SŁOWA) ---
 const bookContent = document.getElementById('bookContent');
 const paragraphs = bookContent.getElementsByTagName('p');
 
 for (let p of paragraphs) {
-    // Dzielimy tekst na słowa, zachowując spacje
-    const words = p.innerText.split(/(\s+)/);
-    p.innerHTML = words.map(chunk => {
-        if (chunk.trim() === '') return chunk; // Spacja zostaje
-        return `<span class="clickable-word">${chunk}</span>`; // Słowo owijamy w span
-    }).join('');
+    // Dzielimy tekst na zdania (za pomocą kropek, pytajników, wykrzykników wraz ze spacją po nich)
+    const sentences = p.innerText.split(/(?<=[.!?])\s+/);
+    
+    const parsedSentences = sentences.map(sentence => {
+        if (!sentence.trim()) return '';
+        
+        // Każde słowo wewnątrz zdania owijamy w klasę .clickable-word
+        const words = sentence.split(/(\s+)/);
+        const parsedWords = words.map(chunk => {
+            if (chunk.trim() === '') return chunk;
+            return `<span class="clickable-word">${chunk}</span>`;
+        }).join('');
+        
+        // Całe zdanie trzymamy w bloku z atrybutem zawierającym pełny tekst zdania
+        return `<span class="sentence-block" data-sentence="${sentence.replace(/"/g, '&quot;')}">${parsedWords}</span>`;
+    });
+    
+    p.innerHTML = parsedSentences.join(' ');
 }
 
 // --- 2. OBSŁUGA TRYBU TŁUMACZA ---
@@ -410,7 +470,7 @@ function toggleTranslatorMode() {
     isTranslatorActive = !isTranslatorActive;
     const btn = document.getElementById('translatorToggle');
     if (isTranslatorActive) {
-        document.body.classList.add('translator-active');
+        document.body.classList.add('translator-active'); // To aktywuje delikatną zmianę koloru słówek w CSS!
         btn.classList.add('active');
     } else {
         document.body.classList.remove('translator-active');
@@ -419,49 +479,72 @@ function toggleTranslatorMode() {
     }
 }
 
-// --- 3. AKCJA TŁUMACZENIA I POKAZYWANIA TOOLTIPIE ---
-async function translateWord(word, event) {
-    const tooltip = document.getElementById('tooltip');
-    
-    // Pozycjonowanie dymku nad klikniętym słowem
-    tooltip.style.left = event.pageX + 'px';
-    tooltip.style.top = (event.pageY - 40) + 'px';
-    tooltip.style.display = 'block';
-    tooltip.innerText = 'Tłumaczenie...';
-
-    // Oczyszczenie słowa z interpunkcji
-    const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\"\'\?]/g,"");
-    if (!cleanWord.trim()) {
-        tooltip.style.display = 'none';
-        return;
-    }
-
-    // Wykorzystanie darmowego API Google Translate (EN -> PL)
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pl&dt=t&q=${encodeURIComponent(cleanWord)}`;
-
+// --- 3. PROFILOWANE TŁUMACZENIE (SŁOWO LUB ZDANIE) ---
+async function requestTranslation(textToTranslate, targetElement) {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pl&dt=t&q=${encodeURIComponent(textToTranslate)}`;
     try {
         const response = await fetch(url);
         const data = await response.json();
-        tooltip.innerText = data[0][0][0]; // Wstawienie przetłumaczonego tekstu
+        
+        // Sklejanie tekstu (szczególnie przydatne przy długich zdaniach)
+        let finalTranslation = "";
+        data[0].forEach(part => {
+            if (part[0]) finalTranslation += part[0];
+        });
+        
+        targetElement.innerText = finalTranslation;
     } catch (error) {
-        tooltip.innerText = 'Błąd połączenia';
+        targetElement.innerText = 'Błąd połączenia';
     }
 }
 
-// Kliknięcie w wygenerowane słowo (tylko, gdy tryb tłumacza jest aktywny)
+// Obsługa kliknięcia w słowo
 bookContent.addEventListener('click', function(e) {
     if (!isTranslatorActive) return;
     
     if (e.target.classList.contains('clickable-word')) {
-        e.stopPropagation(); // Zatrzymujemy event, żeby dokument od razu nie schował tooltipa
-        translateWord(e.target.innerText, e);
+        e.stopPropagation();
+        
+        const tooltip = document.getElementById('tooltip');
+        const tooltipText = document.getElementById('tooltipText');
+        const sentenceBtn = document.getElementById('translateSentenceBtn');
+
+        // Ustawienie pozycji dymku nad słowem
+        tooltip.style.left = e.pageX + 'px';
+        tooltip.style.top = (e.pageY - 50) + 'px';
+        tooltip.style.display = 'block';
+        tooltipText.innerText = 'Tłumaczenie słowa...';
+        sentenceBtn.style.display = 'block'; // Pokazujemy przycisk zdania
+
+        // Oczyszczamy pojedyncze słowo z interpunkcji
+        const cleanWord = e.target.innerText.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\"\'\?]/g,"");
+        
+        // Znajdujemy zdanie, do którego należy to słowo i zapisujemy je
+        const parentSentenceBlock = e.target.closest('.sentence-block');
+        currentSentenceText = parentSentenceBlock ? parentSentenceBlock.getAttribute('data-sentence') : "";
+
+        // Odpytujemy o tłumaczenie pojedynczego słowa
+        requestTranslation(cleanWord, tooltipText);
     }
 });
 
-// Ukrywanie dymku po kliknięciu gdziekolwiek indziej
+// Obsługa przycisku tłumacz całe zdanie w dymku
+document.getElementById('translateSentenceBtn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (!currentSentenceText) return;
+
+    const tooltipText = document.getElementById('tooltipText');
+    this.style.display = 'none'; // Chowamy przycisk, bo właśnie tłumaczymy zdanie
+    tooltipText.innerText = 'Tłumaczenie całego zdania...';
+
+    requestTranslation(currentSentenceText, tooltipText);
+});
+
+// Ukrywanie dymku po kliknięciu poza słówko/dymek
 document.addEventListener('click', function(e) {
-    if (!e.target.classList.contains('clickable-word')) {
-        document.getElementById('tooltip').style.display = 'none';
+    const tooltip = document.getElementById('tooltip');
+    if (!tooltip.contains(e.target) && !e.target.classList.contains('clickable-word')) {
+        tooltip.style.display = 'none';
     }
 });
 
