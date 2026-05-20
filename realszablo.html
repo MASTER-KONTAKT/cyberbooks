@@ -146,7 +146,7 @@
             outline: none;
         }
 
-        /* --- Panel Ochrony Wzroku (Rozwijane Menu) --- */
+        /* --- Panel Ochrony Wzroku --- */
         .dropdown-wrapper {
             position: relative;
         }
@@ -244,16 +244,13 @@
             text-indent: 1.5rem;
         }
 
-        /* Zmiana koloru tekstu w trybie tłumacza (bez podkreśleń) */
-        body.translator-active .book-content {
-            color: #b08bf8; /* Delikatny fiolet, świetnie pasuje do Twojego akcentu #a252fa */
+        /* Style dla automatycznie generowanych słów gdy tłumacz jest aktywny */
+        body.translator-active .clickable-word {
             cursor: help;
         }
-        body.theme-light.translator-active .book-content {
-            color: #632ca6; /* Ciemniejszy fiolet dla jasnego motywu, żeby był czytelny */
-        }
-        body.theme-sepia.translator-active .book-content {
-            color: #7232bd; /* Dopasowany fiolet pod sepię */
+        body.translator-active .clickable-word:hover {
+            background-color: rgba(162, 82, 250, 0.2);
+            border-radius: 4px;
         }
 
         /* Separator stron */
@@ -286,88 +283,20 @@
             letter-spacing: 1px;
         }
 
-        /* --- Okno Modalne Słownika --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            z-index: 2000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal-overlay.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .modal {
-            background: var(--bg-interface);
-            border: 1px solid var(--border-color);
-            padding: 2.2rem;
-            border-radius: 24px;
-            max-width: 420px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-            transform: scale(0.8);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .modal-overlay.open .modal {
-            transform: scale(1);
-        }
-
-        .modal h3 {
-            font-size: 1.1rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.5rem;
-        }
-
-        .modal .word-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-interface);
-            margin-bottom: 0.8rem;
-        }
-
-        .modal .word-translation {
-            font-size: 1.3rem;
+        /* --- Nowoczesny Tooltip do szybkich tłumaczeń --- */
+        #tooltip {
+            position: absolute;
+            background: #1e1b29;
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.95rem;
             font-weight: 500;
-            color: #2ecc71;
-            background: rgba(46, 204, 113, 0.1);
-            padding: 0.6rem;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-        }
-
-        .btn-close {
-            padding: 0.6rem 1.8rem;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        /* --- Responsywność --- */
-        @media (max-width: 768px) {
-            header { padding: 0.8rem 3%; }
-            .btn-nav span { display: none; }
-            .reader-container { padding: 2rem 1rem 4rem; }
-            .book-content { font-size: 1.15rem; line-height: 1.8; }
+            display: none;
+            z-index: 2000;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(162, 82, 250, 0.4);
+            pointer-events: none; /* Żeby dymek nie uciekał przy najechaniu */
         }
     </style>
 </head>
@@ -387,7 +316,7 @@
             
             <div class="nav-group">
                 <div class="page-jumper">
-                    <input type="number" id="pageInput" class="page-input" min="1" max="2" value="1">
+                    <input type="number" id="pageInput" class="page-input" min="1" max="3" value="1">
                     <button class="btn-nav" onclick="jumpToPage()">Idź</button>
                 </div>
             </div>
@@ -427,6 +356,7 @@
     </header>
 
     <div class="reader-container">
+        <!-- Zgodnie z Twoim kodem: czysty tekst w p, skrypt sam zajmie się resztą -->
         <article class="book-content" id="bookContent">
             
             <div id="page-1">
@@ -456,33 +386,24 @@
        </article>
     </div>
 
-    <div class="modal-overlay" id="translateModal" onclick="closeModal(event)">
-        <div class="modal">
-            <h3>Lokalny Słownik</h3>
-            <div class="word-title" id="modalWord">Słowo</div>
-            <div class="word-translation" id="modalTranslation">Tłumaczenie</div>
-            <button class="btn-close" onclick="document.getElementById('translateModal').classList.remove('open')">Zamknij</button>
-        </div>
-    </div>
+    <!-- Element natychmiastowego dymku tłumaczenia -->
+    <div id="tooltip">Ładowanie...</div>
 
 <script>
-// 1. DYNAMICZNE POBIERANIE SŁOWNIKA Z PLIKU JSON
-let localDictionary = {};
+// --- 1. AUTOMATYCZNE GENEROWANIE KLIKALNYCH SŁÓW ---
+const bookContent = document.getElementById('bookContent');
+const paragraphs = bookContent.getElementsByTagName('p');
 
-async function loadDictionary() {
-    try {
-        const response = await fetch('slownik.json');
-        if (!response.ok) {
-            throw new Error(`Problem z plikiem słownika: ${response.status}`);
-        }
-        localDictionary = await response.json();
-        console.log('Słownik załadowany poprawnie.');
-    } catch (error) {
-        console.error('Nie udało się załadować słownika z pliku JSON:', error);
-    }
+for (let p of paragraphs) {
+    // Dzielimy tekst na słowa, zachowując spacje
+    const words = p.innerText.split(/(\s+)/);
+    p.innerHTML = words.map(chunk => {
+        if (chunk.trim() === '') return chunk; // Spacja zostaje
+        return `<span class="clickable-word">${chunk}</span>`; // Słowo owijamy w span
+    }).join('');
 }
 
-// 2. PRZEŁĄCZANIE TRYBU TŁUMACZA (ZMIANA KOLORU)
+// --- 2. OBSŁUGA TRYBU TŁUMACZA ---
 let isTranslatorActive = false;
 
 function toggleTranslatorMode() {
@@ -494,94 +415,57 @@ function toggleTranslatorMode() {
     } else {
         document.body.classList.remove('translator-active');
         btn.classList.remove('active');
+        document.getElementById('tooltip').style.display = 'none';
     }
 }
 
-// 3. INTELIGENTNE WYKRYWANIE KLIKNIĘTEGO SŁOWA BEZ BAZY SPANÓW
-document.getElementById('bookContent').addEventListener('click', function(e) {
+// --- 3. AKCJA TŁUMACZENIA I POKAZYWANIA TOOLTIPIE ---
+async function translateWord(word, event) {
+    const tooltip = document.getElementById('tooltip');
+    
+    // Pozycjonowanie dymku nad klikniętym słowem
+    tooltip.style.left = event.pageX + 'px';
+    tooltip.style.top = (event.pageY - 40) + 'px';
+    tooltip.style.display = 'block';
+    tooltip.innerText = 'Tłumaczenie...';
+
+    // Oczyszczenie słowa z interpunkcji
+    const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\"\'\?]/g,"");
+    if (!cleanWord.trim()) {
+        tooltip.style.display = 'none';
+        return;
+    }
+
+    // Wykorzystanie darmowego API Google Translate (EN -> PL)
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pl&dt=t&q=${encodeURIComponent(cleanWord)}`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        tooltip.innerText = data[0][0][0]; // Wstawienie przetłumaczonego tekstu
+    } catch (error) {
+        tooltip.innerText = 'Błąd połączenia';
+    }
+}
+
+// Kliknięcie w wygenerowane słowo (tylko, gdy tryb tłumacza jest aktywny)
+bookContent.addEventListener('click', function(e) {
     if (!isTranslatorActive) return;
     
-    // Blokujemy standardowe zachowanie, jeśli to nagłówek
-    if (e.target.tagName === 'H2') return;
-
-    const selection = window.getSelection();
-    if (!selection.toString().trim()) {
-        // Magia: rozszerzamy kliknięty punkt do pełnego słowa
-        const range = document.caretRangeFromPoint(e.clientX, e.clientY);
-        if (range) {
-            range.expand('word');
-            const clickedWord = range.toString().trim();
-            if (clickedWord && /[a-zA-Z]/.test(clickedWord)) {
-                handleWordTranslation(clickedWord);
-            }
-        }
+    if (e.target.classList.contains('clickable-word')) {
+        e.stopPropagation(); // Zatrzymujemy event, żeby dokument od razu nie schował tooltipa
+        translateWord(e.target.innerText, e);
     }
 });
 
-// 4. INTERAKTYWNY SYSTEM TŁUMACZENIA
-function handleWordTranslation(word) {
-    // Oczyszczenie słowa ze znaków interpunkcyjnych (np. kropek, przecinków)
-    let cleanWord = word.replace(/[^a-zA-Z']/g, '').trim();
-    if (!cleanWord) return;
-    
-    // Przygotowanie różnych wariantów do przeszukania bazy JSON
-    let originalWord = cleanWord;
-    let lowerWord = cleanWord.toLowerCase();
-    let fallbackWord = lowerWord.split("'")[0];
-    let capitalizedWord = cleanWord.charAt(0).toUpperCase() + cleanWord.slice(1).toLowerCase();
-
-    let translation = null;
-
-    // Szukamy dopasowania w bazie JSON
-    if (localDictionary[originalWord]) {
-        translation = localDictionary[originalWord];
-    } else if (localDictionary[lowerWord]) {
-        translation = localDictionary[lowerWord];
-    } else if (localDictionary[fallbackWord]) {
-        translation = localDictionary[fallbackWord];
-    } else if (localDictionary[capitalizedWord]) {
-        translation = localDictionary[capitalizedWord];
+// Ukrywanie dymku po kliknięciu gdziekolwiek indziej
+document.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('clickable-word')) {
+        document.getElementById('tooltip').style.display = 'none';
     }
+});
 
-    const modalWord = document.getElementById('modalWord');
-    const modalTranslation = document.getElementById('modalTranslation');
-    const modalOverlay = document.getElementById('translateModal');
-
-    modalWord.innerText = cleanWord;
-
-    const googleUrl = `https://translate.google.com/?sl=en&tl=pl&text=${encodeURIComponent(cleanWord)}&op=translate`;
-
-    if (translation) {
-        modalTranslation.innerHTML = `
-            <div style="color: #2ecc71; font-weight: 500; margin-bottom: 15px;">
-                ${translation}
-            </div>
-            <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 12px;">
-            <a href="${googleUrl}" target="_blank" style="display: inline-block; font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 600; padding: 4px 10px; background: rgba(162, 82, 250, 0.1); border-radius: 6px;">
-                🔍 Pełne tłumaczenie w Google
-            </a>
-        `;
-    } else {
-        modalTranslation.innerHTML = `
-            <div style="font-size: 0.95rem; color: #e74c3c; margin-bottom: 12px; background: rgba(231, 76, 60, 0.1); padding: 8px; border-radius: 8px;">
-                Brak tłumaczenia w bazie podręcznej
-            </div>
-            <a href="${googleUrl}" target="_blank" style="display: inline-block; font-size: 0.9rem; color: var(--accent); text-decoration: underline; font-weight: 600; margin-top: 5px;">
-                🔍 Sprawdź w Google Translate
-            </a>
-        `;
-    }
-
-    modalOverlay.classList.add('open');
-}
-
-function closeModal(e) {
-    if (e.target.id === 'translateModal') {
-        document.getElementById('translateModal').classList.remove('open');
-    }
-}
-
-// 5. ROZWIJALNY PANEL OCHRONY WZROKU (TEMATY)
+// --- 4. ROZWIJALNY PANEL STYLÓW EKRANU ---
 function toggleDropdown() {
     document.getElementById('themeDropdown').classList.toggle('open');
 }
@@ -601,7 +485,7 @@ window.addEventListener('click', function(e) {
     }
 });
 
-// 6. TRYB PEŁNOEKRANOWY (FULLSCREEN)
+// --- 5. TRYB PEŁNOEKRANOWY ---
 function toggleFullscreen() {
     const btn = document.getElementById('fullscreenBtn');
     
@@ -620,7 +504,7 @@ function toggleFullscreen() {
     }
 }
 
-// 7. NAWIGACJA (SKOK DO PODANEJ STRONY)
+// --- 6. NAWIGACJA PO STRONACH ---
 function jumpToPage() {
     const pageNum = document.getElementById('pageInput').value;
     if (pageNum == 1) {
@@ -631,7 +515,7 @@ function jumpToPage() {
     }
 }
 
-// 8. WERYFIKACJA FIREBASE + INICJALIZACJA STRONY
+// --- 7. WERYFIKACJA FIREBASE + INICJALIZACJA STRONY ---
 (function() {
     const script = document.createElement('script');
     script.type = 'module';
@@ -651,17 +535,12 @@ function jumpToPage() {
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Ukrywamy treść na czas weryfikacji tożsamości użytkownika
         document.body.style.opacity = '0';
 
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.href = 'logowanie.html';
             } else {
-                // Ładujemy bazę JSON w tle
-                await loadDictionary();
-
-                // Pokazujemy gotową stronę z płynnym przejściem
                 document.body.style.opacity = '1';
                 document.body.style.transition = 'opacity 0.4s ease';
             }
