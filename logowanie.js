@@ -139,7 +139,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
         // 3. Wylogowanie użytkownika (żeby system nie wpuścił go automatycznie po rejestracji)
         await signOut(auth);
 
-        showAlert("Konto utworzone pomyślnie! Wysłaliśmy link weryfikacyjny. Sprawdź pocztę (i folder spam).", "success");
+        showAlert("Konto utworzone pomyślnie! Wysłaliśmy link weryfikacyjny. Sprawdź pocztę (oraz folder SPAM!).", "success");
         
         // Automatyczne przełączenie widoku na formularz logowania po 4 sekundach
         setTimeout(() => {
