@@ -1144,37 +1144,6 @@ function jumpToPage(inputId) {
 })();
 
 
-  import { getDatabase, ref, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-// Wklej to WEWNĄTRZ funkcji onAuthStateChanged(auth, (user) => { ... }) 
-// w miejscu, gdzie użytkownik jest pomyślnie zalogowany:
-if (user) {
-    const db = getDatabase();
-    const userStatusRef = ref(db, '/status/' + user.uid);
-
-    // Dynamicznie pobieramy ładną nazwę strony, na której aktualnie jest użytkownik
-    // Np. z tytułu strony <title> lub nazwy pliku
-    const pageTitle = document.title || window.location.pathname.split('/').pop() || "Strona główna";
-
-    const sessionData = {
-        state: "online",
-        email: user.email,
-        page: pageTitle, // Przekazuje np. "CyberBooks Reader Pro - Zaawansowany Czytnik"
-        url: window.location.pathname, // Przekazuje np. "/czytnik.html"
-        last_changed: Date.now()
-    };
-
-    // Zapisz obecność w bazie danych przy wejściu na stronę
-    set(userStatusRef, sessionData);
-
-    // Kiedy użytkownik zamknie kartę, wyłączy telefon lub straci internet:
-    // Firebase automatycznie usunie jego status "online" na serwerze!
-    onDisconnect(userStatusRef).set({
-        state: "offline",
-        email: user.email,
-        last_changed: Date.now()
-    });
-}
 </script>
 </body>
 </html>
