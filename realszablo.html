@@ -212,20 +212,30 @@
             margin-right: 8px;
         }
 
-        /* --- MOBILNY PANEL OPCJI (NOWOŚĆ) --- */
+        /* --- MOBILNY PANEL OPCJI (PRZYKLEJONY DO GÓRY) --- */
         .mobile-toggle-btn {
-            display: none; /* Domyślnie schowany na komputerach */
+            display: none;
         }
 
         .mobile-options-panel {
             display: none;
             width: 100%;
             background: var(--bg-interface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-color);
             padding: 1rem 5%;
             flex-direction: column;
             gap: 1rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            
+            /* Naprawa: Panel przyklejony pod paskiem nawigacyjnym, przewija się wraz ze stroną na górze */
+            position: fixed;
+            top: 50px; /* Wysokość zbliżona do paska header */
+            left: 0;
+            z-index: 99; 
+            max-height: calc(100vh - 60px);
+            overflow-y: auto;
         }
 
         .mobile-options-panel.open {
@@ -238,6 +248,15 @@
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 0.8rem;
+        }
+
+        /* Lista motywów na stałe rozwinięta na telefonie */
+        .mobile-theme-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            width: 100%;
+            margin-top: 0.3rem;
         }
 
         /* --- Kolumna Tekstu --- */
@@ -386,22 +405,21 @@
 
         /* --- MEDIA QUERIES: DOPASOWANIE DO TELEFONÓW --- */
         @media (max-width: 768px) {
-            /* Ukrywamy domyślne elementy paska, które mają pójść do menu rozwijanego */
             .desktop-only {
                 display: none !important;
             }
 
-            /* Pokazujemy przycisk rozwijania opcji */
             .mobile-toggle-btn {
                 display: flex;
             }
 
             header {
                 padding: 0.6rem 4%;
+                position: fixed; /* Header też staje się fixed, aby panel pod nim idealnie leżał */
             }
-
-            .btn-nav span {
-                display: inline; /* Ukrywanie tekstów na rzecz ikon opcjonalnie, ale zostawiamy czytelne */
+            
+            .reader-container {
+                padding-top: 6rem; /* Dodatkowy margines na sztywny header mobilny */
             }
         }
     </style>
@@ -479,27 +497,24 @@
             </div>
         </div>
         <hr style="border: 0; border-top: 1px solid var(--border-color);">
-        <div class="mobile-row">
-            <span style="font-size:0.9rem; font-weight:500;">Styl ekranu:</span>
-            <div class="dropdown-wrapper" id="themeDropdownMobile" style="width:100%;">
-                <button class="btn-nav" onclick="toggleDropdown('themeDropdownMobile')" style="width:100%; justify-content:center;">🎨 Wybierz motyw</button>
-                <div class="dropdown-menu" style="width:100%; position:relative; top:10px; box-shadow:none;">
-                    <div class="theme-option" onclick="changeTheme('dark', 'themeDropdownMobile')">
-                        <span>Ciemny (Dark)</span>
-                        <div class="theme-dot" style="background: #0d0e12;"></div>
-                    </div>
-                    <div class="theme-option" onclick="changeTheme('gray', 'themeDropdownMobile')">
-                        <span>Szary (Muted)</span>
-                        <div class="theme-dot" style="background: #2d3139;"></div>
-                    </div>
-                    <div class="theme-option" onclick="changeTheme('light', 'themeDropdownMobile')">
-                        <span>Jasny (Light)</span>
-                        <div class="theme-dot" style="background: #f8fafc;"></div>
-                    </div>
-                    <div class="theme-option" onclick="changeTheme('sepia', 'themeDropdownMobile')">
-                        <span>Sepia ✨</span>
-                        <div class="theme-dot" style="background: #f4edd9;"></div>
-                    </div>
+        <div class="mobile-col">
+            <span style="font-size:0.9rem; font-weight:500; display:block; margin-bottom:0.5rem;">Styl ekranu (Wybierz motyw):</span>
+            <div class="mobile-theme-list">
+                <div class="theme-option" style="border: 1px solid var(--border-color);" onclick="changeTheme('dark', 'mobile')">
+                    <span>Ciemny (Dark)</span>
+                    <div class="theme-dot" style="background: #0d0e12;"></div>
+                </div>
+                <div class="theme-option" style="border: 1px solid var(--border-color);" onclick="changeTheme('gray', 'mobile')">
+                    <span>Szary (Muted)</span>
+                    <div class="theme-dot" style="background: #2d3139;"></div>
+                </div>
+                <div class="theme-option" style="border: 1px solid var(--border-color);" onclick="changeTheme('light', 'mobile')">
+                    <span>Jasny (Light)</span>
+                    <div class="theme-dot" style="background: #f8fafc;"></div>
+                </div>
+                <div class="theme-option" style="border: 1px solid var(--border-color);" onclick="changeTheme('sepia', 'mobile')">
+                    <span>Sepia ✨</span>
+                    <div class="theme-dot" style="background: #f4edd9;"></div>
                 </div>
             </div>
         </div>
@@ -578,6 +593,7 @@ function toggleTranslatorMode() {
         document.body.classList.remove('translator-active');
         btn.classList.remove('active');
         document.getElementById('tooltip').style.display = 'none';
+        activeClickedWordElement = null;
     }
 }
 
@@ -615,14 +631,23 @@ function positionTooltip(element) {
     tooltip.style.top = (rect.top + scrollTop - tooltip.offsetHeight - 12) + 'px';
 }
 
+// Obsługa kliknięcia w słowo
 bookContent.addEventListener('click', function(e) {
     if (!isTranslatorActive) return;
     
     if (e.target.classList.contains('clickable-word')) {
         e.stopPropagation();
         
-        activeClickedWordElement = e.target;
         const tooltip = document.getElementById('tooltip');
+        
+        // POPRAWKA: Jeśli dymek jest już otwarty (na jakimkolwiek słowie), zamknij go i wyczyść stan. Następne kliknięcie otworzy nowy.
+        if (tooltip.style.display === 'block') {
+            tooltip.style.display = 'none';
+            activeClickedWordElement = null;
+            return;
+        }
+        
+        activeClickedWordElement = e.target;
         const tooltipText = document.getElementById('tooltipText');
         const sentenceBtn = document.getElementById('translateSentenceBtn');
 
@@ -682,12 +707,15 @@ function changeTheme(themeName, dropdownId) {
     if (themeName !== 'dark') {
         document.body.classList.add(`theme-${themeName}`);
     }
-    document.getElementById(dropdownId).classList.remove('open');
+    
+    // Jeśli zmiana nastąpiła z dropdowna desktopowego, zamknij go
+    if(dropdownId !== 'mobile' && document.getElementById(dropdownId)) {
+        document.getElementById(dropdownId).classList.remove('open');
+    }
 }
 
 window.addEventListener('click', function(e) {
-    // Zamykanie standardowych dropdownów przy kliknięciu obok
-    ['themeDropdown', 'themeDropdownMobile'].forEach(id => {
+    ['themeDropdown'].forEach(id => {
         const dropdown = document.getElementById(id);
         if (dropdown && !dropdown.contains(e.target)) {
             dropdown.classList.remove('open');
@@ -723,9 +751,12 @@ function jumpToPage(inputId) {
         const marker = document.getElementById(`page-marker-${pageNum}`);
         if (marker) marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    // Autohide panelu na komórkach po dokonaniu wyboru strony
-    document.getElementById('mobileOptionsPanel').classList.remove('open');
-    document.getElementById('mobileMenuBtn').classList.remove('active');
+    
+    // Auto ukrywanie paska na telefonie po nawigacji do strony
+    if(inputId.includes('Mobile')) {
+        document.getElementById('mobileOptionsPanel').classList.remove('open');
+        document.getElementById('mobileMenuBtn').classList.remove('active');
+    }
 }
 
 // --- 7. WERYFIKACJA FIREBASE + SYNC INSTANCJI USERA ---
