@@ -6,7 +6,7 @@
     <title>CyberBooks Reader Pro - Zaawansowany Czytnik</title>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- Tematy kolorystyczne (Zmiennes CSS) --- */
+        /* --- Tematy kolorystyczne (Zmienne CSS) --- */
         :root {
             --bg-main: #0d0e12;
             --bg-interface: rgba(22, 24, 33, 0.85);
@@ -115,6 +115,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            white-space: nowrap;
         }
 
         .btn-nav:hover {
@@ -211,6 +212,34 @@
             margin-right: 8px;
         }
 
+        /* --- MOBILNY PANEL OPCJI (NOWOŚĆ) --- */
+        .mobile-toggle-btn {
+            display: none; /* Domyślnie schowany na komputerach */
+        }
+
+        .mobile-options-panel {
+            display: none;
+            width: 100%;
+            background: var(--bg-interface);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 5%;
+            flex-direction: column;
+            gap: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .mobile-options-panel.open {
+            display: flex;
+        }
+
+        .mobile-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
         /* --- Kolumna Tekstu --- */
         .reader-container {
             max-width: 740px;
@@ -240,7 +269,6 @@
             text-indent: 1.5rem;
         }
 
-        /* KLUCZOWA NAPRAWA: display: inline sprawia, że spacje w justify działają naturalnie! */
         .clickable-word {
             color: var(--word-interactive);
             display: inline; 
@@ -355,6 +383,27 @@
             background: var(--accent);
             color: #fff;
         }
+
+        /* --- MEDIA QUERIES: DOPASOWANIE DO TELEFONÓW --- */
+        @media (max-width: 768px) {
+            /* Ukrywamy domyślne elementy paska, które mają pójść do menu rozwijanego */
+            .desktop-only {
+                display: none !important;
+            }
+
+            /* Pokazujemy przycisk rozwijania opcji */
+            .mobile-toggle-btn {
+                display: flex;
+            }
+
+            header {
+                padding: 0.6rem 4%;
+            }
+
+            .btn-nav span {
+                display: inline; /* Ukrywanie tekstów na rzecz ikon opcjonalnie, ale zostawiamy czytelne */
+            }
+        }
     </style>
 </head>
 <body>
@@ -364,37 +413,38 @@
 
             <div class="nav-group">
                 <a href="sdfdsf.html" class="btn-nav return-btn" style="text-decoration: none;">
-                    ⬅️ <span>Strona główna</span>
+                    ⬅️ <span>Powrót</span>
                 </a>
             </div>
-            <div id="online-counter" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9rem; color: #2ecc71; font-weight: bold; background: rgba(46, 204, 113, 0.1); padding: 4px 10px; border-radius: 20px; margin-left: 10px;">
+
+            <div id="online-counter" class="desktop-only" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9rem; color: #2ecc71; font-weight: bold; background: rgba(46, 204, 113, 0.1); padding: 4px 10px; border-radius: 20px;">
                 🟢 Online: <span id="active-users-count">1</span>
             </div>
             
-            <div class="nav-group">
+            <div class="nav-group desktop-only">
                 <div class="page-jumper">
                     <input type="number" id="pageInput" class="page-input" min="1" max="3" value="1">
-                    <button class="btn-nav" onclick="jumpToPage()">Idź</button>
+                    <button class="btn-nav" onclick="jumpToPage('pageInput')">Idź</button>
                 </div>
             </div>
 
-            <div class="nav-group">
+            <div class="nav-group desktop-only">
                 <div class="dropdown-wrapper" id="themeDropdown">
-                    <button class="btn-nav" onclick="toggleDropdown()">🎨 <span>Styl ekranu</span></button>
+                    <button class="btn-nav" onclick="toggleDropdown('themeDropdown')">🎨 <span>Styl ekranu</span></button>
                     <div class="dropdown-menu">
-                        <div class="theme-option" onclick="changeTheme('dark')">
+                        <div class="theme-option" onclick="changeTheme('dark', 'themeDropdown')">
                             <span>Ciemny (Dark)</span>
                             <div class="theme-dot" style="background: #0d0e12;"></div>
                         </div>
-                        <div class="theme-option" onclick="changeTheme('gray')">
+                        <div class="theme-option" onclick="changeTheme('gray', 'themeDropdown')">
                             <span>Szary (Muted)</span>
                             <div class="theme-dot" style="background: #2d3139;"></div>
                         </div>
-                        <div class="theme-option" onclick="changeTheme('light')">
+                        <div class="theme-option" onclick="changeTheme('light', 'themeDropdown')">
                             <span>Jasny (Light)</span>
                             <div class="theme-dot" style="background: #f8fafc;"></div>
                         </div>
-                        <div class="theme-option" onclick="changeTheme('sepia')">
+                        <div class="theme-option" onclick="changeTheme('sepia', 'themeDropdown')">
                             <span>Sepia</span>
                             <span class="healthy-tag">(Zdrowy ✨)</span>
                             <div class="theme-dot" style="background: #f4edd9;"></div>
@@ -402,15 +452,58 @@
                     </div>
                 </div>
 
-                <button class="btn-nav" id="fullscreenBtn" onclick="toggleFullscreen()">🔲 <span>Pełny ekran</span></button>
+                <button class="btn-nav" id="fullscreenBtn" onclick="toggleFullscreen('fullscreenBtn')">🔲 <span>Pełny ekran</span></button>
             </div>
 
             <div class="nav-group">
-                <button class="btn-nav" id="translatorToggle" onclick="toggleTranslatorMode()">🌐 Tłumacz słowo</button>
+                <button class="btn-nav mobile-toggle-btn" id="mobileMenuBtn" onclick="toggleMobileOptions()">⚙️ <span>Opcje</span></button>
+                <button class="btn-nav" id="translatorToggle" onclick="toggleTranslatorMode()">🌐 Tłumacz</button>
             </div>
 
         </div>
     </header>
+
+    <div class="mobile-options-panel" id="mobileOptionsPanel">
+        <div class="mobile-row">
+            <div style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9rem; color: #2ecc71; font-weight: bold; background: rgba(46, 204, 113, 0.1); padding: 4px 10px; border-radius: 20px;">
+                🟢 Online: <span id="active-users-count-mobile">1</span>
+            </div>
+            <button class="btn-nav" id="fullscreenBtnMobile" onclick="toggleFullscreen('fullscreenBtnMobile')">🔲 Pełny ekran</button>
+        </div>
+        <hr style="border: 0; border-top: 1px solid var(--border-color);">
+        <div class="mobile-row">
+            <span style="font-size:0.9rem; font-weight:500;">Skocz do strony:</span>
+            <div class="page-jumper">
+                <input type="number" id="pageInputMobile" class="page-input" min="1" max="3" value="1">
+                <button class="btn-nav" onclick="jumpToPage('pageInputMobile')">Idź</button>
+            </div>
+        </div>
+        <hr style="border: 0; border-top: 1px solid var(--border-color);">
+        <div class="mobile-row">
+            <span style="font-size:0.9rem; font-weight:500;">Styl ekranu:</span>
+            <div class="dropdown-wrapper" id="themeDropdownMobile" style="width:100%;">
+                <button class="btn-nav" onclick="toggleDropdown('themeDropdownMobile')" style="width:100%; justify-content:center;">🎨 Wybierz motyw</button>
+                <div class="dropdown-menu" style="width:100%; position:relative; top:10px; box-shadow:none;">
+                    <div class="theme-option" onclick="changeTheme('dark', 'themeDropdownMobile')">
+                        <span>Ciemny (Dark)</span>
+                        <div class="theme-dot" style="background: #0d0e12;"></div>
+                    </div>
+                    <div class="theme-option" onclick="changeTheme('gray', 'themeDropdownMobile')">
+                        <span>Szary (Muted)</span>
+                        <div class="theme-dot" style="background: #2d3139;"></div>
+                    </div>
+                    <div class="theme-option" onclick="changeTheme('light', 'themeDropdownMobile')">
+                        <span>Jasny (Light)</span>
+                        <div class="theme-dot" style="background: #f8fafc;"></div>
+                    </div>
+                    <div class="theme-option" onclick="changeTheme('sepia', 'themeDropdownMobile')">
+                        <span>Sepia ✨</span>
+                        <div class="theme-dot" style="background: #f4edd9;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="reader-container">
         <article class="book-content" id="bookContent">
@@ -508,7 +601,6 @@ async function requestTranslation(textToTranslate, targetElement) {
     }
 }
 
-// Globalna zmienna przechowująca element klikniętego słowa w celu ponownych kalkulacji pozycji
 let activeClickedWordElement = null;
 
 function positionTooltip(element) {
@@ -519,12 +611,10 @@ function positionTooltip(element) {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
-    // Pozycjonowanie dymku dokładnie nad słowem z uwzględnieniem jego aktualnej dynamicznej wysokości
     tooltip.style.left = (rect.left + scrollLeft + (rect.width / 2)) + 'px';
     tooltip.style.top = (rect.top + scrollTop - tooltip.offsetHeight - 12) + 'px';
 }
 
-// Obsługa kliknięcia w słowo
 bookContent.addEventListener('click', function(e) {
     if (!isTranslatorActive) return;
     
@@ -540,7 +630,6 @@ bookContent.addEventListener('click', function(e) {
         tooltipText.innerText = 'Tłumaczenie słowa...';
         sentenceBtn.style.display = 'block';
 
-        // Wstępne ustawienie pozycji dymku
         positionTooltip(activeClickedWordElement);
 
         const cleanWord = e.target.innerText.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\"\'\?]/g,"");
@@ -548,13 +637,11 @@ bookContent.addEventListener('click', function(e) {
         currentSentenceText = parentSentenceBlock ? parentSentenceBlock.getAttribute('data-sentence') : "";
 
         requestTranslation(cleanWord, tooltipText).then(() => {
-            // Ponowne dopasowanie pozycji po wstawieniu przetłumaczonego tekstu słowa
             positionTooltip(activeClickedWordElement);
         });
     }
 });
 
-// Obsługa przycisku tłumacz całe zdanie w dymku
 document.getElementById('translateSentenceBtn').addEventListener('click', function(e) {
     e.stopPropagation();
     if (!currentSentenceText) return;
@@ -563,16 +650,13 @@ document.getElementById('translateSentenceBtn').addEventListener('click', functi
     this.style.display = 'none';
     tooltipText.innerText = 'Tłumaczenie całego zdania...';
 
-    // Przeliczenie natychmiastowe pozycji (dymek się zmniejszył, bo schowaliśmy przycisk)
     positionTooltip(activeClickedWordElement);
 
     requestTranslation(currentSentenceText, tooltipText).then(() => {
-        // Ostateczne przeliczenie pozycji (tekst zdania może być długi i dymek urośnie w pionie)
         positionTooltip(activeClickedWordElement);
     });
 });
 
-// Ukrywanie dymku po kliknięciu poza słówko/dymek
 document.addEventListener('click', function(e) {
     const tooltip = document.getElementById('tooltip');
     if (!tooltip.contains(e.target) && !e.target.classList.contains('clickable-word')) {
@@ -581,57 +665,70 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// --- 4. ROZWIJALNY PANEL STYLÓW EKRANU ---
-function toggleDropdown() {
-    document.getElementById('themeDropdown').classList.toggle('open');
+// --- 4. ROZWIJALNE PANALE INTERFEJSU & MOBILNE MENU ---
+function toggleMobileOptions() {
+    const panel = document.getElementById('mobileOptionsPanel');
+    const btn = document.getElementById('mobileMenuBtn');
+    panel.classList.toggle('open');
+    btn.classList.toggle('active');
 }
 
-function changeTheme(themeName) {
+function toggleDropdown(dropdownId) {
+    document.getElementById(dropdownId).classList.toggle('open');
+}
+
+function changeTheme(themeName, dropdownId) {
     document.body.classList.remove('theme-dark', 'theme-gray', 'theme-light', 'theme-sepia');
     if (themeName !== 'dark') {
         document.body.classList.add(`theme-${themeName}`);
     }
-    document.getElementById('themeDropdown').classList.remove('open');
+    document.getElementById(dropdownId).classList.remove('open');
 }
 
 window.addEventListener('click', function(e) {
-    const dropdown = document.getElementById('themeDropdown');
-    if (dropdown && !dropdown.contains(e.target)) {
-        dropdown.classList.remove('open');
-    }
+    // Zamykanie standardowych dropdownów przy kliknięciu obok
+    ['themeDropdown', 'themeDropdownMobile'].forEach(id => {
+        const dropdown = document.getElementById(id);
+        if (dropdown && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
 });
 
 // --- 5. TRYB PEŁNOEKRANOWY ---
-function toggleFullscreen() {
-    const btn = document.getElementById('fullscreenBtn');
+function toggleFullscreen(buttonId) {
+    const btn = document.getElementById(buttonId);
     
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().then(() => {
             btn.classList.add('active');
-            btn.innerHTML = `🔲 <span>Zamknij pełny ekran</span>`;
+            btn.innerHTML = buttonId.includes('Mobile') ? `🔲 Zamknij full` : `🔲 <span>Zamknij pełny ekran</span>`;
         }).catch(err => {
             console.error(`Błąd Fullscreen: ${err.message}`);
         });
     } else {
         document.exitFullscreen().then(() => {
             btn.classList.remove('active');
-            btn.innerHTML = `🔲 <span>Pełny ekran</span>`;
+            btn.innerHTML = buttonId.includes('Mobile') ? `🔲 Pełny ekran` : `🔲 <span>Pełny ekran</span>`;
         });
     }
 }
 
 // --- 6. NAWIGACJA PO STRONACH ---
-function jumpToPage() {
-    const pageNum = document.getElementById('pageInput').value;
+function jumpToPage(inputId) {
+    const pageNum = document.getElementById(inputId).value;
     if (pageNum == 1) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
         const marker = document.getElementById(`page-marker-${pageNum}`);
         if (marker) marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    // Autohide panelu na komórkach po dokonaniu wyboru strony
+    document.getElementById('mobileOptionsPanel').classList.remove('open');
+    document.getElementById('mobileMenuBtn').classList.remove('active');
 }
 
-// --- 7. WERYFIKACJA FIREBASE + INICJALIZACJA STRONY ---
+// --- 7. WERYFIKACJA FIREBASE + SYNC INSTANCJI USERA ---
 (function() {
     const script = document.createElement('script');
     script.type = 'module';
