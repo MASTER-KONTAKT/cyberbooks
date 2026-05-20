@@ -216,7 +216,7 @@
 
         /* --- Kolumna Tekstu --- */
         .reader-container {
-            max-width: 740px; /* Perfekcyjna szerokość do skupienia wzroku */
+            max-width: 740px;
             margin: 0 auto;
             padding: 4rem 1.5rem 8rem;
             background-color: var(--book-bg);
@@ -228,6 +228,7 @@
             line-height: 1.9;
             color: var(--book-text);
             text-align: justify;
+            transition: color 0.3s ease;
         }
 
         .book-content h2 {
@@ -241,6 +242,18 @@
         .book-content p {
             margin-bottom: 1.6rem;
             text-indent: 1.5rem;
+        }
+
+        /* Zmiana koloru tekstu w trybie tłumacza (bez podkreśleń) */
+        body.translator-active .book-content {
+            color: #b08bf8; /* Delikatny fiolet, świetnie pasuje do Twojego akcentu #a252fa */
+            cursor: help;
+        }
+        body.theme-light.translator-active .book-content {
+            color: #632ca6; /* Ciemniejszy fiolet dla jasnego motywu, żeby był czytelny */
+        }
+        body.theme-sepia.translator-active .book-content {
+            color: #7232bd; /* Dopasowany fiolet pod sepię */
         }
 
         /* Separator stron */
@@ -271,18 +284,6 @@
             font-weight: 500;
             z-index: 2;
             letter-spacing: 1px;
-        }
-
-        /* --- Obsługa Aktywnego Tłumacza --- */
-        body.translator-active .book-content p span.word {
-            cursor: help;
-            border-bottom: 1px dashed var(--accent);
-            padding: 0 1px;
-        }
-
-        body.translator-active .book-content p span.word:hover {
-            background: var(--accent-glow);
-            color: var(--accent);
         }
 
         /* --- Okno Modalne Słownika --- */
@@ -364,8 +365,8 @@
         /* --- Responsywność --- */
         @media (max-width: 768px) {
             header { padding: 0.8rem 3%; }
-            .btn-nav span { display: none; } /* Ukryj opisy tekstowe przycisków na mobile */
-            .reader-container { padding: 2rem 1rem 4rem; } /* Zanikanie marginesów bocznych */
+            .btn-nav span { display: none; }
+            .reader-container { padding: 2rem 1rem 4rem; }
             .book-content { font-size: 1.15rem; line-height: 1.8; }
         }
     </style>
@@ -381,8 +382,8 @@
                 </a>
             </div>
             <div id="online-counter" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9rem; color: #2ecc71; font-weight: bold; background: rgba(46, 204, 113, 0.1); padding: 4px 10px; border-radius: 20px; margin-left: 10px;">
-    🟢 Online: <span id="active-users-count">1</span>
-</div>
+                🟢 Online: <span id="active-users-count">1</span>
+            </div>
             
             <div class="nav-group">
                 <div class="page-jumper">
@@ -452,8 +453,7 @@
                 <p>Tom takes his map again. He shows the map to the waiter. "Excuse me," Tom asks. "Where is Green Street?" The waiter looks at the map and points his finger. "Go straight, then turn left at the big supermarket. Green Street is there."</p>
             </div>
 
-
-     </article>
+       </article>
     </div>
 
     <div class="modal-overlay" id="translateModal" onclick="closeModal(event)">
@@ -466,7 +466,7 @@
     </div>
 
 <script>
-// 1. DYNAMICZNE POBIERANIE SŁOWNIKA + TOTALNE OCZYSZCZANIE KLUCZY
+// 1. DYNAMICZNE POBIERANIE SŁOWNIKA Z PLIKU JSON
 let localDictionary = {};
 
 async function loadDictionary() {
@@ -475,132 +475,14 @@ async function loadDictionary() {
         if (!response.ok) {
             throw new Error(`Problem z plikiem słownika: ${response.status}`);
         }
-        const data = await response.json();
-        
-        localDictionary = {};
-        for (let key in data) {
-            // Czyścimy klucz w JSON zostawiając absolutnie tylko małe litery i prosty apostrof
-            let cleanKey = key
-                .normalize('NFD')
-                .replace(/[\u2018\u2019]/g, "'") // Zamiana zakrzywionych apostrofów na proste
-                .replace(/[^a-zA-Z']/g, '')     // Usunięcie WSZYSTKIEGO co nie jest literą lub apostrofem
-                .toLowerCase();
-            
-            if (cleanKey) {
-                localDictionary[cleanKey] = data[key];
-            }
-        }
-        console.log('Słownik załadowany i pancernie oczyszczony.');
+        localDictionary = await response.json();
+        console.log('Słownik załadowany poprawnie.');
     } catch (error) {
         console.error('Nie udało się załadować słownika z pliku JSON:', error);
     }
 }
 
-// Funkcja pomocnicza – bezwzględny filtr zostawiający TYLKO czyste litery angielskie i apostrof
-function superCleanWord(word) {
-    if (!word) return '';
-    return word
-        .normalize('NFD')               // Rozbija ukryte znaki diakrytyczne i ligatury binarne
-        .replace(/[\u2018\u2019]/g, "'") // Ujednolica apostrofy drukarskie na proste
-        .replace(/[^a-zA-Z']/g, '')     // Wymazuje każdy znak specjalny, cyfrę, spację, tabulator, niewidoczny bajt
-        .trim();
-}
-    // 7. WERYFIKACJA FIREBASE + LICZNIK ONLINE LIVE
-(function() {
-    const script = document.createElement('script');
-    script.type = 'module';
-    script.innerHTML = `
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        // Importujemy potrzebne funkcje z bazy Firestore
-        import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-          apiKey: "AIzaSyCNg0JnAgAH39y9D-8vhJKwQ10JYxx5Z0s",
-          authDomain: "cyberbook-83464.firebaseapp.com",
-          projectId: "cyberbook-83464",
-          storageBucket: "cyberbook-83464.firebasestorage.app",
-          messagingSenderId: "93288968489",
-          appId: "1:93288968489:web:61a2651a867903dff769c8"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        document.body.style.opacity = '0';
-
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'logowanie.html';
-            } else {
-                await loadDictionary();
-                initWordTokenization();
-                document.body.style.opacity = '1';
-                document.body.style.transition = 'opacity 0.4s ease';
-
-                // --- LOGIKA LICZNIKA ONLINE ---
-                // Tworzymy unikalny identyfikator obecności dla tej sesji przeglądarki
-                const userPresenceRef = doc(db, "online_users", user.uid);
-                
-                // Zgłaszamy obecność w bazie przy wejściu
-                await setDoc(userPresenceRef, {
-                    email: user.email,
-                    lastActive: Date.now()
-                });
-
-                // Nasłuchujemy na żywo, ile osób jest w kolekcji "online_users"
-                onSnapshot(collection(db, "online_users"), (snapshot) => {
-                    const count = snapshot.size;
-                    const counterEl = document.getElementById('active-users-count');
-                    if (counterEl) {
-                        counterEl.innerText = count;
-                    }
-                });
-
-                // Usuwamy obecność z bazy, kiedy użytkownik zamyka kartę lub odchodzi ze strony
-                window.addEventListener('beforeunload', () => {
-                    deleteDoc(userPresenceRef);
-                });
-                
-                // Awaryjne czyszczenie przy wylogowaniu
-                window.addEventListener('unload', () => {
-                    deleteDoc(userPresenceRef);
-                });
-            }
-        });
-    `;
-    document.head.appendChild(script);
-})();
-
-// 2. PRZYGOTOWANIE TEKSTU (TOKENIZACJA SŁÓW)
-function initWordTokenization() {
-    const paragraphs = document.querySelectorAll('.book-content p');
-    paragraphs.forEach(p => {
-        // Zamieniamy wszelkie białe znaki (entery, tabulatory, potrójne spacje) na pojedyncze, klasyczne spacje
-        let text = p.innerText.replace(/\s+/g, ' ');
-        
-        // Dzielimy tekst na pojedyncze wyrazy
-        const tokens = text.split(' ');
-        
-        const processedTokens = tokens.map(token => {
-            const cleanWord = superCleanWord(token);
-            
-            // Jeśli po agresywnym oczyszczeniu słowo nadal istnieje, robimy z niego klikalny span
-            if (cleanWord.length > 0) {
-                // Znaki interpunkcyjne stojące przy słowie (np. przecinek, kropka, myślnik) wyciągamy na zewnątrz spana
-                const punctuation = token.replace(/[a-zA-Z\u2018\u2019']/g, '').trim();
-                return `<span class="word" onclick="handleWordClick('${cleanWord}')">${cleanWord}</span>${punctuation}`;
-            }
-            return token;
-        });
-        
-        // Łączymy tekst z powrotem standardowymi spacjami
-        p.innerHTML = processedTokens.join(' ');
-    });
-}
-
-// 3. INTERAKTYWNY SYSTEM TŁUMACZENIA
+// 2. PRZEŁĄCZANIE TRYBU TŁUMACZA (ZMIANA KOLORU)
 let isTranslatorActive = false;
 
 function toggleTranslatorMode() {
@@ -615,31 +497,59 @@ function toggleTranslatorMode() {
     }
 }
 
-function handleWordClick(word) {
+// 3. INTELIGENTNE WYKRYWANIE KLIKNIĘTEGO SŁOWA BEZ BAZY SPANÓW
+document.getElementById('bookContent').addEventListener('click', function(e) {
     if (!isTranslatorActive) return;
-
-    // Przepuszczamy kliknięte słowo przez nasz pancerny filtr i zamieniamy na małe litery
-    let searchWord = superCleanWord(word).toLowerCase();
     
-    // Obsługa form z końcówką dopasowania (np. "bed's" spróbuje też znaleźć "bed")
-    let fallbackWord = searchWord.split("'")[0];
+    // Blokujemy standardowe zachowanie, jeśli to nagłówek
+    if (e.target.tagName === 'H2') return;
+
+    const selection = window.getSelection();
+    if (!selection.toString().trim()) {
+        // Magia: rozszerzamy kliknięty punkt do pełnego słowa
+        const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+        if (range) {
+            range.expand('word');
+            const clickedWord = range.toString().trim();
+            if (clickedWord && /[a-zA-Z]/.test(clickedWord)) {
+                handleWordTranslation(clickedWord);
+            }
+        }
+    }
+});
+
+// 4. INTERAKTYWNY SYSTEM TŁUMACZENIA
+function handleWordTranslation(word) {
+    // Oczyszczenie słowa ze znaków interpunkcyjnych (np. kropek, przecinków)
+    let cleanWord = word.replace(/[^a-zA-Z']/g, '').trim();
+    if (!cleanWord) return;
+    
+    // Przygotowanie różnych wariantów do przeszukania bazy JSON
+    let originalWord = cleanWord;
+    let lowerWord = cleanWord.toLowerCase();
+    let fallbackWord = lowerWord.split("'")[0];
+    let capitalizedWord = cleanWord.charAt(0).toUpperCase() + cleanWord.slice(1).toLowerCase();
 
     let translation = null;
 
-    // Szukamy dopasowania w czystej bazie danych
-    if (localDictionary[searchWord]) {
-        translation = localDictionary[searchWord];
+    // Szukamy dopasowania w bazie JSON
+    if (localDictionary[originalWord]) {
+        translation = localDictionary[originalWord];
+    } else if (localDictionary[lowerWord]) {
+        translation = localDictionary[lowerWord];
     } else if (localDictionary[fallbackWord]) {
         translation = localDictionary[fallbackWord];
+    } else if (localDictionary[capitalizedWord]) {
+        translation = localDictionary[capitalizedWord];
     }
 
     const modalWord = document.getElementById('modalWord');
     const modalTranslation = document.getElementById('modalTranslation');
     const modalOverlay = document.getElementById('translateModal');
 
-    modalWord.innerText = word;
+    modalWord.innerText = cleanWord;
 
-    const googleUrl = `https://translate.google.com/?sl=en&tl=pl&text=${encodeURIComponent(word)}&op=translate`;
+    const googleUrl = `https://translate.google.com/?sl=en&tl=pl&text=${encodeURIComponent(cleanWord)}&op=translate`;
 
     if (translation) {
         modalTranslation.innerHTML = `
@@ -671,7 +581,7 @@ function closeModal(e) {
     }
 }
 
-// 4. PANEL TEMATÓW
+// 5. ROZWIJALNY PANEL OCHRONY WZROKU (TEMATY)
 function toggleDropdown() {
     document.getElementById('themeDropdown').classList.toggle('open');
 }
@@ -691,7 +601,7 @@ window.addEventListener('click', function(e) {
     }
 });
 
-// 5. TRYB PEŁNOEKRANOWY (FULLSCREEN)
+// 6. TRYB PEŁNOEKRANOWY (FULLSCREEN)
 function toggleFullscreen() {
     const btn = document.getElementById('fullscreenBtn');
     
@@ -710,7 +620,7 @@ function toggleFullscreen() {
     }
 }
 
-// 6. NAWIGACJA
+// 7. NAWIGACJA (SKOK DO PODANEJ STRONY)
 function jumpToPage() {
     const pageNum = document.getElementById('pageInput').value;
     if (pageNum == 1) {
@@ -721,7 +631,7 @@ function jumpToPage() {
     }
 }
 
-// 7. WERYFIKACJA FIREBASE + INICJALIZACJA STRONY
+// 8. WERYFIKACJA FIREBASE + INICJALIZACJA STRONY
 (function() {
     const script = document.createElement('script');
     script.type = 'module';
@@ -741,14 +651,17 @@ function jumpToPage() {
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
+        // Ukrywamy treść na czas weryfikacji tożsamości użytkownika
         document.body.style.opacity = '0';
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = 'logowanie.html';
             } else {
+                // Ładujemy bazę JSON w tle
                 await loadDictionary();
-                initWordTokenization();
+
+                // Pokazujemy gotową stronę z płynnym przejściem
                 document.body.style.opacity = '1';
                 document.body.style.transition = 'opacity 0.4s ease';
             }
