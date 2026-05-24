@@ -609,10 +609,9 @@
 }
 
        /* --- Zaktualizowana Responsywność --- */
-        @media (max-width: 992px) {
+        @media (max-width: 1100px) {
             header { padding: 1rem 5%; }
             
-            /* Logo z lewej, hamburger z prawej */
             .navbar { 
                 flex-direction: row; 
                 justify-content: space-between; 
@@ -621,7 +620,7 @@
             
             .logo { font-size: 1.4rem; }
             
-            /* Pokazujemy ikonkę na telefonach */
+            /* Pokazujemy ikonkę hamburgera wcześniej! */
             .hamburger { display: flex; }
             
             /* Przemodelowanie menu na wersję wysuwaną z góry */
@@ -630,7 +629,7 @@
                 top: 100%;
                 left: 0;
                 width: 100%;
-                background: var(--bg-navbar);
+                background: rgba(13, 14, 18, 0.97); /* Mniejsza przezroczystość, jak chciałeś */
                 backdrop-filter: blur(12px);
                 -webkit-backdrop-filter: blur(12px);
                 flex-direction: column;
