@@ -6,6 +6,82 @@
     <title>CyberBooks - Darmowa Platforma E-booków</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+
+
+            /* --- Ekran prac kontrolnych (Blokada strony) --- */
+.maintenance-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--bg-main); /* Całkowicie ciemne tło */
+    z-index: 99999; /* Kosmicznie wysoki z-index, żeby przykryć menu i modale */
+    display: flex; /* Zmień na 'none', aby wyłączyć blokadę */
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.maintenance-box {
+    background: var(--bg-card);
+    border: 1px solid rgba(162, 82, 250, 0.3); /* Fioletowa ramka */
+    box-shadow: 0 0 40px rgba(162, 82, 250, 0.15);
+    padding: 3rem;
+    border-radius: 24px;
+    max-width: 550px;
+    width: 100%;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.maintenance-box h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.maintenance-lead {
+    color: var(--text-main);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+.maintenance-details {
+    background: rgba(13, 14, 18, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 14px;
+    text-align: left;
+    margin-bottom: 2rem;
+}
+
+.maintenance-details p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+}
+
+.maintenance-details p:last-child {
+    margin-bottom: 0;
+}
+
+.maintenance-details strong {
+    color: var(--text-main);
+}
+
+.maintenance-footer {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+
+        
         /* --- Zmienne globalne --- */
         :root {
             --bg-main: #0d0e12;
@@ -675,77 +751,7 @@
 
 
 
-        /* --- Ekran prac kontrolnych (Blokada strony) --- */
-.maintenance-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: var(--bg-main); /* Całkowicie ciemne tło */
-    z-index: 99999; /* Kosmicznie wysoki z-index, żeby przykryć menu i modale */
-    display: flex; /* Zmień na 'none', aby wyłączyć blokadę */
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-}
-
-.maintenance-box {
-    background: var(--bg-card);
-    border: 1px solid rgba(162, 82, 250, 0.3); /* Fioletowa ramka */
-    box-shadow: 0 0 40px rgba(162, 82, 250, 0.15);
-    padding: 3rem;
-    border-radius: 24px;
-    max-width: 550px;
-    width: 100%;
-    text-align: center;
-    backdrop-filter: blur(10px);
-}
-
-.maintenance-box h2 {
-    font-size: 2.2rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    background: var(--accent-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.maintenance-lead {
-    color: var(--text-main);
-    font-size: 1.1rem;
-    margin-bottom: 2rem;
-}
-
-.maintenance-details {
-    background: rgba(13, 14, 18, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 1.5rem;
-    border-radius: 14px;
-    text-align: left;
-    margin-bottom: 2rem;
-}
-
-.maintenance-details p {
-    color: var(--text-muted);
-    font-size: 0.95rem;
-    margin-bottom: 0.8rem;
-    line-height: 1.5;
-}
-
-.maintenance-details p:last-child {
-    margin-bottom: 0;
-}
-
-.maintenance-details strong {
-    color: var(--text-main);
-}
-
-.maintenance-footer {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-}
+    
         
     </style>
 </head>
