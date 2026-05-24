@@ -590,27 +590,104 @@
             font-size: 1.1rem;
             grid-column: 1 / -1;
         }
+        /* --- Style dla ikony Hamburgera (domyślnie ukryta na PC) --- */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            z-index: 1001; /* Żeby zawsze był nad menu */
+        }
 
-        /* --- Zaktualizowana Responsywność --- */
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background-color: var(--text-main);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+       /* --- Zaktualizowana Responsywność --- */
         @media (max-width: 768px) {
-            header { padding: 1rem 3%; }
-            .navbar { flex-direction: column; gap: 0.8rem; }
+            header { padding: 1rem 5%; }
+            
+            /* Logo z lewej, hamburger z prawej */
+            .navbar { 
+                flex-direction: row; 
+                justify-content: space-between; 
+                align-items: center; 
+            }
+            
             .logo { font-size: 1.4rem; }
-            .nav-links { display: flex; gap: 1.2rem; flex-wrap: wrap; justify-content: center; }
-            .nav-links a { font-size: 0.85rem; }
+            
+            /* Pokazujemy ikonkę na telefonach */
+            .hamburger { display: flex; }
+            
+            /* Przemodelowanie menu na wersję wysuwaną z góry */
+            .nav-links { 
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: var(--bg-navbar);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                flex-direction: column;
+                padding: 2rem 0;
+                gap: 2rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                
+                /* Ukrywanie - menu wyjeżdża do góry i robi się niewidzialne */
+                transform: translateY(-150%);
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+                z-index: -1;
+            }
+
+            /* Klasa aktywująca pokazanie menu */
+            .nav-links.active {
+                transform: translateY(0);
+                opacity: 1;
+                visibility: visible;
+            }
+            
+            .nav-links a { font-size: 1.1rem; }
+
+            /* Animacja ikony hamburgera na "X" */
+            .hamburger.active span:nth-child(1) {
+                transform: translateY(8px) rotate(45deg);
+            }
+            .hamburger.active span:nth-child(2) {
+                opacity: 0;
+            }
+            .hamburger.active span:nth-child(3) {
+                transform: translateY(-8px) rotate(-45deg);
+            }
+
             .hero { padding: 4rem 3% 2rem; }
             .hero h1 { font-size: 2.1rem; }
             .filter-panel { flex-direction: column; align-items: stretch; padding: 1rem; }
             .books-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
         }
+        }
     </style>
 </head>
 <body>
 
-    <header id="main-header">
+<header id="main-header">
         <div class="navbar">
             <a href="#" class="logo">CyberBooks</a>
-            <ul class="nav-links">
+            
+            <!-- NOWE: Ikona hamburgera (3 kreski) -->
+            <div class="hamburger" id="hamburger-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <ul class="nav-links" id="nav-links">
                 <li><a href="#" class="active" id="nav-platform">Platforma</a></li>
                 <li><a href="#" id="nav-library">📚 Moja Biblioteka</a></li>
                 <li><a href="#kategorie">Kategorie</a></li>
@@ -812,6 +889,28 @@
                 header.classList.remove('scrolled');
             }
         });
+
+
+        
+        // Obsługa wysuwanego menu na telefonach
+        const hamburger = document.getElementById('hamburger-menu');
+        const navLinks = document.getElementById('nav-links');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+
+        // Zamknięcie menu po kliknięciu w jakikolwiek link wewnątrz niego
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('active');
+            });
+        });
+
+
+        
 
         // Zaawansowany filtr powiązany z animacją CSS
         function runFilter() {
