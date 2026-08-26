@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" type="image/png" href="favicon.png">
+
+    <link rel="icon" type="image/png" href="favicon.png">
+
     <title>CyberBooks - Logowanie i Rejestracja</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -38,8 +40,6 @@
                     #ec4899 100%
                 );
 
-            --accent-light: rgba(124, 58, 237, 0.08);
-
             --shadow-card:
                 0 20px 60px rgba(31, 35, 50, 0.10);
 
@@ -67,6 +67,7 @@
 
         body {
             min-height: 100vh;
+
             background:
                 radial-gradient(
                     circle at 15% 15%,
@@ -93,11 +94,12 @@
 
 
         /* =========================================================
-           DELIKATNE TŁO
+           TŁO
         ========================================================= */
 
         body::before {
             content: "";
+
             position: fixed;
 
             width: 420px;
@@ -148,7 +150,6 @@
         ========================================================= */
 
         .auth-container {
-
             width: 100%;
             max-width: 440px;
 
@@ -189,7 +190,6 @@
         ========================================================= */
 
         .auth-logo {
-
             text-align: center;
 
             font-size: 30px;
@@ -212,7 +212,6 @@
         ========================================================= */
 
         .tabs {
-
             display: flex;
 
             gap: 5px;
@@ -230,7 +229,6 @@
 
 
         .tab-btn {
-
             flex: 1;
 
             border: none;
@@ -257,13 +255,11 @@
 
 
         .tab-btn:hover {
-
             color: var(--text-main);
         }
 
 
         .tab-btn.active {
-
             color: var(--accent-primary);
 
             background: white;
@@ -278,7 +274,6 @@
         ========================================================= */
 
         .alert {
-
             padding: 12px 14px;
 
             border-radius: 12px;
@@ -294,7 +289,6 @@
 
 
         .alert-error {
-
             background: #fff1f2;
 
             color: #dc2626;
@@ -304,7 +298,6 @@
 
 
         .alert-success {
-
             background: #ecfdf5;
 
             color: #059669;
@@ -318,13 +311,11 @@
         ========================================================= */
 
         .form-panel {
-
             display: none;
         }
 
 
         .form-panel.active {
-
             display: block;
 
             animation: panelAppear 0.25s ease;
@@ -346,7 +337,6 @@
 
 
         .input-group {
-
             display: flex;
 
             flex-direction: column;
@@ -358,7 +348,6 @@
 
 
         .input-group label {
-
             color: var(--text-secondary);
 
             font-size: 13px;
@@ -368,7 +357,6 @@
 
 
         .input-group input {
-
             width: 100%;
 
             height: 48px;
@@ -395,13 +383,11 @@
 
 
         .input-group input::placeholder {
-
             color: #a4aab7;
         }
 
 
         .input-group input:hover {
-
             border-color: var(--border-hover);
 
             background: white;
@@ -409,7 +395,6 @@
 
 
         .input-group input:focus {
-
             background: white;
 
             border-color: var(--accent-primary);
@@ -420,11 +405,120 @@
 
 
         /* =========================================================
+           WYMAGANIA HASŁA
+        ========================================================= */
+
+        .password-requirements {
+            display: none;
+
+            background: #f8f9fc;
+
+            border: 1px solid #e7e9ef;
+
+            border-radius: 12px;
+
+            padding: 12px 14px;
+
+            margin-top: -8px;
+
+            margin-bottom: 18px;
+
+            animation: requirementsAppear 0.2s ease;
+        }
+
+
+        .password-requirements.visible {
+            display: block;
+        }
+
+
+        @keyframes requirementsAppear {
+
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        .requirements-title {
+            font-size: 12px;
+
+            font-weight: 600;
+
+            color: var(--text-secondary);
+
+            margin-bottom: 8px;
+        }
+
+
+        .requirement {
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            font-size: 11px;
+
+            color: #8b93a1;
+
+            margin: 5px 0;
+
+            transition:
+                color 0.2s ease;
+        }
+
+
+        .requirement-icon {
+            width: 17px;
+            height: 17px;
+
+            border-radius: 50%;
+
+            border: 1px solid #d5d9e2;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 10px;
+
+            flex-shrink: 0;
+
+            transition:
+                background 0.2s ease,
+                border-color 0.2s ease,
+                color 0.2s ease;
+        }
+
+
+        .requirement.valid {
+            color: #059669;
+        }
+
+
+        .requirement.valid .requirement-icon {
+            background: #ecfdf5;
+
+            border-color: #86efac;
+
+            color: #059669;
+        }
+
+
+        /* =========================================================
            PRZYCISK
         ========================================================= */
 
         .btn-submit {
-
             width: 100%;
 
             height: 49px;
@@ -455,7 +549,6 @@
 
 
         .btn-submit:hover {
-
             transform: translateY(-2px);
 
             box-shadow:
@@ -464,13 +557,11 @@
 
 
         .btn-submit:active {
-
             transform: translateY(0);
         }
 
 
         .btn-submit:disabled {
-
             opacity: 0.65;
 
             cursor: not-allowed;
@@ -486,7 +577,6 @@
         ========================================================= */
 
         .back-link {
-
             display: flex;
 
             align-items: center;
@@ -505,23 +595,20 @@
 
             font-weight: 500;
 
-            transition:
-                color 0.25s ease;
+            transition: color 0.25s ease;
         }
 
 
         .back-link:hover {
-
             color: var(--accent-primary);
         }
 
 
         /* =========================================================
-           MAŁY TEKST POD FORMULARZEM
+           INFORMACJA
         ========================================================= */
 
         .auth-info {
-
             text-align: center;
 
             margin-top: 20px;
@@ -541,13 +628,11 @@
         @media (max-width: 500px) {
 
             body {
-
                 padding: 18px;
             }
 
 
             .auth-container {
-
                 padding: 30px 22px;
 
                 border-radius: 20px;
@@ -555,7 +640,6 @@
 
 
             .auth-logo {
-
                 font-size: 27px;
 
                 margin-bottom: 27px;
@@ -563,7 +647,6 @@
 
 
             .tabs {
-
                 margin-bottom: 24px;
             }
         }
@@ -572,13 +655,11 @@
         @media (max-width: 360px) {
 
             .auth-container {
-
                 padding: 25px 18px;
             }
 
 
             .auth-logo {
-
                 font-size: 25px;
             }
         }
@@ -591,7 +672,6 @@
         @media (prefers-reduced-motion: reduce) {
 
             * {
-
                 scroll-behavior: auto !important;
 
                 animation-duration: 0.01ms !important;
@@ -741,11 +821,70 @@
                     <input
                         type="password"
                         id="register-password"
-                        placeholder="Min. 6 znaków"
+                        placeholder="Wpisz hasło"
                         autocomplete="new-password"
                         minlength="6"
                         required
                     >
+
+                </div>
+
+
+                <!-- =================================================
+                     WYMAGANIA HASŁA
+                     Pojawiają się dopiero po kliknięciu pola
+                ================================================== -->
+
+                <div
+                    class="password-requirements"
+                    id="password-requirements"
+                >
+
+                    <div class="requirements-title">
+                        Hasło musi zawierać:
+                    </div>
+
+
+                    <div
+                        class="requirement"
+                        id="requirement-length"
+                    >
+
+                        <span class="requirement-icon">
+                            ✓
+                        </span>
+
+                        Minimum 6 znaków
+
+                    </div>
+
+
+                    <div
+                        class="requirement"
+                        id="requirement-uppercase"
+                    >
+
+                        <span class="requirement-icon">
+                            ✓
+                        </span>
+
+                        Co najmniej 1 wielką literę
+
+                    </div>
+
+
+                    <div
+                        class="requirement"
+                        id="requirement-numbers"
+                    >
+
+                        <span class="requirement-icon">
+                            ✓
+                        </span>
+
+                        Co najmniej 2 cyfry
+
+                    </div>
 
                 </div>
 
@@ -773,14 +912,18 @@
 
 
         <div class="auth-info">
+
             Twoje konto pozwala korzystać z funkcji CyberBooks
             i synchronizować dane między urządzeniami.
+
         </div>
 
     </div>
 
 
-    <!-- TWÓJ DOTYCHCZASOWY SYSTEM LOGOWANIA -->
+    <!-- =========================================================
+         SYSTEM LOGOWANIA
+    ========================================================= -->
 
     <script
         type="module"
@@ -788,9 +931,15 @@
     ></script>
 
 
-    <!-- OBSŁUGA ZAKŁADEK -->
+    <!-- =========================================================
+         OBSŁUGA ZAKŁADEK + WYMAGAŃ HASŁA
+    ========================================================= -->
 
     <script>
+
+        /* =====================================================
+           ZAKŁADKI
+        ===================================================== */
 
         const tabLogin =
             document.getElementById("tab-login");
@@ -808,20 +957,26 @@
         function showLogin() {
 
             tabLogin.classList.add("active");
+
             tabRegister.classList.remove("active");
 
             panelLogin.classList.add("active");
+
             panelRegister.classList.remove("active");
+
         }
 
 
         function showRegister() {
 
             tabRegister.classList.add("active");
+
             tabLogin.classList.remove("active");
 
             panelRegister.classList.add("active");
+
             panelLogin.classList.remove("active");
+
         }
 
 
@@ -834,6 +989,143 @@
         tabRegister.addEventListener(
             "click",
             showRegister
+        );
+
+
+        /* =====================================================
+           WYMAGANIA HASŁA
+        ===================================================== */
+
+        const passwordInput =
+            document.getElementById("register-password");
+
+        const passwordRequirements =
+            document.getElementById("password-requirements");
+
+        const requirementLength =
+            document.getElementById("requirement-length");
+
+        const requirementUppercase =
+            document.getElementById("requirement-uppercase");
+
+        const requirementNumbers =
+            document.getElementById("requirement-numbers");
+
+
+        /* =====================================================
+           AKTUALIZACJA WYMAGAŃ
+        ===================================================== */
+
+        function updatePasswordRequirements() {
+
+            const password =
+                passwordInput.value;
+
+
+            // Minimum 6 znaków
+
+            const hasMinimumLength =
+                password.length >= 6;
+
+
+            // Minimum jedna wielka litera
+
+            const hasUppercase =
+                /[A-Z]/.test(password);
+
+
+            // Minimum dwie cyfry
+
+            const numberCount =
+                (password.match(/[0-9]/g) || []).length;
+
+            const hasTwoNumbers =
+                numberCount >= 2;
+
+
+            // Aktualizacja wyglądu
+
+            requirementLength.classList.toggle(
+                "valid",
+                hasMinimumLength
+            );
+
+
+            requirementUppercase.classList.toggle(
+                "valid",
+                hasUppercase
+            );
+
+
+            requirementNumbers.classList.toggle(
+                "valid",
+                hasTwoNumbers
+            );
+
+        }
+
+
+        /* =====================================================
+           POKAZANIE WYMAGAŃ PO KLIKNIĘCIU
+        ===================================================== */
+
+        passwordInput.addEventListener(
+            "focus",
+            () => {
+
+                passwordRequirements.classList.add(
+                    "visible"
+                );
+
+                updatePasswordRequirements();
+
+            }
+        );
+
+
+        /* =====================================================
+           AKTUALIZACJA PODCZAS PISANIA
+        ===================================================== */
+
+        passwordInput.addEventListener(
+            "input",
+            updatePasswordRequirements
+        );
+
+
+        /* =====================================================
+           UKRYCIE WYMAGAŃ PO OPUSZCZENIU POLA
+           
+           Jeżeli hasło jest poprawne, wymagania nadal zostają.
+           Dzięki temu użytkownik widzi, że wszystko jest OK.
+        ===================================================== */
+
+        passwordInput.addEventListener(
+            "blur",
+            () => {
+
+                const password =
+                    passwordInput.value;
+
+                const valid =
+                    password.length >= 6 &&
+                    /[A-Z]/.test(password) &&
+                    (password.match(/[0-9]/g) || []).length >= 2;
+
+
+                if (valid) {
+
+                    setTimeout(() => {
+
+                        passwordRequirements.classList.remove(
+                            "visible"
+                        );
+
+                    }, 300);
+
+                }
+
+            }
         );
 
     </script>
