@@ -23,13 +23,13 @@ import {
 // =========================================================
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCNg0JnAgAH39yD9-8vhJKwQ10JYxx5Z0s",
-    authDomain: "cyberbook-83464.firebaseapp.com",
-    projectId: "cyberbook-83464",
-    storageBucket: "cyberbook-83464.firebasestorage.app",
-    messagingSenderId: "93288968489",
-    appId: "1:93288968489:web:61a2651a867903dff769c8",
-    measurementId: "G-PW5G4KFXX1"
+  apiKey: "AIzaSyCNg0JnAgAH39y9D-8vhJKwQ10JYxx5Z0s",
+  authDomain: "cyberbook-83464.firebaseapp.com",
+  projectId: "cyberbook-83464",
+  storageBucket: "cyberbook-83464.firebasestorage.app",
+  messagingSenderId: "932889686489",
+  appId: "1:932889686489:web:61a2651a867903dff769c8",
+  measurementId: "G-PW5G4KFXX1"
 };
 
 
