@@ -3,18 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>CyberBooks - Logowanie i Rejestracja</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
+
+        /* =========================================================
+           CYBERBOOKS - JASNY MOTYW
+        ========================================================= */
+
         :root {
-            --bg-main: #0d0e12;
-            --bg-card: rgba(22, 24, 33, 0.75);
-            --accent-primary: #a252fa;
-            --accent-gradient: linear-gradient(135deg, #646cff 0%, #f355da 100%);
-            --text-main: #ffffff;
-            --text-muted: #9ca3af;
-            --neon-glow: rgba(162, 82, 250, 0.3);
+            --bg-main: #f5f6fa;
+            --bg-card: rgba(255, 255, 255, 0.92);
+            --bg-input: #f8f9fc;
+
+            --text-main: #20242d;
+            --text-secondary: #4b5563;
+            --text-muted: #7b8494;
+
+            --border-color: #e7e9ef;
+            --border-hover: #d8dbe5;
+
+            --accent-primary: #7c3aed;
+            --accent-secondary: #6366f1;
+            --accent-pink: #ec4899;
+
+            --accent-gradient:
+                linear-gradient(
+                    135deg,
+                    #6366f1 0%,
+                    #7c3aed 45%,
+                    #ec4899 100%
+                );
+
+            --accent-light: rgba(124, 58, 237, 0.08);
+
+            --shadow-card:
+                0 20px 60px rgba(31, 35, 50, 0.10);
+
+            --shadow-button:
+                0 10px 25px rgba(124, 58, 237, 0.20);
         }
+
+
+        /* =========================================================
+           RESET
+        ========================================================= */
 
         * {
             margin: 0;
@@ -23,209 +59,784 @@
             font-family: 'Poppins', sans-serif;
         }
 
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+
+        html {
+            scroll-behavior: smooth;
         }
+
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(
+                    circle at 15% 15%,
+                    rgba(99, 102, 241, 0.08),
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at 85% 85%,
+                    rgba(236, 72, 153, 0.07),
+                    transparent 30%
+                ),
+                var(--bg-main);
+
+            color: var(--text-main);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 30px 20px;
+
+            overflow-x: hidden;
+        }
+
+
+        /* =========================================================
+           DELIKATNE TŁO
+        ========================================================= */
+
+        body::before {
+            content: "";
+            position: fixed;
+
+            width: 420px;
+            height: 420px;
+
+            border-radius: 50%;
+
+            background:
+                radial-gradient(
+                    circle,
+                    rgba(124, 58, 237, 0.08),
+                    transparent 70%
+                );
+
+            top: -180px;
+            left: -180px;
+
+            pointer-events: none;
+        }
+
+
+        body::after {
+            content: "";
+
+            position: fixed;
+
+            width: 400px;
+            height: 400px;
+
+            border-radius: 50%;
+
+            background:
+                radial-gradient(
+                    circle,
+                    rgba(236, 72, 153, 0.07),
+                    transparent 70%
+                );
+
+            right: -180px;
+            bottom: -180px;
+
+            pointer-events: none;
+        }
+
+
+        /* =========================================================
+           GŁÓWNY PANEL
+        ========================================================= */
 
         .auth-container {
-            background: var(--bg-card);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 24px;
+
             width: 100%;
             max-width: 440px;
-            padding: 2.5rem;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(100, 108, 255, 0.1);
+
+            background: var(--bg-card);
+
+            border: 1px solid var(--border-color);
+
+            border-radius: 24px;
+
+            padding: 40px;
+
+            box-shadow: var(--shadow-card);
+
+            position: relative;
+
+            z-index: 2;
+
+            animation: cardAppear 0.55s ease;
         }
+
+
+        @keyframes cardAppear {
+
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+
+        /* =========================================================
+           LOGO
+        ========================================================= */
 
         .auth-logo {
+
             text-align: center;
-            font-size: 2rem;
+
+            font-size: 30px;
+
             font-weight: 700;
+
+            letter-spacing: 0.5px;
+
             background: var(--accent-gradient);
+
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 2rem;
-            letter-spacing: 1px;
+
+            margin-bottom: 32px;
         }
+
+
+        /* =========================================================
+           ZAKŁADKI
+        ========================================================= */
 
         .tabs {
+
             display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 0.5rem;
+
+            gap: 5px;
+
+            background: #f1f2f6;
+
+            border-radius: 14px;
+
+            padding: 5px;
+
+            margin-bottom: 28px;
+
+            border: 1px solid #e8e9ef;
         }
+
 
         .tab-btn {
-            background: none;
+
+            flex: 1;
+
             border: none;
+
+            background: transparent;
+
             color: var(--text-muted);
-            font-size: 1rem;
+
+            font-size: 14px;
+
             font-weight: 600;
+
             cursor: pointer;
-            padding: 0.5rem 1rem;
-            transition: all 0.3s ease;
-            position: relative;
+
+            padding: 11px 15px;
+
+            border-radius: 10px;
+
+            transition:
+                color 0.25s ease,
+                background 0.25s ease,
+                box-shadow 0.25s ease;
         }
+
+
+        .tab-btn:hover {
+
+            color: var(--text-main);
+        }
+
 
         .tab-btn.active {
-            color: var(--text-main);
+
+            color: var(--accent-primary);
+
+            background: white;
+
+            box-shadow:
+                0 3px 10px rgba(30, 35, 50, 0.08);
         }
 
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -9px;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: var(--accent-gradient);
-            border-radius: 2px;
-        }
 
-        .form-panel {
-            display: none;
-        }
+        /* =========================================================
+           ALERT
+        ========================================================= */
 
-        .form-panel.active {
-            display: block;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .input-group label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .input-group input {
-            background: #161821;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 0.85rem 1.2rem;
-            color: white;
-            font-size: 0.95rem;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .input-group input:focus {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 15px var(--neon-glow);
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 0.9rem;
-            background: var(--accent-gradient);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .btn-submit:hover {
-            box-shadow: 0 0 20px rgba(243, 85, 218, 0.4);
-            transform: translateY(-2px);
-        }
-
-        /* Komunikaty o błędach/powodzeniach wbudowane w design */
         .alert {
-            padding: 0.8rem 1rem;
+
+            padding: 12px 14px;
+
             border-radius: 12px;
-            font-size: 0.85rem;
-            margin-bottom: 1.5rem;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+
+            margin-bottom: 20px;
+
             display: none;
-            line-height: 1.4;
         }
+
 
         .alert-error {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.2);
+
+            background: #fff1f2;
+
+            color: #dc2626;
+
+            border: 1px solid #fecdd3;
         }
 
+
         .alert-success {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.2);
+
+            background: #ecfdf5;
+
+            color: #059669;
+
+            border: 1px solid #a7f3d0;
         }
-        
-        .back-link {
+
+
+        /* =========================================================
+           FORMULARZ
+        ========================================================= */
+
+        .form-panel {
+
+            display: none;
+        }
+
+
+        .form-panel.active {
+
             display: block;
-            text-align: center;
-            margin-top: 1.5rem;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.85rem;
-            transition: color 0.3s ease;
+
+            animation: panelAppear 0.25s ease;
         }
-        .back-link:hover {
+
+
+        @keyframes panelAppear {
+
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        .input-group {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 7px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .input-group label {
+
+            color: var(--text-secondary);
+
+            font-size: 13px;
+
+            font-weight: 600;
+        }
+
+
+        .input-group input {
+
+            width: 100%;
+
+            height: 48px;
+
+            background: var(--bg-input);
+
+            border: 1px solid var(--border-color);
+
+            border-radius: 12px;
+
+            padding: 0 15px;
+
             color: var(--text-main);
+
+            font-size: 14px;
+
+            outline: none;
+
+            transition:
+                border-color 0.25s ease,
+                box-shadow 0.25s ease,
+                background 0.25s ease;
         }
+
+
+        .input-group input::placeholder {
+
+            color: #a4aab7;
+        }
+
+
+        .input-group input:hover {
+
+            border-color: var(--border-hover);
+
+            background: white;
+        }
+
+
+        .input-group input:focus {
+
+            background: white;
+
+            border-color: var(--accent-primary);
+
+            box-shadow:
+                0 0 0 4px rgba(124, 58, 237, 0.08);
+        }
+
+
+        /* =========================================================
+           PRZYCISK
+        ========================================================= */
+
+        .btn-submit {
+
+            width: 100%;
+
+            height: 49px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background: var(--accent-gradient);
+
+            color: white;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            margin-top: 6px;
+
+            box-shadow: var(--shadow-button);
+
+            transition:
+                transform 0.25s ease,
+                box-shadow 0.25s ease,
+                opacity 0.25s ease;
+        }
+
+
+        .btn-submit:hover {
+
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 14px 30px rgba(124, 58, 237, 0.25);
+        }
+
+
+        .btn-submit:active {
+
+            transform: translateY(0);
+        }
+
+
+        .btn-submit:disabled {
+
+            opacity: 0.65;
+
+            cursor: not-allowed;
+
+            transform: none;
+
+            box-shadow: none;
+        }
+
+
+        /* =========================================================
+           POWRÓT
+        ========================================================= */
+
+        .back-link {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 5px;
+
+            margin-top: 25px;
+
+            color: var(--text-muted);
+
+            text-decoration: none;
+
+            font-size: 13px;
+
+            font-weight: 500;
+
+            transition:
+                color 0.25s ease;
+        }
+
+
+        .back-link:hover {
+
+            color: var(--accent-primary);
+        }
+
+
+        /* =========================================================
+           MAŁY TEKST POD FORMULARZEM
+        ========================================================= */
+
+        .auth-info {
+
+            text-align: center;
+
+            margin-top: 20px;
+
+            font-size: 11px;
+
+            line-height: 1.5;
+
+            color: #9aa1ae;
+        }
+
+
+        /* =========================================================
+           RESPONSYWNOŚĆ
+        ========================================================= */
+
+        @media (max-width: 500px) {
+
+            body {
+
+                padding: 18px;
+            }
+
+
+            .auth-container {
+
+                padding: 30px 22px;
+
+                border-radius: 20px;
+            }
+
+
+            .auth-logo {
+
+                font-size: 27px;
+
+                margin-bottom: 27px;
+            }
+
+
+            .tabs {
+
+                margin-bottom: 24px;
+            }
+        }
+
+
+        @media (max-width: 360px) {
+
+            .auth-container {
+
+                padding: 25px 18px;
+            }
+
+
+            .auth-logo {
+
+                font-size: 25px;
+            }
+        }
+
+
+        /* =========================================================
+           REDUCED MOTION
+        ========================================================= */
+
+        @media (prefers-reduced-motion: reduce) {
+
+            * {
+
+                scroll-behavior: auto !important;
+
+                animation-duration: 0.01ms !important;
+
+                transition-duration: 0.01ms !important;
+            }
+        }
+
     </style>
 </head>
+
+
 <body>
 
     <div class="auth-container">
-        <div class="auth-logo">CyberBooks</div>
-        
+
+        <!-- LOGO -->
+
+        <div class="auth-logo">
+            CyberBooks
+        </div>
+
+
+        <!-- ZAKŁADKI -->
+
         <div class="tabs">
-            <button class="tab-btn active" id="tab-login">Logowanie</button>
-            <button class="tab-btn" id="tab-register">Rejestracja</button>
+
+            <button
+                class="tab-btn active"
+                id="tab-login"
+                type="button"
+            >
+                Logowanie
+            </button>
+
+
+            <button
+                class="tab-btn"
+                id="tab-register"
+                type="button"
+            >
+                Rejestracja
+            </button>
+
         </div>
 
-        <div class="alert alert-error" id="auth-alert"></div>
 
-        <div class="form-panel active" id="panel-login">
+        <!-- KOMUNIKAT -->
+
+        <div
+            class="alert alert-error"
+            id="auth-alert"
+        ></div>
+
+
+        <!-- =====================================================
+             LOGOWANIE
+        ====================================================== -->
+
+        <div
+            class="form-panel active"
+            id="panel-login"
+        >
+
             <form id="login-form">
+
                 <div class="input-group">
-                    <label for="login-email">Adres E-mail</label>
-                    <input type="email" id="login-email" placeholder="twoj-email@example.com" required>
+
+                    <label for="login-email">
+                        Adres e-mail
+                    </label>
+
+                    <input
+                        type="email"
+                        id="login-email"
+                        placeholder="twoj-email@example.com"
+                        autocomplete="email"
+                        required
+                    >
+
                 </div>
+
+
                 <div class="input-group">
-                    <label for="login-password">Hasło</label>
-                    <input type="password" id="login-password" placeholder="••••••••" required>
+
+                    <label for="login-password">
+                        Hasło
+                    </label>
+
+                    <input
+                        type="password"
+                        id="login-password"
+                        placeholder="••••••••"
+                        autocomplete="current-password"
+                        required
+                    >
+
                 </div>
-                <button type="submit" class="btn-submit">Zaloguj się</button>
+
+
+                <button
+                    type="submit"
+                    class="btn-submit"
+                >
+                    Zaloguj się
+                </button>
+
             </form>
+
         </div>
 
-        <div class="form-panel" id="panel-register">
+
+        <!-- =====================================================
+             REJESTRACJA
+        ====================================================== -->
+
+        <div
+            class="form-panel"
+            id="panel-register"
+        >
+
             <form id="register-form">
+
                 <div class="input-group">
-                    <label for="register-email">Adres E-mail</label>
-                    <input type="email" id="register-email" placeholder="twoj-email@example.com" required>
+
+                    <label for="register-email">
+                        Adres e-mail
+                    </label>
+
+                    <input
+                        type="email"
+                        id="register-email"
+                        placeholder="twoj-email@example.com"
+                        autocomplete="email"
+                        required
+                    >
+
                 </div>
+
+
                 <div class="input-group">
-                    <label for="register-password">Hasło</label>
-                    <input type="password" id="register-password" placeholder="Min. 6 znaków" required>
+
+                    <label for="register-password">
+                        Hasło
+                    </label>
+
+                    <input
+                        type="password"
+                        id="register-password"
+                        placeholder="Min. 6 znaków"
+                        autocomplete="new-password"
+                        minlength="6"
+                        required
+                    >
+
                 </div>
-                <button type="submit" class="btn-submit">Utwórz konto</button>
+
+
+                <button
+                    type="submit"
+                    class="btn-submit"
+                >
+                    Utwórz konto
+                </button>
+
             </form>
+
         </div>
 
-        <a href="index.html" class="back-link">← Wróć do platformy</a>
+
+        <!-- POWRÓT -->
+
+        <a
+            href="index.html"
+            class="back-link"
+        >
+            ← Wróć do platformy
+        </a>
+
+
+        <div class="auth-info">
+            Twoje konto pozwala korzystać z funkcji CyberBooks
+            i synchronizować dane między urządzeniami.
+        </div>
+
     </div>
 
-    <script type="module" src="logowanie.js"></script>
+
+    <!-- TWÓJ DOTYCHCZASOWY SYSTEM LOGOWANIA -->
+
+    <script
+        type="module"
+        src="logowanie.js"
+    ></script>
+
+
+    <!-- OBSŁUGA ZAKŁADEK -->
+
+    <script>
+
+        const tabLogin =
+            document.getElementById("tab-login");
+
+        const tabRegister =
+            document.getElementById("tab-register");
+
+        const panelLogin =
+            document.getElementById("panel-login");
+
+        const panelRegister =
+            document.getElementById("panel-register");
+
+
+        function showLogin() {
+
+            tabLogin.classList.add("active");
+            tabRegister.classList.remove("active");
+
+            panelLogin.classList.add("active");
+            panelRegister.classList.remove("active");
+        }
+
+
+        function showRegister() {
+
+            tabRegister.classList.add("active");
+            tabLogin.classList.remove("active");
+
+            panelRegister.classList.add("active");
+            panelLogin.classList.remove("active");
+        }
+
+
+        tabLogin.addEventListener(
+            "click",
+            showLogin
+        );
+
+
+        tabRegister.addEventListener(
+            "click",
+            showRegister
+        );
+
+    </script>
+
 </body>
 </html>
