@@ -7,7 +7,8 @@ import {
     setPersistence,
     browserLocalPersistence,
     sendEmailVerification,
-    signOut
+    signOut,
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 import {
@@ -23,13 +24,13 @@ import {
 // =========================================================
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCNg0JnAgAH39y9D-8vhJKwQ10JYxx5Z0s",
-  authDomain: "cyberbook-83464.firebaseapp.com",
-  projectId: "cyberbook-83464",
-  storageBucket: "cyberbook-83464.firebasestorage.app",
-  messagingSenderId: "932889686489",
-  appId: "1:932889686489:web:61a2651a867903dff769c8",
-  measurementId: "G-PW5G4KFXX1"
+    apiKey: "AIzaSyCNg0JnAgAH39y9D-8vhJKwQ10JYxx5Z0s",
+    authDomain: "cyberbook-83464.firebaseapp.com",
+    projectId: "cyberbook-83464",
+    storageBucket: "cyberbook-83464.firebasestorage.app",
+    messagingSenderId: "932889686489",
+    appId: "1:932889686489:web:61a2651a867903dff769c8",
+    measurementId: "G-PW5G4KFXX1"
 };
 
 
@@ -71,13 +72,9 @@ function showAlert(message, type = "error") {
     alertBox.style.display = "block";
 
     if (type === "success") {
-
         alertBox.className = "alert alert-success";
-
     } else {
-
         alertBox.className = "alert alert-error";
-
     }
 }
 
@@ -152,7 +149,7 @@ function translateError(code) {
             return "Zbyt wiele prób. Spróbuj ponownie za chwilę.";
 
         case "auth/network-request-failed":
-            return "Problem z połączeniem internetowym. Sprawdź połączenie i spróbuj ponownie.";
+            return "Problem z połączeniem internetowym. Sprawdź połączenie.";
 
         case "auth/user-disabled":
             return "To konto zostało zablokowane.";
@@ -186,8 +183,6 @@ function validatePassword(password) {
     const hasTwoNumbers = numberCount >= 2;
 
 
-    // Sprawdzamy wszystkie wymagania
-
     if (!hasMinimumLength) {
 
         return {
@@ -218,8 +213,6 @@ function validatePassword(password) {
     }
 
 
-    // Wszystko poprawnie
-
     return {
         valid: true,
         message: ""
@@ -228,99 +221,79 @@ function validatePassword(password) {
 
 
 // =========================================================
-// LOGOWANIE
+// USTAWIENIE PERSISTENCJI LOGOWANIA
 // =========================================================
+//
+// browserLocalPersistence oznacza:
+//
+// - zamknięcie karty       → nadal zalogowany
+// - zamknięcie przeglądarki → nadal zalogowany
+// - ponowne uruchomienie komputera → nadal zalogowany
+//
+// Wylogowanie przez użytkownika → sesja zostaje usunięta
+//
+// Nie zapisujemy hasła w localStorage.
+//
 
-loginForm.addEventListener("submit", async (e) => {
-
-    e.preventDefault();
-
-    clearAlert();
-
-
-    const email =
-        document.getElementById("login-email").value.trim();
-
-    const password =
-        document.getElementById("login-password").value;
+await setPersistence(
+    auth,
+    browserLocalPersistence
+);
 
 
-    // Blokujemy przycisk podczas logowania
+// =========================================================
+// AUTOMATYCZNE SPRAWDZANIE SESJI
+// =========================================================
+//
+// Firebase sprawdza, czy użytkownik ma aktywną sesję.
+//
+// Jeżeli tak:
+// użytkownik nie musi ponownie wpisywać e-maila i hasła.
+//
 
-    const submitButton =
-        loginForm.querySelector(".btn-submit");
+onAuthStateChanged(auth, async (user) => {
 
-    submitButton.disabled = true;
+    if (!user) {
+        // Brak zalogowanego użytkownika
+        return;
+    }
 
-    submitButton.innerText = "Logowanie...";
 
+    // -----------------------------------------------------
+    // JEŻELI E-MAIL NIE JEST ZWERYFIKOWANY
+    // -----------------------------------------------------
+
+    if (!user.emailVerified) {
+
+        // Nie przekierowujemy dalej.
+        // Użytkownik musi zweryfikować konto.
+
+        return;
+    }
+
+
+    // -----------------------------------------------------
+    // UŻYTKOWNIK JEST ZALOGOWANY
+    // -----------------------------------------------------
+
+    console.log("Użytkownik jest już zalogowany:", user.email);
+
+
+    // -----------------------------------------------------
+    // SPRAWDZAMY PROFIL W FIRESTORE
+    // -----------------------------------------------------
 
     try {
 
-        // =====================================================
-        // LOCAL PERSISTENCE
-        // Użytkownik pozostaje zalogowany po zamknięciu strony
-        // =====================================================
-
-        await setPersistence(
-            auth,
-            browserLocalPersistence
+        const userDocRef = doc(
+            db,
+            "users",
+            user.uid
         );
 
 
-        // =====================================================
-        // LOGOWANIE
-        // =====================================================
+        const docSnap = await getDoc(userDocRef);
 
-        const userCredential =
-            await signInWithEmailAndPassword(
-                auth,
-                email,
-                password
-            );
-
-
-        const user = userCredential.user;
-
-
-        // =====================================================
-        // WERYFIKACJA E-MAILA
-        // =====================================================
-
-        if (!user.emailVerified) {
-
-            showAlert(
-                "Twoje konto nie zostało jeszcze aktywowane. Kliknij w link weryfikacyjny wysłany na Twój e-mail."
-            );
-
-
-            // Wylogowanie nieweryfikowanego użytkownika
-
-            await signOut(auth);
-
-
-            submitButton.disabled = false;
-
-            submitButton.innerText = "Zaloguj się";
-
-            return;
-        }
-
-
-        // =====================================================
-        // SPRAWDZENIE DOKUMENTU UŻYTKOWNIKA W FIRESTORE
-        // =====================================================
-
-        const userDocRef =
-            doc(db, "users", user.uid);
-
-
-        const docSnap =
-            await getDoc(userDocRef);
-
-
-        // Jeśli dokument nie istnieje,
-        // tworzymy go automatycznie
 
         if (!docSnap.exists()) {
 
@@ -336,16 +309,149 @@ loginForm.addEventListener("submit", async (e) => {
         }
 
 
-        // =====================================================
+    } catch (error) {
+
+        console.error(
+            "Błąd sprawdzania profilu:",
+            error
+        );
+
+    }
+
+
+    // -----------------------------------------------------
+    // PRZEJŚCIE DO STRONY GŁÓWNEJ
+    // -----------------------------------------------------
+
+    window.location.href = "index.html";
+
+});
+
+
+// =========================================================
+// LOGOWANIE
+// =========================================================
+
+loginForm.addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    clearAlert();
+
+
+    const email =
+        document
+            .getElementById("login-email")
+            .value
+            .trim();
+
+
+    const password =
+        document
+            .getElementById("login-password")
+            .value;
+
+
+    // -----------------------------------------------------
+    // BLOKADA PRZYCISKU
+    // -----------------------------------------------------
+
+    const submitButton =
+        loginForm.querySelector(".btn-submit");
+
+
+    submitButton.disabled = true;
+
+    submitButton.innerText = "Logowanie...";
+
+
+    try {
+
+        // -------------------------------------------------
+        // LOGOWANIE
+        // -------------------------------------------------
+
+        const userCredential =
+            await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+
+        const user =
+            userCredential.user;
+
+
+        // -------------------------------------------------
+        // WERYFIKACJA E-MAILA
+        // -------------------------------------------------
+
+        if (!user.emailVerified) {
+
+            showAlert(
+                "Twoje konto nie zostało jeszcze aktywowane. Kliknij w link weryfikacyjny wysłany na Twój e-mail."
+            );
+
+
+            await signOut(auth);
+
+
+            submitButton.disabled = false;
+
+            submitButton.innerText = "Zaloguj się";
+
+            return;
+        }
+
+
+        // -------------------------------------------------
+        // PROFIL FIRESTORE
+        // -------------------------------------------------
+
+        const userDocRef =
+            doc(
+                db,
+                "users",
+                user.uid
+            );
+
+
+        const docSnap =
+            await getDoc(userDocRef);
+
+
+        // Jeżeli dokument nie istnieje,
+        // tworzymy go automatycznie.
+
+        if (!docSnap.exists()) {
+
+            await setDoc(
+                userDocRef,
+                {
+                    email: user.email,
+                    createdAt: new Date().toISOString(),
+                    startedBooks: []
+                }
+            );
+
+        }
+
+
+        // -------------------------------------------------
         // PRZEJŚCIE DO PLATFORMY
-        // =====================================================
+        // -------------------------------------------------
 
         window.location.href = "index.html";
 
 
     } catch (error) {
 
-        console.error("Błąd logowania:", error);
+        console.error(
+            "Błąd logowania:",
+            error
+        );
+
 
         showAlert(
             translateError(error.code)
@@ -355,6 +461,7 @@ loginForm.addEventListener("submit", async (e) => {
         submitButton.disabled = false;
 
         submitButton.innerText = "Zaloguj się";
+
     }
 
 });
@@ -372,15 +479,21 @@ registerForm.addEventListener("submit", async (e) => {
 
 
     const email =
-        document.getElementById("register-email").value.trim();
+        document
+            .getElementById("register-email")
+            .value
+            .trim();
+
 
     const password =
-        document.getElementById("register-password").value;
+        document
+            .getElementById("register-password")
+            .value;
 
 
-    // =====================================================
+    // -----------------------------------------------------
     // SPRAWDZENIE HASŁA
-    // =====================================================
+    // -----------------------------------------------------
 
     const passwordValidation =
         validatePassword(password);
@@ -396,12 +509,13 @@ registerForm.addEventListener("submit", async (e) => {
     }
 
 
-    // =====================================================
+    // -----------------------------------------------------
     // BLOKADA PRZYCISKU
-    // =====================================================
+    // -----------------------------------------------------
 
     const submitButton =
         registerForm.querySelector(".btn-submit");
+
 
     submitButton.disabled = true;
 
@@ -410,19 +524,9 @@ registerForm.addEventListener("submit", async (e) => {
 
     try {
 
-        // =====================================================
-        // LOCAL PERSISTENCE
-        // =====================================================
-
-        await setPersistence(
-            auth,
-            browserLocalPersistence
-        );
-
-
-        // =====================================================
-        // TWORZENIE KONTA FIREBASE
-        // =====================================================
+        // -------------------------------------------------
+        // TWORZENIE KONTA
+        // -------------------------------------------------
 
         const userCredential =
             await createUserWithEmailAndPassword(
@@ -436,40 +540,41 @@ registerForm.addEventListener("submit", async (e) => {
             userCredential.user;
 
 
-        // =====================================================
+        // -------------------------------------------------
         // WYSŁANIE E-MAILA WERYFIKACYJNEGO
-        // =====================================================
+        // -------------------------------------------------
 
         await sendEmailVerification(user);
 
 
-        // =====================================================
-        // UTWORZENIE PROFILU UŻYTKOWNIKA W FIRESTORE
-        // =====================================================
+        // -------------------------------------------------
+        // UTWORZENIE PROFILU W FIRESTORE
+        // -------------------------------------------------
 
         await setDoc(
-            doc(db, "users", user.uid),
+            doc(
+                db,
+                "users",
+                user.uid
+            ),
             {
                 email: email,
-
-                createdAt:
-                    new Date().toISOString(),
-
+                createdAt: new Date().toISOString(),
                 startedBooks: []
             }
         );
 
 
-        // =====================================================
+        // -------------------------------------------------
         // WYLOGOWANIE PO REJESTRACJI
-        // =====================================================
+        // -------------------------------------------------
 
         await signOut(auth);
 
 
-        // =====================================================
-        // KOMUNIKAT SUKCESU
-        // =====================================================
+        // -------------------------------------------------
+        // KOMUNIKAT
+        // -------------------------------------------------
 
         showAlert(
             "Konto utworzone pomyślnie! Wysłaliśmy link weryfikacyjny. Sprawdź pocztę (oraz folder SPAM!).",
@@ -477,16 +582,18 @@ registerForm.addEventListener("submit", async (e) => {
         );
 
 
-        // =====================================================
-        // POWRÓT DO LOGOWANIA PO 4 SEKUNDACH
-        // =====================================================
+        // -------------------------------------------------
+        // POWRÓT DO LOGOWANIA
+        // -------------------------------------------------
 
         setTimeout(() => {
 
             tabRegister.classList.remove("active");
+
             tabLogin.classList.add("active");
 
             panelRegister.classList.remove("active");
+
             panelLogin.classList.add("active");
 
             clearAlert();
@@ -496,7 +603,11 @@ registerForm.addEventListener("submit", async (e) => {
 
     } catch (error) {
 
-        console.error("Błąd rejestracji:", error);
+        console.error(
+            "Błąd rejestracji:",
+            error
+        );
+
 
         showAlert(
             translateError(error.code)
@@ -506,6 +617,7 @@ registerForm.addEventListener("submit", async (e) => {
         submitButton.disabled = false;
 
         submitButton.innerText = "Utwórz konto";
+
     }
 
 });
