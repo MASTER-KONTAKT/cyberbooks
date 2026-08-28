@@ -976,12 +976,14 @@
             z-index: 5;
 
             transition: .3s ease;
+            pointer-events: none;
         }
 
         .book-card:hover .hover-action {
             transform: translate(-50%, 0);
 
             opacity: 1;
+            pointer-events: auto;
         }
 
         .btn-read {
@@ -1441,7 +1443,8 @@
 
                 transform: none !important;
 
-                opacity: 1;
+                opacity: 1 !important;
+                pointer-events: auto;
             }
 
             .btn-read {
@@ -3176,6 +3179,49 @@
             element.querySelector(
                 ".btn-read"
             );
+
+        const cover =
+            element.querySelector(
+                ".book-cover"
+            );
+
+        /* =========================
+           KLIKNIĘCIE OKŁADKI
+           ========================= */
+
+        if (cover) {
+
+            cover.style.cursor = "pointer";
+
+            cover.addEventListener(
+                "click",
+                (e) => {
+
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (!currentUser) {
+
+                        showModal(
+                            "Zaloguj się, aby zacząć czytać!",
+                            "Tylko zarejestrowani użytkownicy platformy CyberBooks mogą otwierać czytnik.",
+                            true
+                        );
+
+                        return;
+                    }
+
+                    const targetUrl =
+                        readBtn
+                            ? readBtn.getAttribute("data-href")
+                            : null;
+
+                    if (targetUrl) {
+                        window.location.href = targetUrl;
+                    }
+                }
+            );
+        }
 
         const addBtn =
             element.querySelector(
