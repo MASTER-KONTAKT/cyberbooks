@@ -1,518 +1,181 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberBooks Reader Pro - Zaawansowany Czytnik</title>
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* --- Tematy kolorystyczne (Zmienne CSS) --- */
-        :root {
-            --bg-main: #0d0e12;
-            --bg-interface: rgba(22, 24, 33, 0.85);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --text-main: #e2e8f0;
-            --text-interface: #ffffff;
-            --text-muted: #9ca3af;
-            --accent: #a252fa;
-            --accent-glow: rgba(162, 82, 250, 0.3);
-            --book-bg: #0d0e12;
-            --book-text: #e2e8f0;
-            --book-font: 'Merriweather', serif;
-            --word-interactive: #e2e8f0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberBooks Reader Pro</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+    --bg:#f4edd9; --surface:rgba(235,226,204,.94); --surface-solid:#ebe2cc;
+    --border:rgba(70,52,30,.13); --text:#2c2519; --muted:#7d725f;
+    --accent:#8a6a3d; --accent-soft:rgba(138,106,61,.12);
+    --book:#f4edd9; --book-text:#2c2519; --shadow:0 12px 40px rgba(72,53,28,.10);
+    --font-size:20px; --line-height:1.9;
+}
+body.theme-dark{--bg:#0d0e12;--surface:rgba(22,24,33,.94);--surface-solid:#171921;--border:rgba(255,255,255,.09);--text:#e2e8f0;--muted:#9ca3af;--accent:#9b7b4d;--accent-soft:rgba(155,123,77,.14);--book:#0d0e12;--book-text:#e2e8f0;--shadow:0 12px 40px rgba(0,0,0,.28)}
+body.theme-gray{--bg:#2d3139;--surface:rgba(53,58,68,.95);--surface-solid:#353a44;--border:rgba(255,255,255,.1);--text:#e1e4ea;--muted:#a0a5b1;--accent:#b79b70;--accent-soft:rgba(183,155,112,.14);--book:#2d3139;--book-text:#e1e4ea}
+body.theme-light{--bg:#f7f7f5;--surface:rgba(255,255,255,.95);--surface-solid:#fff;--border:rgba(0,0,0,.08);--text:#20242d;--muted:#69717e;--accent:#806442;--accent-soft:rgba(128,100,66,.10);--book:#f7f7f5;--book-text:#20242d}
 
-        body.theme-gray {
-            --bg-main: #2d3139;
-            --bg-interface: rgba(53, 58, 68, 0.9);
-            --border-color: rgba(255, 255, 255, 0.1);
-            --text-main: #e1e4ea;
-            --text-interface: #ffffff;
-            --text-muted: #a0a5b1;
-            --book-bg: #2d3139;
-            --book-text: #e1e4ea;
-            --word-interactive: #e1e4ea;
-        }
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Poppins,sans-serif;min-height:100vh;transition:background .3s,color .3s}
+body.reader-focus header,.reader-focus .progress-wrap{opacity:.12;transition:opacity .25s}
+body.reader-focus header:hover,.reader-focus .progress-wrap:hover{opacity:1}
+button,input{font:inherit}
 
-        body.theme-light {
-            --bg-main: #f8fafc;
-            --bg-interface: rgba(255, 255, 255, 0.9);
-            --border-color: rgba(0, 0, 0, 0.08);
-            --text-main: #1e293b;
-            --text-interface: #0f172a;
-            --text-muted: #64748b;
-            --book-bg: #f8fafc;
-            --book-text: #1e293b;
-            --word-interactive: #1e293b;
-        }
+header{
+    position:sticky;top:0;z-index:1000;
+    background:var(--surface);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border-bottom:1px solid var(--border);box-shadow:0 5px 24px rgba(0,0,0,.07)
+}
+.nav-container{max-width:1280px;margin:auto;padding:12px 24px;display:flex;align-items:center;gap:12px}
+.nav-group{display:flex;align-items:center;gap:9px}
+.nav-group.right{margin-left:auto}
+.brand{font-weight:700;letter-spacing:-.4px;white-space:nowrap}
+.brand small{display:block;font-size:10px;color:var(--muted);font-weight:500;letter-spacing:1px;text-transform:uppercase}
+.btn{
+    border:1px solid var(--border);background:var(--accent-soft);color:var(--text);
+    padding:9px 13px;border-radius:11px;cursor:pointer;font-size:13px;font-weight:600;
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.2s
+}
+.btn:hover{transform:translateY(-1px);border-color:var(--accent);background:rgba(138,106,61,.18)}
+.btn.icon{padding:9px 11px}
+.page-jumper{display:flex;align-items:center;gap:6px}
+.page-input{width:52px;border:1px solid var(--border);background:var(--accent-soft);color:var(--text);border-radius:9px;padding:8px;text-align:center;outline:none}
+.progress-wrap{position:sticky;top:59px;z-index:900;background:var(--surface);border-bottom:1px solid var(--border)}
+.progress-inner{max-width:1280px;margin:auto;padding:7px 24px;display:flex;align-items:center;gap:12px}
+.progress-track{height:6px;flex:1;background:rgba(100,80,50,.12);border-radius:99px;overflow:hidden}
+.progress-bar{height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .25s}
+.progress-label{font-size:11px;color:var(--muted);min-width:92px;text-align:right}
 
-        body.theme-sepia {
-            --bg-main: #f4edd9;
-            --bg-interface: rgba(235, 226, 204, 0.95);
-            --border-color: rgba(0, 0, 0, 0.08);
-            --text-main: #2c2519;
-            --text-interface: #1e170c;
-            --text-muted: #7d725f;
-            --book-bg: #f4edd9;
-            --book-text: #2c2519;
-            --word-interactive: #2c2519;
-        }
+.reader-container{max-width:850px;margin:auto;padding:55px 28px 120px}
+.book-content{font-family:Merriweather,serif;font-size:var(--font-size);line-height:var(--line-height);color:var(--book-text);text-align:justify}
+.book-content h2{font-family:Poppins,sans-serif;font-size:clamp(1.8rem,4vw,2.5rem);line-height:1.2;margin:20px 0 35px;letter-spacing:-.8px}
+.book-content p{margin:0 0 1.65em;text-indent:1.5em}
+.book-content p:first-of-type:first-letter{font-size:1.55em;font-weight:700}
+.clickable-word{color:inherit;cursor:inherit;border-radius:4px;padding:0 1px}
+body.translator-active .clickable-word{cursor:help}
+body.translator-active .clickable-word:hover{background:var(--accent-soft)}
+body.translator-active .clickable-word.translated{background:rgba(0,0,0,.025);color:inherit}
 
-        /* --- Reset i bazy --- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, transform 0.3s ease;
-        }
+.page-break{height:1px;margin:75px 0;position:relative;background:var(--border)}
+.page-num{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--book);padding:4px 15px;color:var(--muted);font:600 11px Poppins,sans-serif;letter-spacing:1px;border:1px solid var(--border);border-radius:99px}
 
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            font-family: 'Poppins', sans-serif;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+#tooltip{
+    position:absolute;display:none;z-index:3000;max-width:min(360px,calc(100vw - 24px));
+    background:#191817;color:#fff;padding:13px 15px;border-radius:13px;
+    box-shadow:0 14px 35px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.10);
+    font:500 14px/1.45 Poppins,sans-serif;text-align:center
+}
+.tooltip-translation{margin-bottom:7px}
+.btn-sentence-tr{width:100%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:7px;cursor:pointer;font-size:11px}
+.btn-sentence-tr:hover{background:rgba(255,255,255,.14)}
 
-        /* --- Pasek Nawigacyjny --- */
-        header {
-            position: sticky;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 100;
-            padding: 0.8rem 5%;
-            background: var(--bg-interface);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
+.mobile-toggle{display:none}
+.settings-panel{
+    position:fixed;right:22px;top:70px;width:310px;z-index:2000;
+    background:var(--surface);backdrop-filter:blur(18px);border:1px solid var(--border);
+    border-radius:18px;padding:17px;box-shadow:var(--shadow);display:none
+}
+.settings-panel.open{display:block}
+.setting-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700;margin:0 0 9px}
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0}
+.setting-row label{font-size:13px;font-weight:600}
+.slider{width:145px;accent-color:var(--accent)}
+.value{font-size:11px;color:var(--muted);width:40px;text-align:right}
+.theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.theme-choice{padding:9px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--text);cursor:pointer;text-align:left;font-size:12px}
+.theme-choice:hover{border-color:var(--accent)}
+.hide-btn{width:100%;margin-top:12px}
 
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+body.hidden-ui .reader-container{max-width:850px;padding-top:25px}
+body.hidden-ui header,body.hidden-ui .progress-wrap{display:none}
+body.hidden-ui .reader-container{min-height:100vh}
 
-        .nav-group {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .btn-nav {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
-            color: var(--text-interface);
-            padding: 0.5rem 1.2rem;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.88rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            white-space: nowrap;
-        }
-
-        .btn-nav:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: var(--text-muted);
-        }
-
-        .btn-nav.active {
-            background: var(--accent);
-            color: #fff;
-            border-color: var(--accent);
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
-
-        .page-jumper {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .page-input {
-            width: 50px;
-            padding: 0.4rem;
-            background: rgba(0, 0, 0, 0.15);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-interface);
-            text-align: center;
-            font-size: 0.88rem;
-            outline: none;
-        }
-
-        /* --- Panel Ochrony Wzroku --- */
-        .dropdown-wrapper {
-            position: relative;
-        }
-
-        .dropdown-menu {
-            position: absolute;
-            top: 130%;
-            right: 0;
-            background: var(--bg-interface);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 0.8rem;
-            width: 260px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-            opacity: 0;
-            transform: translateY(-10px);
-            pointer-events: none;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            z-index: 150;
-        }
-
-        .dropdown-wrapper.open .dropdown-menu {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
-        .theme-option {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.6rem 1rem;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            color: var(--text-interface);
-            font-weight: 500;
-        }
-
-        .theme-option:hover {
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        .theme-dot {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .healthy-tag {
-            font-size: 0.72rem;
-            color: #2ecc71;
-            font-weight: 600;
-            margin-left: auto;
-            margin-right: 8px;
-        }
-
-        /* --- MOBILNY PANEL OPCJI (PRZYKLEJONY DO GÓRY) --- */
-        .mobile-toggle-btn {
-            display: none;
-        }
-
-        .mobile-options-panel {
-            display: none;
-            width: 100%;
-            background: var(--bg-interface);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem 5%;
-            flex-direction: column;
-            gap: 1rem;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-            
-            /* Panel przyklejony pod paskiem nawigacyjnym, przewija się wraz ze stroną na górze */
-            position: fixed;
-            top: 50px; /* Wysokość zbliżona do paska header */
-            left: 0;
-            z-index: 99; 
-            max-height: calc(100vh - 60px);
-            overflow-y: auto;
-        }
-
-        .mobile-options-panel.open {
-            display: flex;
-        }
-
-        .mobile-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 0.8rem;
-        }
-
-        /* Lista motywów na stałe rozwinięta na telefonie */
-        .mobile-theme-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-            width: 100%;
-            margin-top: 0.3rem;
-        }
-
-        /* --- Kolumna Tekstu --- */
-        .reader-container {
-            max-width: 740px;
-            margin: 0 auto;
-            padding: 4rem 1.5rem 8rem;
-            background-color: var(--book-bg);
-        }
-
-        .book-content {
-            font-family: var(--book-font);
-            font-size: 1.25rem;
-            line-height: 1.9;
-            color: var(--book-text);
-            text-align: justify;
-        }
-
-        .book-content h2 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 2.2rem;
-            margin-top: 3rem;
-            margin-bottom: 1.5rem;
-            color: var(--text-interface);
-        }
-
-        .book-content p {
-            margin-bottom: 1.6rem;
-            text-indent: 1.5rem;
-        }
-
-        .clickable-word {
-            color: var(--word-interactive);
-            display: inline; 
-            transition: color 0.2s ease, background-color 0.2s ease;
-        }
-
-        body.translator-active .clickable-word {
-            cursor: help;
-            color: #bfa3f7; 
-        }
-        body.theme-light.translator-active .clickable-word {
-            color: #5c32a6;
-        }
-        body.theme-sepia.translator-active .clickable-word {
-            color: #7240b8;
-        }
-
-        body.translator-active .clickable-word:hover {
-            background-color: rgba(162, 82, 250, 0.15);
-            border-radius: 4px;
-        }
-
-        .sentence-block {
-            display: inline;
-        }
-
-        /* Separator stron */
-        .page-break {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 4rem 0;
-            position: relative;
-        }
-
-        .page-break::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background: var(--border-color);
-            z-index: 1;
-        }
-
-        .page-num {
-            background: var(--bg-main);
-            padding: 0 1.5rem;
-            font-family: 'Poppins', sans-serif;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-weight: 500;
-            z-index: 2;
-            letter-spacing: 1px;
-        }
-
-        /* --- Inteligentny Tooltip nad słowem --- */
-        #tooltip {
-            position: absolute;
-            background: #171520;
-            color: #ffffff;
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            display: none;
-            z-index: 2000;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(162, 82, 250, 0.4);
-            max-width: 90vw; /* Zapobiega wychodzeniu poza ekran na bardzo wąskich telefonach */
-            width: max-content;
-            transition: none;
-        }
-
-        /* Usunięto pseudo-element ::after (strzałkę), aby uniknąć błędów wizualnych przy przesunięciach bocznych */
-
-        .tooltip-translation {
-            margin-bottom: 8px;
-            line-height: 1.4;
-            text-align: center;
-        }
-
-        .btn-sentence-tr {
-            display: block;
-            width: 100%;
-            background: rgba(162, 82, 250, 0.2);
-            border: 1px solid var(--accent);
-            color: #e2e8f0;
-            padding: 5px 10px;
-            font-size: 0.78rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 5px;
-            transition: all 0.2s ease;
-        }
-
-        .btn-sentence-tr:hover {
-            background: var(--accent);
-            color: #fff;
-        }
-
-        /* --- MEDIA QUERIES: DOPASOWANIE DO TELEFONÓW --- */
-        @media (max-width: 768px) {
-            .desktop-only {
-                display: none !important;
-            }
-
-            .mobile-toggle-btn {
-                display: flex;
-            }
-
-            header {
-                padding: 0.6rem 4%;
-                position: fixed; /* Header też staje się fixed, aby panel pod nim idealnie leżał */
-            }
-            
-            .reader-container {
-                padding-top: 6rem; /* Dodatkowy margines na sztywny header mobilny */
-            }
-        }
-    </style>
+@media(max-width:800px){
+    header{position:fixed;top:0;left:0;right:0}
+    .nav-container{padding:9px 12px;gap:7px}
+    .brand small,.desktop-only{display:none!important}
+    .mobile-toggle{display:inline-flex}
+    .brand{font-size:14px}
+    .nav-group.right{margin-left:auto}
+    .btn{padding:8px 10px;font-size:12px}
+    .progress-wrap{position:fixed;top:53px;left:0;right:0}
+    .progress-inner{padding:6px 12px}
+    .progress-label{font-size:10px;min-width:70px}
+    .reader-container{padding:105px 18px 80px}
+    .book-content{text-align:left;font-size:var(--font-size);line-height:var(--line-height)}
+    .book-content p{text-indent:1em}
+    .settings-panel{top:91px;left:10px;right:10px;width:auto;max-height:calc(100vh - 105px);overflow:auto}
+    #tooltip{
+        position:fixed;left:50%!important;top:50%!important;transform:translate(-50%,-50%);
+        width:min(340px,calc(100vw - 28px));max-width:none
+    }
+    .page-break{margin:55px 0}
+}
+</style>
 </head>
-<body>
+<body class="theme-sepia">
 
-    <header>
-        <div class="nav-container">
-
-            <div class="nav-group">
-                <a href="index.html" class="btn-nav return-btn" style="text-decoration: none;">
-                    ⬅️ <span>Powrót</span>
-                </a>
-            </div>
-
-            <div id="online-counter" class="desktop-only" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9rem; color: #2ecc71; font-weight: bold; background: rgba(46, 204, 113, 0.1); padding: 4px 10px; border-radius: 20px;">
-                🟢 Online: <span id="active-users-count">1</span>
-            </div>
-            
-            <div class="nav-group desktop-only">
-                <div class="page-jumper">
-                    <input type="number" id="pageInput" class="page-input" min="1" max="3" value="1">
-                    <button class="btn-nav" onclick="jumpToPage('pageInput')">Idź</button>
-                </div>
-            </div>
-
-            <div class="nav-group desktop-only">
-                <div class="dropdown-wrapper" id="themeDropdown">
-                    <button class="btn-nav" onclick="toggleDropdown('themeDropdown')">🎨 <span>Styl ekranu</span></button>
-                    <div class="dropdown-menu">
-                        <div class="theme-option" onclick="changeTheme('dark', 'themeDropdown')">
-                            <span>Ciemny (Dark)</span>
-                            <div class="theme-dot" style="background: #0d0e12;"></div>
-                        </div>
-                        <div class="theme-option" onclick="changeTheme('gray', 'themeDropdown')">
-                            <span>Szary (Muted)</span>
-                            <div class="theme-dot" style="background: #2d3139;"></div>
-                        </div>
-                        <div class="theme-option" onclick="changeTheme('light', 'themeDropdown')">
-                            <span>Jasny (Light)</span>
-                            <div class="theme-dot" style="background: #f8fafc;"></div>
-                        </div>
-                        <div class="theme-option" onclick="changeTheme('sepia', 'themeDropdown')">
-                            <span>Sepia</span>
-                            <span class="healthy-tag">(Zdrowy ✨)</span>
-                            <div class="theme-dot" style="background: #f4edd9;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="btn-nav" id="fullscreenBtn" onclick="toggleFullscreen('fullscreenBtn')">🔲 <span>Pełny ekran</span></button>
-            </div>
-
-            <div class="nav-group">
-                <button class="btn-nav mobile-toggle-btn" id="mobileMenuBtn" onclick="toggleMobileOptions()">⚙️ <span>Opcje</span></button>
-                <button class="btn-nav" id="translatorToggle" onclick="toggleTranslatorMode()">🌐 Tłumacz</button>
-            </div>
-
-        </div>
-    </header>
-
-    <div class="mobile-options-panel" id="mobileOptionsPanel">
-        <div class="mobile-row">
-            <div style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9rem; color: #2ecc71; font-weight: bold; background: rgba(46, 204, 113, 0.1); padding: 4px 10px; border-radius: 20px;">
-                🟢 Online: <span id="active-users-count-mobile">1</span>
-            </div>
-            <button class="btn-nav" id="fullscreenBtnMobile" onclick="toggleFullscreen('fullscreenBtnMobile')">🔲 Pełny ekran</button>
-        </div>
-        <hr style="border: 0; border-top: 1px solid var(--border-color);">
-        <div class="mobile-row">
-            <span style="font-size:0.9rem; font-weight:500;">Skocz do strony:</span>
-            <div class="page-jumper">
-                <input type="number" id="pageInputMobile" class="page-input" min="1" max="3" value="1">
-                <button class="btn-nav" onclick="jumpToPage('pageInputMobile')">Idź</button>
-            </div>
-        </div>
-        <hr style="border: 0; border-top: 1px solid var(--border-color);">
-        <div class="mobile-col">
-            <span style="font-size:0.9rem; font-weight:500; display:block; margin-bottom:0.5rem;">Styl ekranu (Wybierz motyw):</span>
-            <div class="mobile-theme-list">
-                <div class="theme-option" style="border: 1px solid var(--border-color);" onclick="changeTheme('dark', 'mobile')">
-                    <span>Ciemny (Dark)</span>
-                    <div class="theme-dot" style="background: #0d0e12;"></div>
-                </div>
-                <div class="theme-option" style="border: 1px solid var(--border-color);" onclick="changeTheme('gray', 'mobile')">
-                    <span>Szary (Muted)</span>
-                    <div class="theme-dot" style="background: #2d3139;"></div>
-                </div>
-                <div class="theme-option" style="border: 1px solid var(--border-color);" onclick="changeTheme('light', 'mobile')">
-                    <span>Jasny (Light)</span>
-                    <div class="theme-dot" style="background: #f8fafc;"></div>
-                </div>
-                <div class="theme-option" style="border: 1px solid var(--border-color);" onclick="changeTheme('sepia', 'mobile')">
-                    <span>Sepia ✨</span>
-                    <div class="theme-dot" style="background: #f4edd9;"></div>
-                </div>
-            </div>
-        </div>
+<header>
+  <div class="nav-container">
+    <div class="nav-group">
+      <a href="index.html" class="btn" style="text-decoration:none">← <span class="desktop-only">Powrót</span></a>
+      <div class="brand">CyberBooks <small>Reader Pro</small></div>
     </div>
 
-    <div class="reader-container">
-        <article class="book-content" id="bookContent">
+    <div class="nav-group desktop-only">
+      <div class="page-jumper">
+        <input id="pageInput" class="page-input" type="number" min="1" max="3" value="1">
+        <button class="btn" onclick="jumpToPage('pageInput')">Idź</button>
+      </div>
+    </div>
+
+    <div class="nav-group right">
+      <button class="btn desktop-only" id="translatorToggle" onclick="toggleTranslatorMode()">🌐 Tłumacz</button>
+      <button class="btn mobile-toggle" onclick="toggleSettings()">⚙️</button>
+      <button class="btn desktop-only" onclick="toggleSettings()">⚙️ Ustawienia</button>
+    </div>
+  </div>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-label" id="progressLabel">0% · str. 1</div>
+  </div>
+</div>
+
+<div class="settings-panel" id="settingsPanel">
+  <div class="setting-title">Czytanie</div>
+  <div class="setting-row">
+    <label>Wielkość tekstu</label>
+    <input class="slider" id="fontSlider" type="range" min="16" max="30" step="1">
+    <span class="value" id="fontValue"></span>
+  </div>
+  <div class="setting-row">
+    <label>Interlinia</label>
+    <input class="slider" id="lineSlider" type="range" min="1.4" max="2.5" step=".1">
+    <span class="value" id="lineValue"></span>
+  </div>
+
+  <div class="setting-title" style="margin-top:18px">Motyw</div>
+  <div class="theme-grid">
+    <button class="theme-choice" onclick="changeTheme('sepia')">📖 Sepia</button>
+    <button class="theme-choice" onclick="changeTheme('light')">☀️ Jasny</button>
+    <button class="theme-choice" onclick="changeTheme('gray')">◐ Szary</button>
+    <button class="theme-choice" onclick="changeTheme('dark')">🌙 Ciemny</button>
+  </div>
+
+  <button class="btn hide-btn" onclick="toggleHiddenUI()">▣ Ukryj wszystko</button>
+  <button class="btn hide-btn" onclick="toggleFullscreen()">⛶ Pełny ekran</button>
+</div>
+
+<main class="reader-container">
+<article class="book-content" id="bookContent">
+
             
             <div id="page-1">
                 <h2>Chapter 1: The New City</h2>
@@ -538,268 +201,222 @@
                 <p>Tom takes his map again. He shows the map to the waiter. "Excuse me," Tom asks. "Where is Green Street?" The waiter looks at the map and points his finger. "Go straight, then turn left at the big supermarket. Green Street is there."</p>
             </div>
 
-       </article>
-    </div>
+       
+</article>
+</main>
 
-    <div id="tooltip">
-        <div class="tooltip-translation" id="tooltipText">Ładowanie...</div>
-        <button class="btn-sentence-tr" id="translateSentenceBtn">Rozwiń do całego zdania 🔍</button>
-    </div>
+<div id="tooltip">
+  <div class="tooltip-translation" id="tooltipText">Tłumaczenie...</div>
+  <button class="btn-sentence-tr" id="translateSentenceBtn">Rozwiń do całego zdania 🔍</button>
+</div>
 
 <script>
-let currentSentenceText = "";
-
-// --- 1. INTELIGENTNE GENEROWANIE STRUKTURY (ZDANIA + SŁOWA) ---
-const bookContent = document.getElementById('bookContent');
-const paragraphs = bookContent.getElementsByTagName('p');
-
-for (let p of paragraphs) {
-    const sentences = p.innerText.split(/(?<=[.!?])\s+/);
-    
-    const parsedSentences = sentences.map(sentence => {
-        if (!sentence.trim()) return '';
-        
-        const words = sentence.split(/(\s+)/);
-        const parsedWords = words.map(chunk => {
-            if (chunk.trim() === '') return chunk;
-            return `<span class="clickable-word">${chunk}</span>`;
-        }).join('');
-        
-        return `<span class="sentence-block" data-sentence="${sentence.replace(/"/g, '&quot;')}">${parsedWords}</span>`;
-    });
-    
-    p.innerHTML = parsedSentences.join(' ');
-}
-
-// --- 2. OBSŁUGA TRYBU TŁUMACZA ---
+const STORAGE_KEY = "cyberbooks-reader-state-v2";
+const state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
 let isTranslatorActive = false;
-
-function toggleTranslatorMode() {
-    isTranslatorActive = !isTranslatorActive;
-    const btn = document.getElementById('translatorToggle');
-    if (isTranslatorActive) {
-        document.body.classList.add('translator-active');
-        btn.classList.add('active');
-    } else {
-        document.body.classList.remove('translator-active');
-        btn.classList.remove('active');
-        document.getElementById('tooltip').style.display = 'none';
-        activeClickedWordElement = null;
-    }
-}
-
-// --- 3. PROFILOWANE TŁUMACZENIE (SŁOWO LUB ZDANIE) ---
-async function requestTranslation(textToTranslate, targetElement) {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pl&dt=t&q=${encodeURIComponent(textToTranslate)}`;
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        let finalTranslation = "";
-        data[0].forEach(part => {
-            if (part[0]) finalTranslation += part[0];
-        });
-        
-        targetElement.innerText = finalTranslation;
-        return true;
-    } catch (error) {
-        targetElement.innerText = 'Błąd połączenia';
-        return false;
-    }
-}
-
 let activeClickedWordElement = null;
+let currentSentenceText = "";
+let saveTimer;
 
-// POPRAWKA: Zaawansowane dynamiczne obliczanie pozycji dymka względem krawędzi ekranu mobilnego
-function positionTooltip(element) {
-    const tooltip = document.getElementById('tooltip');
-    if (!element || tooltip.style.display !== 'block') return;
-
-    const rect = element.getBoundingClientRect();
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-
-    const windowWidth = window.innerWidth;
-    const tooltipWidth = tooltip.offsetWidth;
-    const padding = 10; // Bezpieczny margines od krawędzi ekranu w pikselach
-
-    // Centrowanie domyślne względem słowa
-    let leftPosition = rect.left + scrollLeft + (rect.width / 2) - (tooltipWidth / 2);
-    let topPosition = rect.top + scrollTop - tooltip.offsetHeight - 12;
-
-    // Korekta lewej krawędzi ekranu
-    if (leftPosition < padding) {
-        leftPosition = padding;
-    }
-    // Korekta prawej krawędzi ekranu
-    else if (leftPosition + tooltipWidth > windowWidth - padding) {
-        leftPosition = windowWidth - tooltipWidth - padding;
-    }
-
-    tooltip.style.left = leftPosition + 'px';
-    tooltip.style.top = topPosition + 'px';
+function saveState(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    const data={
+      theme: document.body.className.match(/theme-(dark|gray|light|sepia)/)?.[1] || "sepia",
+      fontSize: getComputedStyle(document.documentElement).getPropertyValue("--font-size").trim(),
+      lineHeight: getComputedStyle(document.documentElement).getPropertyValue("--line-height").trim(),
+      scrollY: window.scrollY
+    };
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+  },100);
 }
 
-// Obsługa kliknięcia w słowo
-bookContent.addEventListener('click', function(e) {
-    if (!isTranslatorActive) return;
-    
-    if (e.target.classList.contains('clickable-word')) {
-        e.stopPropagation();
-        
-        const tooltip = document.getElementById('tooltip');
-        
-        // POPRAWKA: Jeśli dymek jest już otwarty (na jakimkolwiek słowie), zamknij go i wyczyść stan. Następne kliknięcie otworzy nowy.
-        if (tooltip.style.display === 'block') {
-            tooltip.style.display = 'none';
-            activeClickedWordElement = null;
-            return;
-        }
-        
-        activeClickedWordElement = e.target;
-        const tooltipText = document.getElementById('tooltipText');
-        const sentenceBtn = document.getElementById('translateSentenceBtn');
+function applySavedState(){
+  changeTheme(state.theme || "sepia", false);
+  const fs=parseFloat(state.fontSize)||20;
+  const lh=parseFloat(state.lineHeight)||1.9;
+  document.documentElement.style.setProperty("--font-size",fs+"px");
+  document.documentElement.style.setProperty("--line-height",lh);
+  fontSlider.value=fs; lineSlider.value=lh;
+  updateSliderLabels();
+  if(typeof state.scrollY==="number"){
+    setTimeout(()=>window.scrollTo({top:state.scrollY,behavior:"instant"}),150);
+  }
+}
 
-        tooltip.style.display = 'block';
-        tooltipText.innerText = 'Tłumaczenie słowa...';
-        sentenceBtn.style.display = 'block';
+function changeTheme(theme, close=true){
+  document.body.classList.remove("theme-dark","theme-gray","theme-light","theme-sepia");
+  document.body.classList.add("theme-"+theme);
+  if(close) document.getElementById("settingsPanel").classList.remove("open");
+  saveState();
+}
 
-        positionTooltip(activeClickedWordElement);
-
-        const cleanWord = e.target.innerText.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\"\'\?]/g,"");
-        const parentSentenceBlock = e.target.closest('.sentence-block');
-        currentSentenceText = parentSentenceBlock ? parentSentenceBlock.getAttribute('data-sentence') : "";
-
-        requestTranslation(cleanWord, tooltipText).then(() => {
-            positionTooltip(activeClickedWordElement);
-        });
-    }
+function toggleSettings(){
+  document.getElementById("settingsPanel").classList.toggle("open");
+}
+document.addEventListener("click",e=>{
+  const panel=document.getElementById("settingsPanel");
+  if(panel.classList.contains("open") && !panel.contains(e.target) && !e.target.closest("[onclick*='toggleSettings']"))
+    panel.classList.remove("open");
 });
 
-document.getElementById('translateSentenceBtn').addEventListener('click', function(e) {
-    e.stopPropagation();
-    if (!currentSentenceText) return;
-
-    const tooltipText = document.getElementById('tooltipText');
-    this.style.display = 'none';
-    tooltipText.innerText = 'Tłumaczenie całego zdania...';
-
-    positionTooltip(activeClickedWordElement);
-
-    requestTranslation(currentSentenceText, tooltipText).then(() => {
-        positionTooltip(activeClickedWordElement);
-    });
+function updateSliderLabels(){
+  fontValue.textContent=fontSlider.value+" px";
+  lineValue.textContent=Number(lineSlider.value).toFixed(1);
+}
+fontSlider.addEventListener("input",()=>{
+  document.documentElement.style.setProperty("--font-size",fontSlider.value+"px");
+  updateSliderLabels(); saveState();
+});
+lineSlider.addEventListener("input",()=>{
+  document.documentElement.style.setProperty("--line-height",lineSlider.value);
+  updateSliderLabels(); saveState();
 });
 
-document.addEventListener('click', function(e) {
-    const tooltip = document.getElementById('tooltip');
-    if (!tooltip.contains(e.target) && !e.target.classList.contains('clickable-word')) {
-        tooltip.style.display = 'none';
-        activeClickedWordElement = null;
-    }
+function toggleTranslatorMode(){
+  isTranslatorActive=!isTranslatorActive;
+  document.body.classList.toggle("translator-active",isTranslatorActive);
+  const btn=document.getElementById("translatorToggle");
+  if(btn) btn.textContent=isTranslatorActive ? "🌐 Tłumacz ✓" : "🌐 Tłumacz";
+  document.getElementById("tooltip").style.display="none";
+  activeClickedWordElement=null;
+}
+
+async function requestTranslation(text,target){
+  try{
+    const url=`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pl&dt=t&q=${encodeURIComponent(text)}`;
+    const response=await fetch(url);
+    const data=await response.json();
+    target.innerText=(data[0]||[]).map(x=>x[0]||"").join("") || "Brak tłumaczenia";
+  }catch(e){target.innerText="Błąd połączenia";}
+}
+
+function positionTooltip(el){
+  const tooltip=document.getElementById("tooltip");
+  if(!el || tooltip.style.display!=="block") return;
+  if(window.innerWidth<=800) return;
+  const rect=el.getBoundingClientRect();
+  const w=tooltip.offsetWidth;
+  let left=rect.left+window.scrollX+rect.width/2-w/2;
+  let top=rect.top+window.scrollY-tooltip.offsetHeight-12;
+  left=Math.max(10,Math.min(left,window.scrollX+window.innerWidth-w-10));
+  if(top<window.scrollY+10) top=rect.bottom+window.scrollY+12;
+  tooltip.style.left=left+"px"; tooltip.style.top=top+"px";
+}
+
+const bookContent=document.getElementById("bookContent");
+for(const p of bookContent.querySelectorAll("p")){
+  const sentences=p.innerText.split(/(?<=[.!?])\s+/);
+  p.innerHTML=sentences.map(sentence=>{
+    const words=sentence.split(/(\s+)/).map(chunk=>chunk.trim()===""?chunk:`<span class="clickable-word">${chunk}</span>`).join("");
+    return `<span class="sentence-block" data-sentence="${sentence.replace(/"/g,"&quot;")}">${words}</span>`;
+  }).join(" ");
+}
+
+bookContent.addEventListener("click",e=>{
+  if(!isTranslatorActive || !e.target.classList.contains("clickable-word")) return;
+  e.stopPropagation();
+  const tooltip=document.getElementById("tooltip");
+  if(tooltip.style.display==="block" && activeClickedWordElement===e.target){
+    tooltip.style.display="none"; activeClickedWordElement=null; return;
+  }
+  activeClickedWordElement=e.target;
+  e.target.classList.add("translated");
+  tooltip.style.display="block";
+  tooltipText.innerText="Tłumaczenie słowa...";
+  translateSentenceBtn.style.display="block";
+  const cleanWord=e.target.innerText.replace(/[.,/#!$%^&*;:{}=\-_`~()"'?]/g,"");
+  const sentence=e.target.closest(".sentence-block");
+  currentSentenceText=sentence?.getAttribute("data-sentence")||"";
+  positionTooltip(e.target);
+  requestTranslation(cleanWord,tooltipText).then(()=>positionTooltip(activeClickedWordElement));
 });
 
-// --- 4. ROZWIJALNE PANALE INTERFEJSU & MOBILNE MENU ---
-function toggleMobileOptions() {
-    const panel = document.getElementById('mobileOptionsPanel');
-    const btn = document.getElementById('mobileMenuBtn');
-    panel.classList.toggle('open');
-    btn.classList.toggle('active');
-}
-
-function toggleDropdown(dropdownId) {
-    document.getElementById(dropdownId).classList.toggle('open');
-}
-
-function changeTheme(themeName, dropdownId) {
-    document.body.classList.remove('theme-dark', 'theme-gray', 'theme-light', 'theme-sepia');
-    if (themeName !== 'dark') {
-        document.body.classList.add(`theme-${themeName}`);
-    }
-    
-    // Jeśli zmiana nastąpiła z dropdowna desktopowego, zamknij go
-    if(dropdownId !== 'mobile' && document.getElementById(dropdownId)) {
-        document.getElementById(dropdownId).classList.remove('open');
-    }
-}
-
-window.addEventListener('click', function(e) {
-    ['themeDropdown'].forEach(id => {
-        const dropdown = document.getElementById(id);
-        if (dropdown && !dropdown.contains(e.target)) {
-            dropdown.classList.remove('open');
-        }
-    });
+translateSentenceBtn.addEventListener("click",e=>{
+  e.stopPropagation();
+  if(!currentSentenceText)return;
+  translateSentenceBtn.style.display="none";
+  tooltipText.innerText="Tłumaczenie całego zdania...";
+  requestTranslation(currentSentenceText,tooltipText).then(()=>positionTooltip(activeClickedWordElement));
 });
 
-// --- 5. TRYB PEŁNOEKRANOWY ---
-function toggleFullscreen(buttonId) {
-    const btn = document.getElementById(buttonId);
-    
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().then(() => {
-            btn.classList.add('active');
-            btn.innerHTML = buttonId.includes('Mobile') ? `🔲 Zamknij full` : `🔲 <span>Zamknij pełny ekran</span>`;
-        }).catch(err => {
-            console.error(`Błąd Fullscreen: ${err.message}`);
-        });
-    } else {
-        document.exitFullscreen().then(() => {
-            btn.classList.remove('active');
-            btn.innerHTML = buttonId.includes('Mobile') ? `🔲 Pełny ekran` : `🔲 <span>Pełny ekran</span>`;
-        });
-    }
+document.addEventListener("click",e=>{
+  if(!document.getElementById("tooltip").contains(e.target) && !e.target.classList.contains("clickable-word")){
+    document.getElementById("tooltip").style.display="none";
+    activeClickedWordElement=null;
+  }
+});
+
+function jumpToPage(id){
+  const n=parseInt(document.getElementById(id).value)||1;
+  if(n<=1) window.scrollTo({top:0,behavior:"smooth"});
+  else document.getElementById("page-marker-"+n)?.scrollIntoView({behavior:"smooth",block:"center"});
 }
 
-// --- 6. NAWIGACJA PO STRONACH ---
-function jumpToPage(inputId) {
-    const pageNum = document.getElementById(inputId).value;
-    if (pageNum == 1) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-        const marker = document.getElementById(`page-marker-${pageNum}`);
-        if (marker) marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    
-    // Auto ukrywanie paska na telefonie po nawigacji do strony
-    if(inputId.includes('Mobile')) {
-        document.getElementById('mobileOptionsPanel').classList.remove('open');
-        document.getElementById('mobileMenuBtn').classList.remove('active');
-    }
+function updateProgress(){
+  const pages=[1,2,3].map(n=>document.getElementById("page-"+n)).filter(Boolean);
+  let current=1;
+  for(let i=0;i<pages.length;i++){
+    if(window.scrollY+window.innerHeight*.35 >= pages[i].offsetTop) current=i+1;
+  }
+  const max=Math.max(1,document.documentElement.scrollHeight-window.innerHeight);
+  const percent=Math.min(100,Math.max(0,(window.scrollY/max)*100));
+  progressBar.style.width=percent+"%";
+  progressLabel.textContent=Math.round(percent)+"% · str. "+current;
+  saveState();
+}
+window.addEventListener("scroll",updateProgress,{passive:true});
+window.addEventListener("resize",()=>{if(activeClickedWordElement)positionTooltip(activeClickedWordElement)});
+
+function toggleHiddenUI(){
+  document.body.classList.toggle("hidden-ui");
+  document.getElementById("settingsPanel").classList.remove("open");
+  document.getElementById("hiddenUIBtn")?.focus();
+  saveState();
+}
+function toggleFullscreen(){
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
 }
 
-// --- 7. WERYFIKACJA FIREBASE + SYNC INSTANCJI USERA ---
-(function() {
-    const script = document.createElement('script');
-    script.type = 'module';
-    script.innerHTML = `
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape") document.getElementById("tooltip").style.display="none";
+  if(e.key==="f" && !["INPUT","TEXTAREA"].includes(document.activeElement.tagName)) toggleFullscreen();
+});
 
-        const firebaseConfig = {
-          apiKey: "AIzaSyCNg0JnAgAH39y9D-8vhJKwQ10JYxx5Z0s",
-          authDomain: "cyberbook-83464.firebaseapp.com",
-          projectId: "cyberbook-83464",
-          storageBucket: "cyberbook-83464.firebasestorage.app",
-          messagingSenderId: "93288968489",
-          appId: "1:93288968489:web:61a2651a867903dff769c8"
-        };
+const fontSlider=document.getElementById("fontSlider");
+const lineSlider=document.getElementById("lineSlider");
+const fontValue=document.getElementById("fontValue");
+const lineValue=document.getElementById("lineValue");
+const progressBar=document.getElementById("progressBar");
+const progressLabel=document.getElementById("progressLabel");
+const tooltipText=document.getElementById("tooltipText");
+const translateSentenceBtn=document.getElementById("translateSentenceBtn");
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+applySavedState();
+updateProgress();
 
-        document.body.style.opacity = '0';
+window.addEventListener("beforeunload",saveState);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveState();});
 
-        onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.href = 'logowanie.html';
-            } else {
-                document.body.style.opacity = '1';
-                document.body.style.transition = 'opacity 0.4s ease';
-            }
-        });
-    `;
-    document.head.appendChild(script);
+// Firebase authentication, zachowane z oryginalnej wersji.
+(function(){
+ const script=document.createElement("script"); script.type="module";
+ script.innerHTML=`
+ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+ const firebaseConfig={
+   apiKey:"AIzaSyCNg0JnAgAH39y9D-8vhJKwQ10JYxx5Z0s",
+   authDomain:"cyberbook-83464.firebaseapp.com",
+   projectId:"cyberbook-83464",
+   storageBucket:"cyberbook-83464.firebasestorage.app",
+   messagingSenderId:"93288968489",
+   appId:"1:93288968489:web:61a2651a867903dff769c8"
+ };
+ const app=initializeApp(firebaseConfig); const auth=getAuth(app);
+ onAuthStateChanged(auth,user=>{if(!user) location.href="logowanie.html";});
+ `;
+ document.head.appendChild(script);
 })();
 </script>
 </body>
