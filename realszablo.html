@@ -1,1827 +1,1352 @@
+```html
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>CyberBooks Reader Pro</title>
+<title>CyberBooks Reader Pro</title>
 
-    <link rel="icon" type="image/png" href="favicon.png">
+<link rel="icon" type="image/png" href="favicon.png">
 
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <style>
+<style>
 
-        /* =========================================================
-           ZMIENNE / MOTYWY
-        ========================================================= */
+/* =========================================================
+   RESET
+========================================================= */
 
-        :root {
-            --bg-main: #0d0e12;
-            --bg-interface: rgba(22, 24, 33, 0.90);
-            --border-color: rgba(255,255,255,0.08);
+* {
+    box-sizing: border-box;
+}
 
-            --text-main: #e2e8f0;
-            --text-interface: #ffffff;
-            --text-muted: #9ca3af;
+html {
+    scroll-behavior: smooth;
+}
 
-            --accent: #9b6cff;
-            --accent-glow: rgba(155,108,255,0.25);
+body {
+    margin: 0;
+    min-height: 100vh;
 
-            --book-bg: #0d0e12;
-            --book-text: #e2e8f0;
+    font-family: "DM Sans", sans-serif;
 
-            --word-active: #dfe5ed;
+    background: var(--bg-main);
+    color: var(--text-main);
 
-            --tooltip-bg: #181922;
-            --tooltip-text: #ffffff;
+    transition:
+        background-color .3s ease,
+        color .3s ease;
+}
 
-            --reader-width: 820px;
-            --book-font-size: 20px;
-            --book-line-height: 1.9;
+button,
+input {
+    font-family: inherit;
+}
 
-            --header-height: 70px;
-        }
+button {
+    outline: none;
+}
 
 
-        /* DARK */
+/* =========================================================
+   MOTYWY
+========================================================= */
 
-        body.theme-dark {
-            --bg-main: #0d0e12;
-            --bg-interface: rgba(22,24,33,0.90);
-            --border-color: rgba(255,255,255,0.08);
+:root {
+    --bg-main: #f2ead5;
+    --interface: rgba(242,234,213,.94);
 
-            --text-main: #e2e8f0;
-            --text-interface: #ffffff;
-            --text-muted: #9ca3af;
+    --book-bg: #f2ead5;
+    --book-text: #30291f;
 
-            --book-bg: #0d0e12;
-            --book-text: #e2e8f0;
+    --text-main: #30291f;
+    --text-secondary: #746b5d;
 
-            --word-active: #dce2ea;
+    --border: rgba(58,48,34,.13);
 
-            --tooltip-bg: #181922;
-            --tooltip-text: #ffffff;
-        }
+    --hover: rgba(55,45,30,.055);
 
+    --accent: #675846;
+    --accent-soft: rgba(103,88,70,.12);
 
-        /* GRAY */
+    --tooltip-bg: #302a22;
+    --tooltip-text: #fffaf0;
 
-        body.theme-gray {
-            --bg-main: #2d3139;
-            --bg-interface: rgba(53,58,68,0.93);
-            --border-color: rgba(255,255,255,0.10);
+    --font-size: 20px;
+    --line-height: 1.9;
+}
 
-            --text-main: #e1e4ea;
-            --text-interface: #ffffff;
-            --text-muted: #a0a5b1;
 
-            --book-bg: #2d3139;
-            --book-text: #e1e4ea;
+body.theme-dark {
+    --bg-main: #101114;
+    --interface: rgba(16,17,20,.94);
 
-            --word-active: #dce0e7;
+    --book-bg: #101114;
+    --book-text: #dedbd4;
 
-            --tooltip-bg: #1d2027;
-            --tooltip-text: #ffffff;
-        }
+    --text-main: #dedbd4;
+    --text-secondary: #8e8c88;
 
+    --border: rgba(255,255,255,.09);
 
-        /* LIGHT */
+    --hover: rgba(255,255,255,.055);
 
-        body.theme-light {
-            --bg-main: #f8fafc;
-            --bg-interface: rgba(255,255,255,0.94);
-            --border-color: rgba(0,0,0,0.08);
+    --accent: #c8c1b5;
+    --accent-soft: rgba(255,255,255,.08);
 
-            --text-main: #1e293b;
-            --text-interface: #0f172a;
-            --text-muted: #64748b;
+    --tooltip-bg: #242529;
+    --tooltip-text: #ffffff;
+}
 
-            --book-bg: #f8fafc;
-            --book-text: #1e293b;
 
-            --word-active: #1c2b3d;
+body.theme-gray {
+    --bg-main: #34373c;
+    --interface: rgba(52,55,60,.95);
 
-            --tooltip-bg: #ffffff;
-            --tooltip-text: #172033;
-        }
+    --book-bg: #34373c;
+    --book-text: #e0e0de;
 
+    --text-main: #e0e0de;
+    --text-secondary: #a5a6a6;
 
-        /* SEPIA */
+    --border: rgba(255,255,255,.1);
 
-        body.theme-sepia {
-            --bg-main: #f4edd9;
-            --bg-interface: rgba(235,226,204,0.96);
-            --border-color: rgba(68,52,27,0.12);
+    --hover: rgba(255,255,255,.06);
 
-            --text-main: #2c2519;
-            --text-interface: #1e170c;
-            --text-muted: #7d725f;
+    --accent: #d1d1ce;
+    --accent-soft: rgba(255,255,255,.08);
 
-            --book-bg: #f4edd9;
-            --book-text: #2c2519;
+    --tooltip-bg: #242629;
+    --tooltip-text: #ffffff;
+}
 
-            --word-active: #292218;
 
-            --tooltip-bg: #332b20;
-            --tooltip-text: #fffaf0;
-        }
+body.theme-light {
+    --bg-main: #fafafa;
+    --interface: rgba(250,250,250,.96);
 
+    --book-bg: #fafafa;
+    --book-text: #242424;
 
-        /* =========================================================
-           RESET
-        ========================================================= */
+    --text-main: #242424;
+    --text-secondary: #777;
 
-        * {
-            box-sizing: border-box;
-        }
+    --border: rgba(0,0,0,.1);
 
-        html {
-            scroll-behavior: smooth;
-        }
+    --hover: rgba(0,0,0,.045);
 
-        body {
-            margin: 0;
-            min-height: 100vh;
+    --accent: #383838;
+    --accent-soft: rgba(0,0,0,.06);
 
-            background:
-                radial-gradient(
-                    circle at top,
-                    rgba(255,255,255,0.035),
-                    transparent 35%
-                ),
-                var(--bg-main);
+    --tooltip-bg: #242424;
+    --tooltip-text: #ffffff;
+}
 
-            color: var(--text-main);
 
-            font-family: 'Poppins', sans-serif;
+body.theme-sepia {
+    --bg-main: #f2ead5;
+    --interface: rgba(242,234,213,.96);
 
-            overflow-x: hidden;
+    --book-bg: #f2ead5;
+    --book-text: #30291f;
 
-            transition:
-                background-color .35s ease,
-                color .35s ease;
-        }
+    --text-main: #30291f;
+    --text-secondary: #746b5d;
 
+    --border: rgba(58,48,34,.13);
 
-        button,
-        input {
-            font-family: inherit;
-        }
+    --hover: rgba(55,45,30,.055);
 
+    --accent: #675846;
+    --accent-soft: rgba(103,88,70,.12);
 
-        button {
-            border: 0;
-        }
+    --tooltip-bg: #302a22;
+    --tooltip-text: #fffaf0;
+}
 
 
-        /* =========================================================
-           GÓRNY INTERFEJS
-        ========================================================= */
+/* =========================================================
+   HEADER
+========================================================= */
 
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+.reader-header {
+    position: fixed;
+    top: 0;
+    left: 0;
 
-            width: 100%;
+    width: 100%;
+    height: 68px;
 
-            background: var(--bg-interface);
+    z-index: 1000;
 
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
+    background: var(--interface);
 
-            border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border);
 
-            box-shadow:
-                0 8px 30px rgba(0,0,0,0.08);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
 
-            transition:
-                opacity .25s ease,
-                transform .3s ease;
-        }
+    transition:
+        transform .3s ease,
+        opacity .25s ease;
+}
 
 
-        .header-inner {
-            max-width: 1400px;
-            min-height: var(--header-height);
+.header-inner {
+    width: 100%;
+    max-width: 1450px;
 
-            margin: auto;
+    height: 100%;
 
-            padding: 10px 28px;
+    margin: auto;
 
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+    padding: 0 32px;
 
-            gap: 15px;
-        }
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 
 
-        .nav-left,
-        .nav-center,
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-        }
+/* =========================================================
+   LEWA CZĘŚĆ HEADERA
+========================================================= */
 
+.header-left {
+    display: flex;
+    align-items: center;
 
-        .nav-center {
-            flex: 1;
-            justify-content: center;
-        }
+    min-width: 230px;
+}
 
 
-        .nav-right {
-            justify-content: flex-end;
-        }
+.back-button {
+    display: flex;
+    align-items: center;
 
+    height: 34px;
 
-        /* =========================================================
-           PRZYCISKI
-        ========================================================= */
+    padding: 0 12px;
 
-        .btn {
-            min-height: 42px;
+    background: transparent;
 
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+    border: 1px solid transparent;
 
-            gap: 8px;
+    color: var(--text-secondary);
 
-            padding: 9px 15px;
+    text-decoration: none;
 
-            border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
 
-            background: rgba(255,255,255,0.045);
+    transition:
+        color .2s ease,
+        background .2s ease,
+        border-color .2s ease;
+}
 
-            border: 1px solid var(--border-color);
 
-            color: var(--text-interface);
+.back-button:hover {
+    color: var(--text-main);
 
-            cursor: pointer;
+    background: var(--hover);
 
-            font-size: 13px;
-            font-weight: 600;
+    border-color: var(--border);
+}
 
-            white-space: nowrap;
 
-            transition:
-                background .2s ease,
-                border-color .2s ease,
-                transform .2s ease,
-                box-shadow .2s ease;
-        }
+/* =========================================================
+   TYTUŁ
+========================================================= */
 
+.book-header-info {
+    position: absolute;
 
-        .btn:hover {
-            background: rgba(255,255,255,0.09);
-            transform: translateY(-1px);
-        }
+    left: 50%;
+    top: 50%;
 
+    transform: translate(-50%, -50%);
 
-        .btn:active {
-            transform: translateY(0);
-        }
+    text-align: center;
 
+    pointer-events: none;
+}
 
-        .btn.active {
-            background: rgba(155,108,255,0.12);
-            border-color: rgba(155,108,255,0.45);
-        }
 
+.book-name {
+    font-size: 13px;
 
-        .btn-primary {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: white;
+    font-weight: 600;
 
-            box-shadow:
-                0 7px 22px var(--accent-glow);
-        }
+    letter-spacing: .02em;
 
+    color: var(--text-main);
+}
 
-        .btn-primary:hover {
-            background: var(--accent);
-            filter: brightness(1.06);
-        }
 
+.book-chapter {
+    margin-top: 2px;
 
-        .return-btn {
-            text-decoration: none;
-        }
+    font-size: 10px;
 
+    color: var(--text-secondary);
 
-        /* =========================================================
-           LOGO / NAZWA
-        ========================================================= */
+    letter-spacing: .06em;
 
-        .reader-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+    text-transform: uppercase;
+}
 
-            margin-right: 8px;
-        }
 
+/* =========================================================
+   PRAWA CZĘŚĆ
+========================================================= */
 
-        .brand-icon {
-            width: 38px;
-            height: 38px;
+.header-right {
+    display: flex;
+    align-items: center;
 
-            border-radius: 11px;
+    gap: 4px;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+    min-width: 230px;
 
-            background:
-                linear-gradient(
-                    135deg,
-                    rgba(155,108,255,0.35),
-                    rgba(155,108,255,0.08)
-                );
+    justify-content: flex-end;
+}
 
-            border: 1px solid rgba(155,108,255,0.25);
 
-            font-size: 18px;
-        }
+.header-button {
+    height: 34px;
 
+    padding: 0 11px;
 
-        .brand-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.1;
-        }
+    background: transparent;
 
+    border: 1px solid transparent;
 
-        .brand-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-interface);
-        }
+    color: var(--text-secondary);
 
+    cursor: pointer;
 
-        .brand-subtitle {
-            font-size: 9px;
-            color: var(--text-muted);
-            margin-top: 3px;
-            letter-spacing: .5px;
-        }
+    font-size: 12px;
+    font-weight: 500;
 
+    transition:
+        color .2s ease,
+        background .2s ease,
+        border-color .2s ease;
+}
 
-        /* =========================================================
-           LICZNIK ONLINE
-        ========================================================= */
 
-        .online-counter {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+.header-button:hover {
+    color: var(--text-main);
 
-            padding: 7px 11px;
+    background: var(--hover);
 
-            border-radius: 30px;
+    border-color: var(--border);
+}
 
-            color: #2ecc71;
 
-            background: rgba(46,204,113,0.08);
+.header-button.active {
+    color: var(--text-main);
 
-            border: 1px solid rgba(46,204,113,0.15);
+    background: var(--accent-soft);
 
-            font-size: 11px;
-            font-weight: 700;
-        }
+    border-color: var(--border);
+}
 
 
-        .online-dot {
-            width: 7px;
-            height: 7px;
+/* =========================================================
+   POSTĘP
+========================================================= */
 
-            background: #2ecc71;
+.progress-area {
+    position: absolute;
 
-            border-radius: 50%;
+    bottom: -1px;
+    left: 0;
 
-            box-shadow:
-                0 0 0 4px rgba(46,204,113,0.08);
-        }
+    width: 100%;
+    height: 2px;
 
+    background: transparent;
+}
 
-        /* =========================================================
-           SKOK DO STRONY
-        ========================================================= */
 
-        .page-jumper {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+.progress-bar {
+    width: 0%;
+    height: 100%;
 
+    background: var(--accent);
 
-        .page-input {
-            width: 48px;
-            height: 38px;
+    transition: width .15s linear;
+}
 
-            border-radius: 9px;
 
-            border: 1px solid var(--border-color);
+.progress-percentage {
+    position: fixed;
 
-            background: rgba(0,0,0,0.08);
+    top: 79px;
+    right: 32px;
 
-            color: var(--text-interface);
+    z-index: 900;
 
-            text-align: center;
+    color: var(--text-secondary);
 
-            outline: none;
+    font-size: 10px;
 
-            font-size: 13px;
-            font-weight: 600;
-        }
+    letter-spacing: .04em;
 
+    pointer-events: none;
+}
 
-        .page-input:focus {
-            border-color: var(--accent);
-        }
 
+/* =========================================================
+   DROPDOWN
+========================================================= */
 
-        /* =========================================================
-           PROGRESS BAR
-        ========================================================= */
+.dropdown {
+    position: relative;
+}
 
-        .progress-container {
-            position: fixed;
 
-            top: 0;
-            left: 0;
+.dropdown-menu {
+    position: absolute;
 
-            width: 100%;
-            height: 4px;
+    top: 43px;
+    right: 0;
 
-            z-index: 3000;
+    width: 230px;
 
-            background: transparent;
+    padding: 7px;
 
-            pointer-events: none;
-        }
+    background: var(--interface);
 
+    border: 1px solid var(--border);
 
-        .progress-bar {
-            width: 0%;
+    box-shadow:
+        0 18px 50px rgba(0,0,0,.12);
 
-            height: 100%;
+    opacity: 0;
 
-            background:
-                linear-gradient(
-                    90deg,
-                    var(--accent),
-                    #c9a7ff
-                );
+    transform:
+        translateY(-5px);
 
-            box-shadow:
-                0 0 14px var(--accent-glow);
+    pointer-events: none;
 
-            transition: width .15s linear;
-        }
+    transition:
+        opacity .18s ease,
+        transform .18s ease;
+}
 
 
-        .progress-info {
-            position: fixed;
+.dropdown.open .dropdown-menu {
+    opacity: 1;
 
-            top: 12px;
-            left: 50%;
+    transform:
+        translateY(0);
 
-            transform: translateX(-50%);
+    pointer-events: auto;
+}
 
-            z-index: 2000;
 
-            padding: 5px 11px;
+.theme-option {
+    width: 100%;
 
-            border-radius: 20px;
+    display: flex;
+    align-items: center;
 
-            background: var(--bg-interface);
+    justify-content: space-between;
 
-            border: 1px solid var(--border-color);
+    padding: 10px 11px;
 
-            backdrop-filter: blur(12px);
+    background: transparent;
 
-            color: var(--text-interface);
+    border: 0;
 
-            font-size: 10px;
-            font-weight: 700;
+    color: var(--text-main);
 
-            opacity: .75;
+    cursor: pointer;
 
-            pointer-events: none;
-        }
+    font-size: 12px;
 
+    text-align: left;
+}
 
-        /* =========================================================
-           DROPDOWN MOTYWU
-        ========================================================= */
 
-        .dropdown-wrapper {
-            position: relative;
-        }
+.theme-option:hover {
+    background: var(--hover);
+}
 
 
-        .dropdown-menu {
-            position: absolute;
+.theme-indicator {
+    width: 14px;
+    height: 14px;
 
-            top: calc(100% + 10px);
-            right: 0;
+    border-radius: 50%;
 
-            width: 250px;
+    border: 1px solid var(--border);
+}
 
-            padding: 8px;
 
-            background: var(--bg-interface);
+/* =========================================================
+   PANEL USTAWIEŃ
+========================================================= */
 
-            border: 1px solid var(--border-color);
+.settings-panel {
+    position: fixed;
 
-            border-radius: 16px;
+    top: 79px;
+    right: 25px;
 
-            backdrop-filter: blur(18px);
+    z-index: 950;
 
-            box-shadow:
-                0 20px 50px rgba(0,0,0,0.18);
+    width: 300px;
 
-            opacity: 0;
+    padding: 20px;
 
-            transform:
-                translateY(-7px)
-                scale(.98);
+    background: var(--interface);
 
-            pointer-events: none;
+    border: 1px solid var(--border);
 
-            transition:
-                opacity .2s ease,
-                transform .2s ease;
-        }
+    box-shadow:
+        0 20px 60px rgba(0,0,0,.13);
 
+    opacity: 0;
 
-        .dropdown-wrapper.open .dropdown-menu {
-            opacity: 1;
+    transform:
+        translateY(-7px);
 
-            transform:
-                translateY(0)
-                scale(1);
+    pointer-events: none;
 
-            pointer-events: auto;
-        }
+    transition:
+        opacity .2s ease,
+        transform .2s ease;
+}
 
 
-        .theme-option {
-            width: 100%;
+.settings-panel.open {
+    opacity: 1;
 
-            display: flex;
-            align-items: center;
+    transform:
+        translateY(0);
 
-            gap: 10px;
+    pointer-events: auto;
+}
 
-            padding: 11px;
 
-            border-radius: 10px;
+.settings-heading {
+    margin-bottom: 20px;
 
-            color: var(--text-interface);
+    color: var(--text-main);
 
-            cursor: pointer;
+    font-size: 13px;
 
-            font-size: 13px;
-            font-weight: 500;
+    font-weight: 600;
+}
 
-            transition: background .2s ease;
-        }
 
+.setting {
+    padding: 15px 0;
 
-        .theme-option:hover {
-            background: rgba(127,127,127,0.10);
-        }
+    border-top: 1px solid var(--border);
+}
 
 
-        .theme-dot {
-            width: 18px;
-            height: 18px;
+.setting:first-of-type {
+    border-top: 0;
+}
 
-            margin-left: auto;
 
-            border-radius: 50%;
+.setting-top {
+    display: flex;
 
-            border: 2px solid rgba(255,255,255,0.25);
-        }
+    justify-content: space-between;
 
+    align-items: center;
 
-        .healthy-tag {
-            margin-left: auto;
+    margin-bottom: 10px;
+}
 
-            color: #2ecc71;
 
-            font-size: 10px;
-            font-weight: 700;
-        }
+.setting-name {
+    font-size: 11px;
 
+    color: var(--text-main);
 
-        /* =========================================================
-           PANEL OPCJI
-        ========================================================= */
+    font-weight: 500;
+}
 
-        .settings-panel {
-            position: fixed;
 
-            top: calc(var(--header-height) + 10px);
-            right: 20px;
+.setting-value {
+    font-size: 10px;
 
-            z-index: 950;
+    color: var(--text-secondary);
+}
 
-            width: 330px;
 
-            padding: 18px;
+/* =========================================================
+   RANGE
+========================================================= */
 
-            background: var(--bg-interface);
+.range {
+    width: 100%;
 
-            border: 1px solid var(--border-color);
+    height: 3px;
 
-            border-radius: 18px;
+    appearance: none;
+    -webkit-appearance: none;
 
-            backdrop-filter: blur(20px);
+    background: rgba(100,90,75,.22);
 
-            box-shadow:
-                0 20px 60px rgba(0,0,0,0.18);
+    outline: none;
+}
 
-            opacity: 0;
 
-            transform:
-                translateY(-10px)
-                scale(.98);
+.range::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
 
-            pointer-events: none;
+    width: 13px;
+    height: 13px;
 
-            transition:
-                opacity .2s ease,
-                transform .2s ease;
-        }
+    border-radius: 50%;
 
+    background: var(--accent);
 
-        .settings-panel.open {
-            opacity: 1;
+    cursor: pointer;
+}
 
-            transform:
-                translateY(0)
-                scale(1);
 
-            pointer-events: auto;
-        }
+.range::-moz-range-thumb {
+    width: 13px;
+    height: 13px;
 
+    border-radius: 50%;
 
-        .settings-title {
-            color: var(--text-interface);
+    background: var(--accent);
 
-            font-size: 14px;
-            font-weight: 700;
+    cursor: pointer;
 
-            margin-bottom: 15px;
-        }
+    border: 0;
+}
 
 
-        .settings-section {
-            padding: 13px 0;
+/* =========================================================
+   PAGE JUMPER
+========================================================= */
 
-            border-top: 1px solid var(--border-color);
-        }
+.page-navigation {
+    display: flex;
 
+    align-items: center;
 
-        .settings-section:first-of-type {
-            border-top: 0;
-        }
+    gap: 5px;
 
+    margin-left: 7px;
 
-        .setting-label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+    padding-left: 8px;
 
-            margin-bottom: 9px;
+    border-left: 1px solid var(--border);
+}
 
-            font-size: 12px;
-            font-weight: 600;
 
-            color: var(--text-interface);
-        }
+.page-input {
+    width: 42px;
+    height: 31px;
 
+    background: transparent;
 
-        .setting-value {
-            color: var(--text-muted);
+    border: 1px solid var(--border);
 
-            font-size: 11px;
-        }
+    color: var(--text-main);
 
+    text-align: center;
 
-        /* =========================================================
-           SUWAKI
-        ========================================================= */
+    outline: none;
 
-        .range {
-            width: 100%;
+    font-size: 11px;
+}
 
-            appearance: none;
-            -webkit-appearance: none;
 
-            height: 5px;
+.page-input:focus {
+    border-color: var(--accent);
+}
 
-            border-radius: 20px;
 
-            background: rgba(127,127,127,0.25);
+.go-button {
+    height: 31px;
 
-            outline: none;
-        }
+    padding: 0 9px;
 
+    background: transparent;
 
-        .range::-webkit-slider-thumb {
-            appearance: none;
-            -webkit-appearance: none;
+    border: 1px solid var(--border);
 
-            width: 17px;
-            height: 17px;
+    color: var(--text-secondary);
 
-            border-radius: 50%;
+    cursor: pointer;
 
-            background: var(--accent);
+    font-size: 10px;
+}
 
-            border: 2px solid var(--bg-interface);
 
-            box-shadow:
-                0 0 0 1px var(--accent);
+.go-button:hover {
+    background: var(--hover);
 
-            cursor: pointer;
-        }
+    color: var(--text-main);
+}
 
 
-        .range::-moz-range-thumb {
-            width: 17px;
-            height: 17px;
+/* =========================================================
+   CZYTNIK
+========================================================= */
 
-            border-radius: 50%;
+.reader {
+    width: 100%;
 
-            background: var(--accent);
+    max-width: 860px;
 
-            border: 2px solid var(--bg-interface);
+    min-height: 100vh;
 
-            cursor: pointer;
-        }
+    margin: 0 auto;
 
+    padding:
+        145px
+        50px
+        180px;
 
-        /* =========================================================
-           READER
-        ========================================================= */
+    background: var(--book-bg);
 
-        .reader-container {
-            width: 100%;
+    box-shadow:
+        0 0 70px rgba(0,0,0,.025);
+}
 
-            max-width: var(--reader-width);
 
-            margin: 0 auto;
+.book-content {
+    font-family: "Merriweather", serif;
 
-            padding:
-                100px 45px
-                180px;
+    font-size: var(--font-size);
 
-            min-height: 100vh;
+    line-height: var(--line-height);
 
-            background:
-                linear-gradient(
-                    180deg,
-                    rgba(255,255,255,0.012),
-                    transparent 20%
-                ),
-                var(--book-bg);
+    color: var(--book-text);
 
-            box-shadow:
-                0 0 80px rgba(0,0,0,0.035);
-        }
+    transition:
+        font-size .2s ease,
+        line-height .2s ease;
+}
 
 
-        .book-content {
-            font-family: 'Merriweather', serif;
+.book-content h2 {
+    margin:
+        0 0 48px;
 
-            font-size: var(--book-font-size);
+    font-family: "DM Sans", sans-serif;
 
-            line-height: var(--book-line-height);
+    font-size:
+        clamp(28px, 5vw, 40px);
 
-            color: var(--book-text);
+    line-height: 1.15;
 
-            text-align: justify;
+    font-weight: 600;
 
-            letter-spacing: .005em;
+    letter-spacing: -.035em;
 
-            transition:
-                font-size .2s ease,
-                line-height .2s ease,
-                color .3s ease;
-        }
+    color: var(--text-main);
+}
 
 
-        .book-content h2 {
-            font-family: 'Poppins', sans-serif;
+.book-content h2::after {
+    content: "";
 
-            font-size: clamp(1.8rem, 5vw, 2.5rem);
+    display: block;
 
-            line-height: 1.2;
+    width: 38px;
+    height: 2px;
 
-            margin:
-                0 0 2.5rem;
+    margin-top: 22px;
 
-            color: var(--text-interface);
+    background: var(--accent);
+}
 
-            letter-spacing: -.025em;
-        }
 
+.book-content p {
+    margin:
+        0 0 30px;
 
-        .book-content h2::after {
-            content: "";
+    text-align: justify;
 
-            display: block;
+    text-indent: 1.5em;
+}
 
-            width: 45px;
-            height: 3px;
 
-            margin-top: 17px;
+/* =========================================================
+   SŁOWA
+========================================================= */
 
-            border-radius: 20px;
+.clickable-word {
+    color: inherit;
 
-            background: var(--accent);
+    border-radius: 2px;
 
-            opacity: .75;
-        }
+    transition:
+        background-color .12s ease,
+        color .12s ease;
+}
 
 
-        .book-content p {
-            margin:
-                0 0 1.8rem;
+body.translator-active .clickable-word {
+    cursor: pointer;
+}
 
-            text-indent: 1.5em;
-        }
 
+body.translator-active .clickable-word:hover {
+    background: rgba(0,0,0,.045);
+}
 
-        /* =========================================================
-           KLIKALNE SŁOWA
-        ========================================================= */
 
-        .clickable-word {
-            color: inherit;
+/*
+   Kliknięte słowo nie robi się fioletowe.
+   Zmiana jest praktycznie niezauważalna.
+*/
 
-            cursor: default;
+body.translator-active .clickable-word:active {
+    color: color-mix(
+        in srgb,
+        var(--book-text) 88%,
+        black 12%
+    );
+}
 
-            border-radius: 3px;
 
-            transition:
-                background-color .12s ease,
-                color .12s ease;
-        }
+/* =========================================================
+   PODZIAŁ STRON
+========================================================= */
 
+.page-break {
+    display: flex;
 
-        /*
-           WAŻNE:
-           brak fioletowego koloru.
-           Tylko minimalnie ciemniejszy odcień.
-        */
+    align-items: center;
+    justify-content: center;
 
-        body.translator-active .clickable-word {
-            cursor: pointer;
+    margin: 80px 0;
 
-            color: var(--word-active);
-        }
+    position: relative;
+}
 
 
-        body.translator-active .clickable-word:hover {
-            background: rgba(0,0,0,0.045);
-        }
+.page-break::before {
+    content: "";
 
+    position: absolute;
 
-        .sentence-block {
-            display: inline;
-        }
+    left: 0;
+    right: 0;
 
+    height: 1px;
 
-        /* =========================================================
-           ODDZIELENIE STRON
-        ========================================================= */
+    background: var(--border);
+}
 
-        .page-break {
-            display: flex;
 
-            align-items: center;
-            justify-content: center;
+.page-num {
+    position: relative;
 
-            position: relative;
+    padding:
+        4px 14px;
 
-            margin: 5rem 0;
-        }
+    background: var(--book-bg);
 
+    color: var(--text-secondary);
 
-        .page-break::before {
-            content: "";
+    font-family: "DM Sans", sans-serif;
 
-            position: absolute;
+    font-size: 9px;
 
-            left: 0;
-            right: 0;
+    letter-spacing: .12em;
 
-            height: 1px;
+    text-transform: uppercase;
+}
 
-            background: var(--border-color);
-        }
 
+/* =========================================================
+   TOOLTIP
+========================================================= */
 
-        .page-num {
-            position: relative;
+#tooltip {
+    position: absolute;
 
-            padding:
-                5px 16px;
+    z-index: 5000;
 
-            border-radius: 20px;
+    display: none;
 
-            background: var(--book-bg);
+    width: max-content;
 
-            border: 1px solid var(--border-color);
+    max-width:
+        min(370px, calc(100vw - 30px));
 
-            color: var(--text-muted);
+    padding: 15px 16px;
 
-            font-family: 'Poppins', sans-serif;
+    background: var(--tooltip-bg);
 
-            font-size: 10px;
+    color: var(--tooltip-text);
 
-            font-weight: 600;
+    border-radius: 4px;
 
-            letter-spacing: 1px;
-        }
+    box-shadow:
+        0 15px 45px rgba(0,0,0,.25);
 
+    animation:
+        tooltipIn .15s ease;
+}
 
-        /* =========================================================
-           TOOLTIP TŁUMACZENIA
-        ========================================================= */
 
-        #tooltip {
-            position: absolute;
+@keyframes tooltipIn {
 
-            z-index: 5000;
+    from {
+        opacity: 0;
 
-            display: none;
+        transform:
+            translateY(4px);
+    }
 
-            width: max-content;
+    to {
+        opacity: 1;
 
-            max-width: min(360px, calc(100vw - 24px));
+        transform:
+            translateY(0);
+    }
+}
 
-            padding: 14px;
 
-            background: var(--tooltip-bg);
+.tooltip-translation {
+    font-family: "DM Sans", sans-serif;
 
-            color: var(--tooltip-text);
+    font-size: 13px;
 
-            border-radius: 14px;
+    line-height: 1.5;
 
-            border: 1px solid rgba(255,255,255,0.10);
+    text-align: center;
 
-            box-shadow:
-                0 18px 50px rgba(0,0,0,0.25);
+    word-break: break-word;
+}
 
-            font-family: 'Poppins', sans-serif;
 
-            animation:
-                tooltipIn .16s ease;
-        }
+.btn-sentence-tr {
+    display: block;
 
+    width: 100%;
 
-        @keyframes tooltipIn {
-            from {
-                opacity: 0;
-                transform: translateY(4px) scale(.97);
-            }
+    margin-top: 12px;
 
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
+    padding: 8px;
 
+    background: rgba(255,255,255,.08);
 
-        .tooltip-translation {
-            line-height: 1.5;
+    border: 1px solid rgba(255,255,255,.12);
 
-            text-align: center;
+    color: var(--tooltip-text);
 
-            font-size: 13px;
-            font-weight: 500;
+    cursor: pointer;
 
-            word-break: break-word;
-        }
+    font-size: 9px;
 
+    text-transform: uppercase;
 
-        .btn-sentence-tr {
-            width: 100%;
+    letter-spacing: .07em;
+}
 
-            margin-top: 11px;
 
-            padding: 8px 10px;
+.btn-sentence-tr:hover {
+    background: rgba(255,255,255,.14);
+}
 
-            border-radius: 9px;
 
-            background: rgba(255,255,255,0.07);
+/* =========================================================
+   HIDE UI
+========================================================= */
 
-            border: 1px solid rgba(255,255,255,0.10);
+body.ui-hidden .reader-header {
+    transform:
+        translateY(-100%);
 
-            color: var(--tooltip-text);
+    opacity: 0;
 
-            cursor: pointer;
+    pointer-events: none;
+}
 
-            font-size: 10px;
 
-            font-weight: 700;
+body.ui-hidden .progress-percentage {
+    opacity: 0;
+}
 
-            transition:
-                background .2s ease,
-                transform .2s ease;
-        }
 
+body.ui-hidden .settings-panel {
+    opacity: 0;
 
-        .btn-sentence-tr:hover {
-            background: rgba(255,255,255,0.13);
+    pointer-events: none;
+}
 
-            transform: translateY(-1px);
-        }
 
+.show-ui {
+    position: fixed;
 
-        /* =========================================================
-           UKRYWANIE INTERFEJSU
-        ========================================================= */
+    right: 20px;
+    bottom: 20px;
 
-        body.ui-hidden header,
-        body.ui-hidden .settings-panel,
-        body.ui-hidden .progress-info {
-            opacity: 0;
+    z-index: 4000;
 
-            transform: translateY(-100%);
+    display: none;
 
-            pointer-events: none;
-        }
+    height: 34px;
 
+    padding: 0 12px;
 
-        body.ui-hidden .progress-container {
-            opacity: 0;
-        }
+    background: var(--interface);
 
+    border: 1px solid var(--border);
 
-        .show-ui-btn {
-            position: fixed;
+    color: var(--text-secondary);
 
-            right: 18px;
-            bottom: 18px;
+    cursor: pointer;
 
-            z-index: 4000;
+    font-size: 10px;
 
-            display: none;
+    box-shadow:
+        0 8px 25px rgba(0,0,0,.1);
+}
 
-            align-items: center;
-            justify-content: center;
 
-            gap: 7px;
+body.ui-hidden .show-ui {
+    display: block;
+}
 
-            min-height: 40px;
 
-            padding: 9px 14px;
+body.ui-hidden .reader {
+    padding-top: 70px;
+}
 
-            border-radius: 12px;
 
-            background: var(--bg-interface);
+/* =========================================================
+   MOBILE OPTIONS
+========================================================= */
 
-            border: 1px solid var(--border-color);
+.mobile-options {
+    display: none;
+}
 
-            color: var(--text-interface);
 
-            backdrop-filter: blur(14px);
+/* =========================================================
+   MOBILE
+========================================================= */
 
-            box-shadow:
-                0 10px 30px rgba(0,0,0,0.15);
+@media (max-width: 900px) {
 
-            cursor: pointer;
+    .reader-header {
+        height: 60px;
+    }
 
-            font-size: 11px;
-            font-weight: 600;
-        }
 
+    .header-inner {
+        padding:
+            0 13px;
+    }
 
-        body.ui-hidden .show-ui-btn {
-            display: inline-flex;
-        }
 
+    .header-left {
+        min-width: auto;
+    }
 
-        /* =========================================================
-           MOBILE PANEL
-        ========================================================= */
 
-        .mobile-toggle {
-            display: none;
-        }
+    .header-right {
+        min-width: auto;
 
+        gap: 2px;
+    }
 
-        .mobile-options {
-            display: none;
-        }
 
+    .book-header-info {
+        position: static;
 
-        /* =========================================================
-           MOBILE
-        ========================================================= */
+        transform: none;
 
-        @media (max-width: 900px) {
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-            :root {
-                --header-height: 62px;
-            }
 
+    .book-name {
+        font-size: 12px;
+    }
 
-            .desktop-only {
-                display: none !important;
-            }
 
+    .book-chapter {
+        font-size: 8px;
+    }
 
-            header {
-                position: fixed;
-            }
 
+    .desktop-only {
+        display: none !important;
+    }
 
-            .header-inner {
-                min-height: var(--header-height);
 
-                padding:
-                    8px 12px;
-            }
+    .mobile-options {
+        display: block;
 
+        position: fixed;
 
-            .reader-brand {
-                display: none;
-            }
+        top: 60px;
+        left: 0;
+        right: 0;
 
+        z-index: 950;
 
-            .nav-left,
-            .nav-right {
-                flex: 1;
-            }
+        max-height:
+            calc(100vh - 60px);
 
+        overflow-y: auto;
 
-            .nav-left {
-                justify-content: flex-start;
-            }
+        padding: 18px;
 
+        background: var(--interface);
 
-            .nav-right {
-                justify-content: flex-end;
-            }
+        border-bottom:
+            1px solid var(--border);
 
+        box-shadow:
+            0 20px 50px rgba(0,0,0,.13);
 
-            .mobile-toggle {
-                display: inline-flex;
-            }
+        backdrop-filter: blur(18px);
 
+        transform:
+            translateY(-110%);
 
-            .btn {
-                min-height: 40px;
+        opacity: 0;
 
-                padding:
-                    8px 11px;
+        pointer-events: none;
 
-                border-radius: 11px;
+        transition:
+            transform .25s ease,
+            opacity .25s ease;
+    }
 
-                font-size: 11px;
-            }
 
+    .mobile-options.open {
+        transform:
+            translateY(0);
 
-            .reader-container {
-                padding:
-                    100px 20px
-                    130px;
-            }
+        opacity: 1;
 
+        pointer-events: auto;
+    }
 
-            .book-content {
-                font-size: var(--book-font-size);
-            }
 
+    .mobile-title {
+        margin-bottom: 14px;
 
-            .book-content p {
-                text-align: left;
+        font-size: 12px;
 
-                text-indent: 1.2em;
+        font-weight: 600;
+    }
 
-                margin-bottom: 1.6rem;
-            }
 
+    .mobile-section {
+        padding: 15px 0;
 
-            .progress-info {
-                top: 68px;
-            }
+        border-top:
+            1px solid var(--border);
+    }
 
 
-            /* PANEL TELEFONU */
+    .mobile-section:first-of-type {
+        border-top: 0;
+    }
 
-            .mobile-options {
-                position: fixed;
 
-                top: var(--header-height);
-                left: 0;
-                right: 0;
+    .mobile-row {
+        display: flex;
 
-                z-index: 900;
+        justify-content: space-between;
 
-                display: flex;
+        align-items: center;
 
-                flex-direction: column;
+        gap: 10px;
+    }
 
-                gap: 14px;
 
-                max-height:
-                    calc(100vh - var(--header-height));
+    .mobile-label {
+        font-size: 11px;
 
-                overflow-y: auto;
+        color: var(--text-main);
+    }
 
-                padding: 16px;
 
-                background: var(--bg-interface);
+    .mobile-theme-grid {
+        display: grid;
 
-                border-bottom:
-                    1px solid var(--border-color);
+        grid-template-columns:
+            1fr 1fr;
 
-                box-shadow:
-                    0 20px 40px rgba(0,0,0,0.16);
+        gap: 5px;
 
-                backdrop-filter: blur(20px);
+        margin-top: 10px;
+    }
 
-                transform: translateY(-120%);
 
-                opacity: 0;
+    .mobile-theme-grid .theme-option {
+        border:
+            1px solid var(--border);
+    }
 
-                pointer-events: none;
 
-                transition:
-                    transform .25s ease,
-                    opacity .25s ease;
-            }
+    .reader {
+        width: 100%;
 
+        padding:
+            105px
+            21px
+            120px;
 
-            .mobile-options.open {
-                transform: translateY(0);
+        box-shadow: none;
+    }
 
-                opacity: 1;
 
-                pointer-events: auto;
-            }
+    .book-content {
+        font-size: var(--font-size);
 
+        line-height: var(--line-height);
+    }
 
-            .mobile-option-row {
-                display: flex;
 
-                align-items: center;
+    .book-content h2 {
+        margin-bottom: 35px;
 
-                justify-content: space-between;
+        font-size:
+            clamp(26px, 8vw, 34px);
+    }
 
-                gap: 10px;
-            }
 
+    .book-content p {
+        text-align: left;
 
-            .mobile-option-label {
-                color: var(--text-interface);
+        text-indent: 1.1em;
 
-                font-size: 12px;
-                font-weight: 600;
-            }
+        margin-bottom: 27px;
+    }
 
 
-            .mobile-divider {
-                width: 100%;
-                height: 1px;
+    .progress-percentage {
+        top: 70px;
 
-                background: var(--border-color);
-            }
+        right: 14px;
 
+        font-size: 9px;
+    }
 
-            .mobile-theme-list {
-                display: grid;
 
-                grid-template-columns:
-                    1fr 1fr;
+    /*
+       TŁUMACZENIE NA TELEFONIE
+       ZAWSZE NA ŚRODKU EKRANU.
+    */
 
-                gap: 7px;
-            }
+    #tooltip {
+        position: fixed !important;
 
+        left: 50% !important;
+        top: 50% !important;
 
-            .mobile-theme-list .theme-option {
-                border: 1px solid var(--border-color);
+        transform:
+            translate(-50%, -50%) !important;
 
-                padding: 10px;
-            }
+        width:
+            calc(100vw - 32px);
 
+        max-width: 390px;
 
-            /* ================================================
-               MOBILE TOOLTIP
-               CENTRALNIE NA EKRANIE
-            ================================================= */
+        padding: 19px;
 
-            #tooltip {
-                position: fixed;
+        border-radius: 6px;
+    }
 
-                left: 50% !important;
-                top: 50% !important;
 
-                transform:
-                    translate(-50%, -50%) !important;
+    .tooltip-translation {
+        font-size: 14px;
+    }
 
-                width:
-                    min(360px, calc(100vw - 28px));
 
-                max-width:
-                    calc(100vw - 28px);
+    .btn-sentence-tr {
+        padding: 10px;
 
-                padding: 18px;
+        font-size: 9px;
+    }
 
-                border-radius: 17px;
 
-                box-shadow:
-                    0 25px 80px rgba(0,0,0,0.35);
-            }
+    .show-ui {
+        right: 12px;
+        bottom: 12px;
+    }
 
+}
 
-            .tooltip-translation {
-                font-size: 14px;
 
-                min-height: 24px;
-            }
+/* =========================================================
+   MAŁE TELEFONY
+========================================================= */
 
+@media (max-width: 430px) {
 
-            .btn-sentence-tr {
-                padding: 10px;
+    .mobile-theme-grid {
+        grid-template-columns: 1fr;
+    }
 
-                font-size: 10px;
-            }
 
+    .reader {
+        padding-left: 17px;
+        padding-right: 17px;
+    }
 
-            .show-ui-btn {
-                right: 12px;
-                bottom: 12px;
-            }
-        }
+}
 
-
-        /* =========================================================
-           BARDZO MAŁE TELEFONY
-        ========================================================= */
-
-        @media (max-width: 430px) {
-
-            .reader-container {
-                padding-left: 16px;
-                padding-right: 16px;
-            }
-
-
-            .mobile-theme-list {
-                grid-template-columns: 1fr;
-            }
-
-
-            .progress-info {
-                font-size: 9px;
-            }
-        }
-
-
-        /* =========================================================
-           PEŁNY EKRAN
-        ========================================================= */
-
-        :fullscreen {
-            background: var(--bg-main);
-        }
-
-
-        ::selection {
-            background: rgba(155,108,255,0.18);
-        }
-
-    </style>
+</style>
 </head>
 
 
 <body class="theme-sepia">
 
 
-    <!-- =========================================================
-         PASEK POSTĘPU
-    ========================================================= -->
+<!-- =========================================================
+     HEADER
+========================================================= -->
 
-    <div class="progress-container">
-        <div
-            class="progress-bar"
-            id="progressBar">
-        </div>
-    </div>
+<header class="reader-header" id="mainHeader">
 
+    <div class="header-inner">
 
-    <div
-        class="progress-info"
-        id="progressInfo">
-        0% przeczytane
-    </div>
 
+        <div class="header-left">
 
-    <!-- =========================================================
-         HEADER
-    ========================================================= -->
+            <a
+                href="index.html"
+                class="back-button">
 
-    <header id="mainHeader">
+                Powrót
 
-        <div class="header-inner">
+            </a>
 
 
-            <div class="nav-left">
-
-                <a
-                    href="index.html"
-                    class="btn return-btn">
-
-                    ←
-                    <span class="desktop-label">
-                        Powrót
-                    </span>
-
-                </a>
-
-
-                <div class="reader-brand">
-
-                    <div class="brand-icon">
-                        📖
-                    </div>
-
-                    <div class="brand-text">
-
-                        <span class="brand-title">
-                            CyberBooks
-                        </span>
-
-                        <span class="brand-subtitle">
-                            READER PRO
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <div class="online-counter desktop-only">
-
-                    <span class="online-dot"></span>
-
-                    Online:
-                    <span id="active-users-count">
-                        1
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <div class="nav-center desktop-only">
-
-                <div class="page-jumper">
-
-                    <input
-                        type="number"
-                        id="pageInput"
-                        class="page-input"
-                        min="1"
-                        max="3"
-                        value="1">
-
-                    <button
-                        class="btn"
-                        onclick="jumpToPage('pageInput')">
-
-                        Idź
-
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <div class="nav-right">
-
-
-                <div class="dropdown-wrapper desktop-only" id="themeDropdown">
-
-                    <button
-                        class="btn"
-                        onclick="toggleDropdown('themeDropdown')">
-
-                        🎨
-                        Styl
-
-                    </button>
-
-
-                    <div class="dropdown-menu">
-
-
-                        <div
-                            class="theme-option"
-                            onclick="changeTheme('dark','themeDropdown')">
-
-                            <span>
-                                Ciemny
-                            </span>
-
-                            <div
-                                class="theme-dot"
-                                style="background:#0d0e12">
-                            </div>
-
-                        </div>
-
-
-                        <div
-                            class="theme-option"
-                            onclick="changeTheme('gray','themeDropdown')">
-
-                            <span>
-                                Szary
-                            </span>
-
-                            <div
-                                class="theme-dot"
-                                style="background:#2d3139">
-                            </div>
-
-                        </div>
-
-
-                        <div
-                            class="theme-option"
-                            onclick="changeTheme('light','themeDropdown')">
-
-                            <span>
-                                Jasny
-                            </span>
-
-                            <div
-                                class="theme-dot"
-                                style="background:#f8fafc">
-                            </div>
-
-                        </div>
-
-
-                        <div
-                            class="theme-option"
-                            onclick="changeTheme('sepia','themeDropdown')">
-
-                            <span>
-                                Sepia
-                            </span>
-
-                            <span class="healthy-tag">
-                                Komfort
-                            </span>
-
-                            <div
-                                class="theme-dot"
-                                style="background:#f4edd9">
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <button
-                    class="btn desktop-only"
-                    id="fullscreenBtn"
-                    onclick="toggleFullscreen()">
-
-                    ⛶
-                    <span>
-                        Pełny ekran
-                    </span>
-
-                </button>
-
-
-                <button
-                    class="btn desktop-only"
-                    onclick="toggleSettings()">
-
-                    ⚙️
-                    Ustawienia
-
-                </button>
-
-
-                <button
-                    class="btn mobile-toggle"
-                    id="mobileMenuBtn"
-                    onclick="toggleMobileOptions()">
-
-                    ⚙️
-                    Opcje
-
-                </button>
-
-
-                <button
-                    class="btn"
-                    id="translatorToggle"
-                    onclick="toggleTranslatorMode()">
-
-                    🌐
-                    <span class="desktop-label">
-                        Tłumacz
-                    </span>
-
-                </button>
-
-
-                <button
-                    class="btn desktop-only"
-                    onclick="toggleUI()">
-
-                    ◉
-                    Ukryj
-
-                </button>
-
-            </div>
-
-        </div>
-
-    </header>
-
-
-    <!-- =========================================================
-         PANEL USTAWIEŃ DESKTOP
-    ========================================================= -->
-
-    <div
-        class="settings-panel"
-        id="settingsPanel">
-
-
-        <div class="settings-title">
-            Wygląd czytnika
-        </div>
-
-
-        <div class="settings-section">
-
-            <div class="setting-label">
-
-                <span>
-                    Wielkość tekstu
-                </span>
-
-                <span
-                    class="setting-value"
-                    id="fontSizeValue">
-
-                    20 px
-
-                </span>
-
-            </div>
-
-
-            <input
-                type="range"
-                class="range"
-                id="fontSizeRange"
-                min="16"
-                max="30"
-                step="1"
-                value="20">
-
-        </div>
-
-
-        <div class="settings-section">
-
-            <div class="setting-label">
-
-                <span>
-                    Interlinia
-                </span>
-
-                <span
-                    class="setting-value"
-                    id="lineHeightValue">
-
-                    1.90
-
-                </span>
-
-            </div>
-
-
-            <input
-                type="range"
-                class="range"
-                id="lineHeightRange"
-                min="1.4"
-                max="2.4"
-                step="0.05"
-                value="1.9">
-
-        </div>
-
-
-        <div class="settings-section">
-
-            <button
-                class="btn"
-                style="width:100%"
-                onclick="resetReaderSettings()">
-
-                ↻
-                Przywróć ustawienia
-
-            </button>
-
-        </div>
-
-
-        <div class="settings-section">
-
-            <button
-                class="btn"
-                style="width:100%"
-                onclick="toggleUI()">
-
-                ◉
-                Ukryj cały interfejs
-
-            </button>
-
-        </div>
-
-    </div>
-
-
-    <!-- =========================================================
-         MOBILE OPTIONS
-    ========================================================= -->
-
-    <div
-        class="mobile-options"
-        id="mobileOptionsPanel">
-
-
-        <div class="mobile-option-row">
-
-            <span class="mobile-option-label">
-                Postęp książki
-            </span>
-
-            <strong id="mobileProgress">
-                0%
-            </strong>
-
-        </div>
-
-
-        <div class="mobile-divider"></div>
-
-
-        <div class="mobile-option-row">
-
-            <span class="mobile-option-label">
-                Przejdź do strony
-            </span>
-
-
-            <div class="page-jumper">
+            <div class="page-navigation desktop-only">
 
                 <input
                     type="number"
-                    id="pageInputMobile"
+                    id="pageInput"
                     class="page-input"
                     min="1"
                     max="3"
                     value="1">
 
                 <button
-                    class="btn"
-                    onclick="jumpToPage('pageInputMobile')">
+                    class="go-button"
+                    onclick="jumpToPage('pageInput')">
 
                     Idź
 
@@ -1832,192 +1357,149 @@
         </div>
 
 
-        <div class="mobile-divider"></div>
+        <div class="book-header-info">
 
-
-        <div>
-
-            <div class="setting-label">
-
-                <span>
-                    Wielkość tekstu
-                </span>
-
-                <span
-                    class="setting-value"
-                    id="fontSizeValueMobile">
-
-                    20 px
-
-                </span>
-
+            <div class="book-name">
+                The New City
             </div>
 
-
-            <input
-                type="range"
-                class="range"
-                id="fontSizeRangeMobile"
-                min="16"
-                max="30"
-                step="1"
-                value="20">
+            <div class="book-chapter">
+                Chapter 1
+            </div>
 
         </div>
 
 
-        <div>
+        <div class="header-right">
 
-            <div class="setting-label">
-
-                <span>
-                    Interlinia
-                </span>
-
-                <span
-                    class="setting-value"
-                    id="lineHeightValueMobile">
-
-                    1.90
-
-                </span>
-
-            </div>
-
-
-            <input
-                type="range"
-                class="range"
-                id="lineHeightRangeMobile"
-                min="1.4"
-                max="2.4"
-                step="0.05"
-                value="1.9">
-
-        </div>
-
-
-        <div class="mobile-divider"></div>
-
-
-        <div>
 
             <div
-                class="mobile-option-label"
-                style="margin-bottom:9px">
+                class="dropdown desktop-only"
+                id="themeDropdown">
 
-                Styl ekranu
+                <button
+                    class="header-button"
+                    onclick="toggleDropdown('themeDropdown')">
+
+                    Widok
+
+                </button>
+
+
+                <div class="dropdown-menu">
+
+
+                    <button
+                        class="theme-option"
+                        onclick="changeTheme('sepia','themeDropdown')">
+
+                        <span>
+                            Sepia
+                        </span>
+
+                        <span
+                            class="theme-indicator"
+                            style="background:#f2ead5">
+                        </span>
+
+                    </button>
+
+
+                    <button
+                        class="theme-option"
+                        onclick="changeTheme('light','themeDropdown')">
+
+                        <span>
+                            Jasny
+                        </span>
+
+                        <span
+                            class="theme-indicator"
+                            style="background:#fafafa">
+                        </span>
+
+                    </button>
+
+
+                    <button
+                        class="theme-option"
+                        onclick="changeTheme('gray','themeDropdown')">
+
+                        <span>
+                            Szary
+                        </span>
+
+                        <span
+                            class="theme-indicator"
+                            style="background:#34373c">
+                        </span>
+
+                    </button>
+
+
+                    <button
+                        class="theme-option"
+                        onclick="changeTheme('dark','themeDropdown')">
+
+                        <span>
+                            Ciemny
+                        </span>
+
+                        <span
+                            class="theme-indicator"
+                            style="background:#101114">
+                        </span>
+
+                    </button>
+
+                </div>
 
             </div>
 
-
-            <div class="mobile-theme-list">
-
-
-                <div
-                    class="theme-option"
-                    onclick="changeTheme('dark','mobile')">
-
-                    <span>
-                        Ciemny
-                    </span>
-
-                    <div
-                        class="theme-dot"
-                        style="background:#0d0e12">
-                    </div>
-
-                </div>
-
-
-                <div
-                    class="theme-option"
-                    onclick="changeTheme('gray','mobile')">
-
-                    <span>
-                        Szary
-                    </span>
-
-                    <div
-                        class="theme-dot"
-                        style="background:#2d3139">
-                    </div>
-
-                </div>
-
-
-                <div
-                    class="theme-option"
-                    onclick="changeTheme('light','mobile')">
-
-                    <span>
-                        Jasny
-                    </span>
-
-                    <div
-                        class="theme-dot"
-                        style="background:#f8fafc">
-                    </div>
-
-                </div>
-
-
-                <div
-                    class="theme-option"
-                    onclick="changeTheme('sepia','mobile')">
-
-                    <span>
-                        Sepia
-                    </span>
-
-                    <div
-                        class="theme-dot"
-                        style="background:#f4edd9">
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="mobile-divider"></div>
-
-
-        <div class="mobile-option-row">
 
             <button
-                class="btn"
+                class="header-button desktop-only"
+                onclick="toggleSettings()">
+
+                Tekst
+
+            </button>
+
+
+            <button
+                class="header-button desktop-only"
                 onclick="toggleFullscreen()">
 
-                ⛶
                 Pełny ekran
 
             </button>
 
 
             <button
-                class="btn"
-                onclick="toggleUI()">
+                class="header-button mobile-only"
+                id="mobileMenuBtn"
+                onclick="toggleMobileOptions()">
 
-                ◉
-                Ukryj wszystko
+                Opcje
 
             </button>
 
-        </div>
-
-
-        <div>
 
             <button
-                class="btn"
-                style="width:100%"
-                onclick="resetReaderSettings()">
+                class="header-button"
+                id="translatorToggle"
+                onclick="toggleTranslatorMode()">
 
-                ↻
-                Przywróć ustawienia
+                Tłumacz
+
+            </button>
+
+
+            <button
+                class="header-button desktop-only"
+                onclick="toggleUI()">
+
+                Ukryj
 
             </button>
 
@@ -2026,1778 +1508,2100 @@
     </div>
 
 
-    <!-- =========================================================
-         CZYTNIK
-    ========================================================= -->
-
-    <main class="reader-container">
-
-        <article
-            class="book-content"
-            id="bookContent">
-
-
-            <!-- STRONA 1 -->
-
-            <div id="page-1">
-
-                <h2>
-                    Chapter 1: The New City
-                </h2>
-
-
-                <p>
-                    Tom opens his eyes. He is in a new city. The city is big and very beautiful. There are many tall buildings and green trees. The sun is hot in the blue sky. Tom is happy but he is also a little tired.
-                </p>
-
-
-                <p>
-                    He has a small blue suitcase in his hand. In the suitcase, there are three shirts, two pairs of pants, and a map. He looks at the map. "Where is my new house?" Tom asks himself. He walks down the street. The street is busy with people and cars.
-                </p>
-
-            </div>
-
-
-            <div class="page-break">
-
-                <span
-                    class="page-num"
-                    id="page-marker-2">
-
-                    Strona 2
-
-                </span>
-
-            </div>
-
-
-            <!-- STRONA 2 -->
-
-            <div id="page-2">
-
-                <p>
-                    Tom sees a small cafe. The cafe has small round tables outside. A woman is drinking coffee and reading a book. Tom walks to the cafe because he is thirsty. He wants a glass of cold water or a cup of hot tea.
-                </p>
-
-
-                <p>
-                    A waiter comes to Tom. The waiter is a young man with a nice smile. "Hello," the waiter says. "Can I help you?" Tom smiles back. "Yes, please. Can I have a glass of water and a chicken sandwich?" Tom says. He sits down at a table.
-                </p>
-
-            </div>
-
-
-            <div class="page-break">
-
-                <span
-                    class="page-num"
-                    id="page-marker-3">
-
-                    Strona 3
-
-                </span>
-
-            </div>
-
-
-            <!-- STRONA 3 -->
-
-            <div id="page-3">
-
-                <p>
-                    The waiter brings the water and the sandwich. The sandwich is very good, and the water is cold. Tom eats slowly and looks at the people. A girl is walking with a big brown dog. The dog is very friendly. It wags its tail.
-                </p>
-
-
-                <p>
-                    Tom takes his map again. He shows the map to the waiter. "Excuse me," Tom asks. "Where is Green Street?" The waiter looks at the map and points his finger. "Go straight, then turn left at the big supermarket. Green Street is there."
-                </p>
-
-            </div>
-
-
-        </article>
-
-    </main>
-
-
-    <!-- =========================================================
-         TOOLTIP
-    ========================================================= -->
-
-    <div id="tooltip">
+    <div class="progress-area">
 
         <div
-            class="tooltip-translation"
-            id="tooltipText">
+            class="progress-bar"
+            id="progressBar">
+        </div>
 
-            Ładowanie...
+    </div>
+
+</header>
+
+
+<!-- =========================================================
+     PROCENT POSTĘPU
+========================================================= -->
+
+<div
+    class="progress-percentage"
+    id="progressInfo">
+
+    0%
+
+</div>
+
+
+<!-- =========================================================
+     USTAWIENIA DESKTOP
+========================================================= -->
+
+<div
+    class="settings-panel"
+    id="settingsPanel">
+
+
+    <div class="settings-heading">
+        Ustawienia tekstu
+    </div>
+
+
+    <div class="setting">
+
+        <div class="setting-top">
+
+            <span class="setting-name">
+                Wielkość tekstu
+            </span>
+
+            <span
+                class="setting-value"
+                id="fontSizeValue">
+
+                20 px
+
+            </span>
 
         </div>
 
 
-        <button
-            class="btn-sentence-tr"
-            id="translateSentenceBtn">
+        <input
+            type="range"
+            class="range"
+            id="fontSizeRange"
+            min="16"
+            max="30"
+            step="1"
+            value="20">
 
-            Rozwiń do całego zdania 🔍
+    </div>
+
+
+    <div class="setting">
+
+        <div class="setting-top">
+
+            <span class="setting-name">
+                Interlinia
+            </span>
+
+            <span
+                class="setting-value"
+                id="lineHeightValue">
+
+                1.90
+
+            </span>
+
+        </div>
+
+
+        <input
+            type="range"
+            class="range"
+            id="lineHeightRange"
+            min="1.4"
+            max="2.4"
+            step=".05"
+            value="1.9">
+
+    </div>
+
+
+    <div class="setting">
+
+        <button
+            class="header-button"
+            style="width:100%"
+            onclick="resetReaderSettings()">
+
+            Przywróć ustawienia
 
         </button>
 
     </div>
 
 
-    <!-- =========================================================
-         PRZYCISK POWROTU DO INTERFEJSU
-    ========================================================= -->
+    <div class="setting">
+
+        <button
+            class="header-button"
+            style="width:100%"
+            onclick="toggleUI()">
+
+            Ukryj interfejs
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     MOBILE PANEL
+========================================================= -->
+
+<div
+    class="mobile-options"
+    id="mobileOptionsPanel">
+
+
+    <div class="mobile-title">
+        Ustawienia czytnika
+    </div>
+
+
+    <div class="mobile-section">
+
+        <div class="mobile-row">
+
+            <span class="mobile-label">
+                Postęp
+            </span>
+
+            <span
+                class="setting-value"
+                id="mobileProgress">
+
+                0%
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="mobile-section">
+
+        <div class="mobile-row">
+
+            <span class="mobile-label">
+                Przejdź do strony
+            </span>
+
+
+            <div class="page-navigation">
+
+                <input
+                    type="number"
+                    id="pageInputMobile"
+                    class="page-input"
+                    min="1"
+                    max="3"
+                    value="1">
+
+                <button
+                    class="go-button"
+                    onclick="jumpToPage('pageInputMobile')">
+
+                    Idź
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="mobile-section">
+
+        <div class="setting-top">
+
+            <span class="setting-name">
+                Wielkość tekstu
+            </span>
+
+            <span
+                class="setting-value"
+                id="fontSizeValueMobile">
+
+                20 px
+
+            </span>
+
+        </div>
+
+
+        <input
+            type="range"
+            class="range"
+            id="fontSizeRangeMobile"
+            min="16"
+            max="30"
+            step="1"
+            value="20">
+
+    </div>
+
+
+    <div class="mobile-section">
+
+        <div class="setting-top">
+
+            <span class="setting-name">
+                Interlinia
+            </span>
+
+            <span
+                class="setting-value"
+                id="lineHeightValueMobile">
+
+                1.90
+
+            </span>
+
+        </div>
+
+
+        <input
+            type="range"
+            class="range"
+            id="lineHeightRangeMobile"
+            min="1.4"
+            max="2.4"
+            step=".05"
+            value="1.9">
+
+    </div>
+
+
+    <div class="mobile-section">
+
+        <div class="mobile-label">
+            Motyw
+        </div>
+
+
+        <div class="mobile-theme-grid">
+
+
+            <button
+                class="theme-option"
+                onclick="changeTheme('sepia','mobile')">
+
+                Sepia
+
+            </button>
+
+
+            <button
+                class="theme-option"
+                onclick="changeTheme('light','mobile')">
+
+                Jasny
+
+            </button>
+
+
+            <button
+                class="theme-option"
+                onclick="changeTheme('gray','mobile')">
+
+                Szary
+
+            </button>
+
+
+            <button
+                class="theme-option"
+                onclick="changeTheme('dark','mobile')">
+
+                Ciemny
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="mobile-section">
+
+        <div class="mobile-row">
+
+            <button
+                class="header-button"
+                onclick="toggleFullscreen()">
+
+                Pełny ekran
+
+            </button>
+
+
+            <button
+                class="header-button"
+                onclick="toggleUI()">
+
+                Ukryj
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="mobile-section">
+
+        <button
+            class="header-button"
+            style="width:100%"
+            onclick="resetReaderSettings()">
+
+            Przywróć ustawienia
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     CZYTNIK
+========================================================= -->
+
+<main class="reader">
+
+    <article
+        class="book-content"
+        id="bookContent">
+
+
+        <div id="page-1">
+
+            <h2>
+                Chapter 1: The New City
+            </h2>
+
+
+            <p>
+                Tom opens his eyes. He is in a new city. The city is big and very beautiful. There are many tall buildings and green trees. The sun is hot in the blue sky. Tom is happy but he is also a little tired.
+            </p>
+
+
+            <p>
+                He has a small blue suitcase in his hand. In the suitcase, there are three shirts, two pairs of pants, and a map. He looks at the map. "Where is my new house?" Tom asks himself. He walks down the street. The street is busy with people and cars.
+            </p>
+
+        </div>
+
+
+        <div class="page-break">
+
+            <span
+                class="page-num"
+                id="page-marker-2">
+
+                Strona 2
+
+            </span>
+
+        </div>
+
+
+        <div id="page-2">
+
+            <p>
+                Tom sees a small cafe. The cafe has small round tables outside. A woman is drinking coffee and reading a book. Tom walks to the cafe because he is thirsty. He wants a glass of cold water or a cup of hot tea.
+            </p>
+
+
+            <p>
+                A waiter comes to Tom. The waiter is a young man with a nice smile. "Hello," the waiter says. "Can I help you?" Tom smiles back. "Yes, please. Can I have a glass of water and a chicken sandwich?" Tom says. He sits down at a table.
+            </p>
+
+        </div>
+
+
+        <div class="page-break">
+
+            <span
+                class="page-num"
+                id="page-marker-3">
+
+                Strona 3
+
+            </span>
+
+        </div>
+
+
+        <div id="page-3">
+
+            <p>
+                The waiter brings the water and the sandwich. The sandwich is very good, and the water is cold. Tom eats slowly and looks at the people. A girl is walking with a big brown dog. The dog is very friendly. It wags its tail.
+            </p>
+
+
+            <p>
+                Tom takes his map again. He shows the map to the waiter. "Excuse me," Tom asks. "Where is Green Street?" The waiter looks at the map and points his finger. "Go straight, then turn left at the big supermarket. Green Street is there."
+            </p>
+
+        </div>
+
+    </article>
+
+</main>
+
+
+<!-- =========================================================
+     TOOLTIP
+========================================================= -->
+
+<div id="tooltip">
+
+    <div
+        class="tooltip-translation"
+        id="tooltipText">
+
+        Ładowanie...
+
+    </div>
+
 
     <button
-        class="show-ui-btn"
-        id="showUIBtn"
-        onclick="showUI()">
+        class="btn-sentence-tr"
+        id="translateSentenceBtn">
 
-        ☰
-        Pokaż interfejs
+        Rozwiń do całego zdania
 
     </button>
 
-
-    <script>
-
-        /* =========================================================
-           KONFIGURACJA
-        ========================================================= */
-
-        const STORAGE_PREFIX = "cyberbooks_reader_";
-
-        const SETTINGS_KEY =
-            STORAGE_PREFIX + "settings";
-
-        const PROGRESS_KEY =
-            STORAGE_PREFIX + "progress";
-
-        const THEME_KEY =
-            STORAGE_PREFIX + "theme";
-
-        const UI_KEY =
-            STORAGE_PREFIX + "ui";
+</div>
 
 
-        let currentSentenceText = "";
+<!-- =========================================================
+     POKAŻ INTERFEJS
+========================================================= -->
 
-        let activeClickedWordElement = null;
+<button
+    class="show-ui"
+    id="showUIBtn"
+    onclick="showUI()">
 
-        let isTranslatorActive = false;
+    Pokaż interfejs
 
-        let saveTimer = null;
-
-
-        /* =========================================================
-           ELEMENTY
-        ========================================================= */
-
-        const bookContent =
-            document.getElementById("bookContent");
-
-        const tooltip =
-            document.getElementById("tooltip");
-
-        const tooltipText =
-            document.getElementById("tooltipText");
-
-        const sentenceBtn =
-            document.getElementById("translateSentenceBtn");
-
-        const progressBar =
-            document.getElementById("progressBar");
-
-        const progressInfo =
-            document.getElementById("progressInfo");
-
-        const mobileProgress =
-            document.getElementById("mobileProgress");
+</button>
 
 
-        /* =========================================================
-           PRZYGOTOWANIE TEKSTU
-        ========================================================= */
+<script>
 
-        function prepareBookText() {
+/* =========================================================
+   STORAGE
+========================================================= */
 
-            const paragraphs =
-                bookContent.getElementsByTagName("p");
+const STORAGE_PREFIX =
+    "cyberbooks_reader_";
+
+const SETTINGS_KEY =
+    STORAGE_PREFIX + "settings";
+
+const PROGRESS_KEY =
+    STORAGE_PREFIX + "progress";
+
+const THEME_KEY =
+    STORAGE_PREFIX + "theme";
+
+const UI_KEY =
+    STORAGE_PREFIX + "ui";
 
 
-            for (const p of paragraphs) {
+/* =========================================================
+   ZMIENNE
+========================================================= */
 
-                const originalText =
-                    p.innerText;
+let currentSentenceText = "";
+
+let activeClickedWordElement = null;
+
+let isTranslatorActive = false;
+
+let saveTimer = null;
 
 
-                const sentences =
-                    originalText.split(
-                        /(?<=[.!?])\s+/
-                    );
+/* =========================================================
+   ELEMENTY
+========================================================= */
+
+const bookContent =
+    document.getElementById("bookContent");
+
+const tooltip =
+    document.getElementById("tooltip");
+
+const tooltipText =
+    document.getElementById("tooltipText");
+
+const sentenceBtn =
+    document.getElementById("translateSentenceBtn");
+
+const progressBar =
+    document.getElementById("progressBar");
+
+const progressInfo =
+    document.getElementById("progressInfo");
+
+const mobileProgress =
+    document.getElementById("mobileProgress");
 
 
-                const parsed =
-                    sentences.map(sentence => {
+/* =========================================================
+   PRZYGOTOWANIE TEKSTU
+========================================================= */
 
-                        if (!sentence.trim()) {
-                            return "";
+function prepareBookText() {
+
+    const paragraphs =
+        bookContent.getElementsByTagName("p");
+
+
+    for (const p of paragraphs) {
+
+        const originalText =
+            p.innerText;
+
+
+        const sentences =
+            originalText.split(
+                /(?<=[.!?])\s+/
+            );
+
+
+        const parsed =
+            sentences.map(sentence => {
+
+                if (!sentence.trim()) {
+                    return "";
+                }
+
+
+                const escapedSentence =
+                    sentence
+                        .replace(/&/g, "&amp;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;");
+
+
+                const chunks =
+                    sentence.split(/(\s+)/);
+
+
+                const words =
+                    chunks.map(chunk => {
+
+                        if (!chunk.trim()) {
+                            return chunk;
                         }
 
 
-                        const escapedSentence =
-                            sentence
+                        const escaped =
+                            chunk
                                 .replace(/&/g, "&amp;")
-                                .replace(/"/g, "&quot;")
                                 .replace(/</g, "&lt;")
                                 .replace(/>/g, "&gt;");
 
 
-                        const chunks =
-                            sentence.split(/(\s+)/);
-
-
-                        const words =
-                            chunks.map(chunk => {
-
-                                if (
-                                    chunk.trim() === ""
-                                ) {
-                                    return chunk;
-                                }
-
-
-                                const escaped =
-                                    chunk
-                                        .replace(/&/g, "&amp;")
-                                        .replace(/</g, "&lt;")
-                                        .replace(/>/g, "&gt;");
-
-
-                                return `
-                                    <span
-                                        class="clickable-word">
-                                        ${escaped}
-                                    </span>
-                                `;
-
-                            }).join("");
-
-
                         return `
-                            <span
-                                class="sentence-block"
-                                data-sentence="${escapedSentence}">
-                                ${words}
+                            <span class="clickable-word">
+                                ${escaped}
                             </span>
                         `;
 
-                    });
+                    }).join("");
 
 
-                p.innerHTML =
-                    parsed.join(" ");
-            }
-        }
+                return `
+                    <span
+                        class="sentence-block"
+                        data-sentence="${escapedSentence}">
+                        ${words}
+                    </span>
+                `;
+
+            });
 
 
-        prepareBookText();
+        p.innerHTML =
+            parsed.join(" ");
+
+    }
+
+}
 
 
-        /* =========================================================
-           MOTYW
-        ========================================================= */
+prepareBookText();
 
-        function changeTheme(themeName, dropdownId) {
 
-            document.body.classList.remove(
-                "theme-dark",
-                "theme-gray",
-                "theme-light",
-                "theme-sepia"
+/* =========================================================
+   MOTYW
+========================================================= */
+
+function changeTheme(
+    themeName,
+    dropdownId
+) {
+
+    document.body.classList.remove(
+        "theme-dark",
+        "theme-gray",
+        "theme-light",
+        "theme-sepia"
+    );
+
+
+    document.body.classList.add(
+        "theme-" + themeName
+    );
+
+
+    localStorage.setItem(
+        THEME_KEY,
+        themeName
+    );
+
+
+    if (
+        dropdownId &&
+        dropdownId !== "mobile"
+    ) {
+
+        const dropdown =
+            document.getElementById(
+                dropdownId
             );
 
 
-            document.body.classList.add(
-                "theme-" + themeName
+        if (dropdown) {
+
+            dropdown.classList.remove(
+                "open"
             );
 
-
-            localStorage.setItem(
-                THEME_KEY,
-                themeName
-            );
-
-
-            if (
-                dropdownId &&
-                dropdownId !== "mobile"
-            ) {
-
-                const dropdown =
-                    document.getElementById(
-                        dropdownId
-                    );
-
-                if (dropdown) {
-                    dropdown.classList.remove(
-                        "open"
-                    );
-                }
-            }
-
-
-            saveReaderState();
         }
 
+    }
 
-        function loadTheme() {
-
-            const savedTheme =
-                localStorage.getItem(
-                    THEME_KEY
-                );
+}
 
 
-            /*
-               Jeśli użytkownik nigdy nie wybierał
-               motywu, automatycznie Sepia.
-            */
+function loadTheme() {
 
-            const theme =
-                savedTheme || "sepia";
-
-
-            changeTheme(
-                theme,
-                null
-            );
-        }
+    const savedTheme =
+        localStorage.getItem(
+            THEME_KEY
+        );
 
 
-        loadTheme();
+    changeTheme(
+        savedTheme || "sepia",
+        null
+    );
+
+}
 
 
-        /* =========================================================
-           USTAWIENIA CZYTNIKA
-        ========================================================= */
-
-        function loadSettings() {
-
-            const saved =
-                localStorage.getItem(
-                    SETTINGS_KEY
-                );
+loadTheme();
 
 
-            if (!saved) {
-                applySettings(
-                    20,
-                    1.9
-                );
+/* =========================================================
+   USTAWIENIA TEKSTU
+========================================================= */
 
-                return;
-            }
+function applySettings(
+    fontSize,
+    lineHeight
+) {
 
-
-            try {
-
-                const data =
-                    JSON.parse(saved);
-
-
-                applySettings(
-                    data.fontSize || 20,
-                    data.lineHeight || 1.9
-                );
-
-            } catch {
-
-                applySettings(
-                    20,
-                    1.9
-                );
-            }
-        }
+    document.documentElement.style.setProperty(
+        "--font-size",
+        fontSize + "px"
+    );
 
 
-        function applySettings(
+    document.documentElement.style.setProperty(
+        "--line-height",
+        lineHeight
+    );
+
+
+    document.getElementById(
+        "fontSizeRange"
+    ).value = fontSize;
+
+
+    document.getElementById(
+        "fontSizeRangeMobile"
+    ).value = fontSize;
+
+
+    document.getElementById(
+        "lineHeightRange"
+    ).value = lineHeight;
+
+
+    document.getElementById(
+        "lineHeightRangeMobile"
+    ).value = lineHeight;
+
+
+    document.getElementById(
+        "fontSizeValue"
+    ).textContent =
+        fontSize + " px";
+
+
+    document.getElementById(
+        "fontSizeValueMobile"
+    ).textContent =
+        fontSize + " px";
+
+
+    document.getElementById(
+        "lineHeightValue"
+    ).textContent =
+        Number(lineHeight).toFixed(2);
+
+
+    document.getElementById(
+        "lineHeightValueMobile"
+    ).textContent =
+        Number(lineHeight).toFixed(2);
+
+}
+
+
+function loadSettings() {
+
+    const saved =
+        localStorage.getItem(
+            SETTINGS_KEY
+        );
+
+
+    if (!saved) {
+
+        applySettings(
+            20,
+            1.9
+        );
+
+        return;
+    }
+
+
+    try {
+
+        const data =
+            JSON.parse(saved);
+
+
+        applySettings(
+            data.fontSize || 20,
+            data.lineHeight || 1.9
+        );
+
+    } catch {
+
+        applySettings(
+            20,
+            1.9
+        );
+
+    }
+
+}
+
+
+function saveSettings() {
+
+    const fontSize =
+        Number(
+            document.getElementById(
+                "fontSizeRange"
+            ).value
+        );
+
+
+    const lineHeight =
+        Number(
+            document.getElementById(
+                "lineHeightRange"
+            ).value
+        );
+
+
+    localStorage.setItem(
+        SETTINGS_KEY,
+        JSON.stringify({
             fontSize,
             lineHeight
+        })
+    );
+
+}
+
+
+function updateFontSize(value) {
+
+    const size =
+        Number(value);
+
+
+    document.documentElement.style.setProperty(
+        "--font-size",
+        size + "px"
+    );
+
+
+    document.getElementById(
+        "fontSizeRange"
+    ).value = size;
+
+
+    document.getElementById(
+        "fontSizeRangeMobile"
+    ).value = size;
+
+
+    document.getElementById(
+        "fontSizeValue"
+    ).textContent =
+        size + " px";
+
+
+    document.getElementById(
+        "fontSizeValueMobile"
+    ).textContent =
+        size + " px";
+
+
+    saveSettings();
+
+}
+
+
+function updateLineHeight(value) {
+
+    const height =
+        Number(value);
+
+
+    document.documentElement.style.setProperty(
+        "--line-height",
+        height
+    );
+
+
+    document.getElementById(
+        "lineHeightRange"
+    ).value = height;
+
+
+    document.getElementById(
+        "lineHeightRangeMobile"
+    ).value = height;
+
+
+    document.getElementById(
+        "lineHeightValue"
+    ).textContent =
+        height.toFixed(2);
+
+
+    document.getElementById(
+        "lineHeightValueMobile"
+    ).textContent =
+        height.toFixed(2);
+
+
+    saveSettings();
+
+}
+
+
+document.getElementById(
+    "fontSizeRange"
+).addEventListener(
+    "input",
+    e =>
+        updateFontSize(
+            e.target.value
+        )
+);
+
+
+document.getElementById(
+    "fontSizeRangeMobile"
+).addEventListener(
+    "input",
+    e =>
+        updateFontSize(
+            e.target.value
+        )
+);
+
+
+document.getElementById(
+    "lineHeightRange"
+).addEventListener(
+    "input",
+    e =>
+        updateLineHeight(
+            e.target.value
+        )
+);
+
+
+document.getElementById(
+    "lineHeightRangeMobile"
+).addEventListener(
+    "input",
+    e =>
+        updateLineHeight(
+            e.target.value
+        )
+);
+
+
+loadSettings();
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+function resetReaderSettings() {
+
+    localStorage.removeItem(
+        SETTINGS_KEY
+    );
+
+    localStorage.removeItem(
+        THEME_KEY
+    );
+
+
+    applySettings(
+        20,
+        1.9
+    );
+
+
+    changeTheme(
+        "sepia",
+        null
+    );
+
+}
+
+
+/* =========================================================
+   TŁUMACZ
+========================================================= */
+
+function toggleTranslatorMode() {
+
+    isTranslatorActive =
+        !isTranslatorActive;
+
+
+    const button =
+        document.getElementById(
+            "translatorToggle"
+        );
+
+
+    if (isTranslatorActive) {
+
+        document.body.classList.add(
+            "translator-active"
+        );
+
+
+        button.classList.add(
+            "active"
+        );
+
+    } else {
+
+        document.body.classList.remove(
+            "translator-active"
+        );
+
+
+        button.classList.remove(
+            "active"
+        );
+
+
+        closeTooltip();
+
+    }
+
+}
+
+
+/* =========================================================
+   TŁUMACZENIE
+========================================================= */
+
+async function requestTranslation(
+    text,
+    target
+) {
+
+    const url =
+        "https://translate.googleapis.com/" +
+        "translate_a/single" +
+        "?client=gtx" +
+        "&sl=en" +
+        "&tl=pl" +
+        "&dt=t" +
+        "&q=" +
+        encodeURIComponent(text);
+
+
+    try {
+
+        const response =
+            await fetch(url);
+
+
+        if (!response.ok) {
+            throw new Error();
+        }
+
+
+        const data =
+            await response.json();
+
+
+        let translation = "";
+
+
+        if (
+            data &&
+            data[0]
         ) {
 
-            document.documentElement.style.setProperty(
-                "--book-font-size",
-                fontSize + "px"
-            );
+            data[0].forEach(
+                part => {
 
+                    if (part[0]) {
 
-            document.documentElement.style.setProperty(
-                "--book-line-height",
-                lineHeight
-            );
-
-
-            document.getElementById(
-                "fontSizeRange"
-            ).value = fontSize;
-
-
-            document.getElementById(
-                "fontSizeRangeMobile"
-            ).value = fontSize;
-
-
-            document.getElementById(
-                "lineHeightRange"
-            ).value = lineHeight;
-
-
-            document.getElementById(
-                "lineHeightRangeMobile"
-            ).value = lineHeight;
-
-
-            document.getElementById(
-                "fontSizeValue"
-            ).textContent =
-                fontSize + " px";
-
-
-            document.getElementById(
-                "fontSizeValueMobile"
-            ).textContent =
-                fontSize + " px";
-
-
-            document.getElementById(
-                "lineHeightValue"
-            ).textContent =
-                Number(lineHeight).toFixed(2);
-
-
-            document.getElementById(
-                "lineHeightValueMobile"
-            ).textContent =
-                Number(lineHeight).toFixed(2);
-        }
-
-
-        function saveSettings() {
-
-            const fontSize =
-                Number(
-                    document.getElementById(
-                        "fontSizeRange"
-                    ).value
-                );
-
-
-            const lineHeight =
-                Number(
-                    document.getElementById(
-                        "lineHeightRange"
-                    ).value
-                );
-
-
-            localStorage.setItem(
-                SETTINGS_KEY,
-                JSON.stringify({
-                    fontSize,
-                    lineHeight
-                })
-            );
-
-
-            saveReaderState();
-        }
-
-
-        function updateFontSize(value) {
-
-            const size =
-                Number(value);
-
-
-            document.documentElement.style.setProperty(
-                "--book-font-size",
-                size + "px"
-            );
-
-
-            document.getElementById(
-                "fontSizeRange"
-            ).value = size;
-
-
-            document.getElementById(
-                "fontSizeRangeMobile"
-            ).value = size;
-
-
-            document.getElementById(
-                "fontSizeValue"
-            ).textContent =
-                size + " px";
-
-
-            document.getElementById(
-                "fontSizeValueMobile"
-            ).textContent =
-                size + " px";
-
-
-            saveSettings();
-
-
-            updateProgress();
-        }
-
-
-        function updateLineHeight(value) {
-
-            const height =
-                Number(value);
-
-
-            document.documentElement.style.setProperty(
-                "--book-line-height",
-                height
-            );
-
-
-            document.getElementById(
-                "lineHeightRange"
-            ).value = height;
-
-
-            document.getElementById(
-                "lineHeightRangeMobile"
-            ).value = height;
-
-
-            document.getElementById(
-                "lineHeightValue"
-            ).textContent =
-                height.toFixed(2);
-
-
-            document.getElementById(
-                "lineHeightValueMobile"
-            ).textContent =
-                height.toFixed(2);
-
-
-            saveSettings();
-
-
-            updateProgress();
-        }
-
-
-        document.getElementById(
-            "fontSizeRange"
-        ).addEventListener(
-            "input",
-            e => updateFontSize(e.target.value)
-        );
-
-
-        document.getElementById(
-            "fontSizeRangeMobile"
-        ).addEventListener(
-            "input",
-            e => updateFontSize(e.target.value)
-        );
-
-
-        document.getElementById(
-            "lineHeightRange"
-        ).addEventListener(
-            "input",
-            e => updateLineHeight(e.target.value)
-        );
-
-
-        document.getElementById(
-            "lineHeightRangeMobile"
-        ).addEventListener(
-            "input",
-            e => updateLineHeight(e.target.value)
-        );
-
-
-        loadSettings();
-
-
-        /* =========================================================
-           RESET USTAWIEŃ
-        ========================================================= */
-
-        function resetReaderSettings() {
-
-            localStorage.removeItem(
-                SETTINGS_KEY
-            );
-
-
-            localStorage.removeItem(
-                THEME_KEY
-            );
-
-
-            applySettings(
-                20,
-                1.9
-            );
-
-
-            changeTheme(
-                "sepia",
-                null
-            );
-
-
-            saveReaderState();
-        }
-
-
-        /* =========================================================
-           TRYB TŁUMACZA
-        ========================================================= */
-
-        function toggleTranslatorMode() {
-
-            isTranslatorActive =
-                !isTranslatorActive;
-
-
-            const btn =
-                document.getElementById(
-                    "translatorToggle"
-                );
-
-
-            if (isTranslatorActive) {
-
-                document.body.classList.add(
-                    "translator-active"
-                );
-
-
-                btn.classList.add(
-                    "active"
-                );
-
-            } else {
-
-                document.body.classList.remove(
-                    "translator-active"
-                );
-
-
-                btn.classList.remove(
-                    "active"
-                );
-
-
-                closeTooltip();
-            }
-        }
-
-
-        /* =========================================================
-           TŁUMACZENIE
-        ========================================================= */
-
-        async function requestTranslation(
-            textToTranslate,
-            targetElement
-        ) {
-
-            const url =
-                "https://translate.googleapis.com/" +
-                "translate_a/single" +
-                "?client=gtx" +
-                "&sl=en" +
-                "&tl=pl" +
-                "&dt=t" +
-                "&q=" +
-                encodeURIComponent(
-                    textToTranslate
-                );
-
-
-            try {
-
-                const response =
-                    await fetch(url);
-
-
-                if (!response.ok) {
-                    throw new Error(
-                        "Translation error"
-                    );
-                }
-
-
-                const data =
-                    await response.json();
-
-
-                let translation = "";
-
-
-                if (
-                    data &&
-                    data[0]
-                ) {
-
-                    data[0].forEach(
-                        part => {
-
-                            if (part[0]) {
-                                translation +=
-                                    part[0];
-                            }
-
-                        }
-                    );
-
-                }
-
-
-                targetElement.innerText =
-                    translation ||
-                    "Brak tłumaczenia";
-
-
-                return true;
-
-            } catch (error) {
-
-                targetElement.innerText =
-                    "Nie udało się pobrać tłumaczenia.";
-
-                return false;
-            }
-        }
-
-
-        /* =========================================================
-           POZYCJONOWANIE TOOLTIPA
-        ========================================================= */
-
-        function positionTooltip(element) {
-
-            if (
-                !element ||
-                tooltip.style.display !== "block"
-            ) {
-                return;
-            }
-
-
-            /*
-               TELEFON:
-               CSS ustawia tooltip dokładnie na środku.
-            */
-
-            if (
-                window.innerWidth <= 900
-            ) {
-
-                tooltip.style.left = "50%";
-
-                tooltip.style.top = "50%";
-
-                return;
-            }
-
-
-            /*
-               DESKTOP:
-               Tooltip nad klikniętym słowem.
-            */
-
-            const rect =
-                element.getBoundingClientRect();
-
-
-            const scrollTop =
-                window.scrollY;
-
-
-            const scrollLeft =
-                window.scrollX;
-
-
-            const tooltipWidth =
-                tooltip.offsetWidth;
-
-
-            const tooltipHeight =
-                tooltip.offsetHeight;
-
-
-            const padding = 12;
-
-
-            let left =
-                rect.left +
-                scrollLeft +
-                rect.width / 2 -
-                tooltipWidth / 2;
-
-
-            let top =
-                rect.top +
-                scrollTop -
-                tooltipHeight -
-                12;
-
-
-            if (
-                left < padding
-            ) {
-
-                left = padding;
-            }
-
-
-            if (
-                left +
-                tooltipWidth >
-                window.innerWidth +
-                scrollLeft -
-                padding
-            ) {
-
-                left =
-                    window.innerWidth +
-                    scrollLeft -
-                    tooltipWidth -
-                    padding;
-            }
-
-
-            if (
-                top < scrollTop + 8
-            ) {
-
-                top =
-                    rect.bottom +
-                    scrollTop +
-                    12;
-            }
-
-
-            tooltip.style.left =
-                left + "px";
-
-
-            tooltip.style.top =
-                top + "px";
-        }
-
-
-        /* =========================================================
-           KLIKANIE SŁÓW
-        ========================================================= */
-
-        bookContent.addEventListener(
-            "click",
-            function(e) {
-
-                if (
-                    !isTranslatorActive
-                ) {
-                    return;
-                }
-
-
-                const word =
-                    e.target.closest(
-                        ".clickable-word"
-                    );
-
-
-                if (!word) {
-                    return;
-                }
-
-
-                e.stopPropagation();
-
-
-                /*
-                   Drugie kliknięcie tego samego słowa
-                   zamyka tłumaczenie.
-                */
-
-                if (
-                    activeClickedWordElement === word &&
-                    tooltip.style.display === "block"
-                ) {
-
-                    closeTooltip();
-
-                    return;
-                }
-
-
-                activeClickedWordElement =
-                    word;
-
-
-                const cleanWord =
-                    word.innerText
-                        .replace(
-                            /[.,/#!$%^&*;:{}=\-_`~()"'?]/g,
-                            ""
-                        )
-                        .trim();
-
-
-                const parentSentence =
-                    word.closest(
-                        ".sentence-block"
-                    );
-
-
-                currentSentenceText =
-                    parentSentence
-                        ? parentSentence.getAttribute(
-                            "data-sentence"
-                        )
-                        : "";
-
-
-                tooltip.style.display =
-                    "block";
-
-
-                tooltipText.innerText =
-                    "Tłumaczenie słowa...";
-
-
-                sentenceBtn.style.display =
-                    currentSentenceText
-                        ? "block"
-                        : "none";
-
-
-                positionTooltip(word);
-
-
-                requestTranslation(
-                    cleanWord,
-                    tooltipText
-                ).then(() => {
-
-                    positionTooltip(word);
-
-                });
-
-            }
-        );
-
-
-        /* =========================================================
-           TŁUMACZENIE CAŁEGO ZDANIA
-        ========================================================= */
-
-        sentenceBtn.addEventListener(
-            "click",
-            function(e) {
-
-                e.stopPropagation();
-
-
-                if (
-                    !currentSentenceText
-                ) {
-                    return;
-                }
-
-
-                this.style.display =
-                    "none";
-
-
-                tooltipText.innerText =
-                    "Tłumaczenie całego zdania...";
-
-
-                positionTooltip(
-                    activeClickedWordElement
-                );
-
-
-                requestTranslation(
-                    currentSentenceText,
-                    tooltipText
-                ).then(() => {
-
-                    positionTooltip(
-                        activeClickedWordElement
-                    );
-
-                });
-
-            }
-        );
-
-
-        /* =========================================================
-           ZAMYKANIE TOOLTIPA
-        ========================================================= */
-
-        function closeTooltip() {
-
-            tooltip.style.display =
-                "none";
-
-
-            activeClickedWordElement =
-                null;
-
-
-            currentSentenceText =
-                "";
-        }
-
-
-        document.addEventListener(
-            "click",
-            function(e) {
-
-                if (
-                    !tooltip.contains(e.target) &&
-                    !e.target.closest(
-                        ".clickable-word"
-                    )
-                ) {
-
-                    closeTooltip();
-
-                }
-            }
-        );
-
-
-        window.addEventListener(
-            "resize",
-            function() {
-
-                if (
-                    activeClickedWordElement
-                ) {
-
-                    positionTooltip(
-                        activeClickedWordElement
-                    );
-
-                }
-
-            }
-        );
-
-
-        /* =========================================================
-           DROPDOWN
-        ========================================================= */
-
-        function toggleDropdown(id) {
-
-            const element =
-                document.getElementById(id);
-
-
-            element.classList.toggle(
-                "open"
-            );
-        }
-
-
-        window.addEventListener(
-            "click",
-            function(e) {
-
-                const dropdown =
-                    document.getElementById(
-                        "themeDropdown"
-                    );
-
-
-                if (
-                    dropdown &&
-                    !dropdown.contains(e.target)
-                ) {
-
-                    dropdown.classList.remove(
-                        "open"
-                    );
-                }
-
-            }
-        );
-
-
-        /* =========================================================
-           PANEL USTAWIEŃ
-        ========================================================= */
-
-        function toggleSettings() {
-
-            document.getElementById(
-                "settingsPanel"
-            ).classList.toggle(
-                "open"
-            );
-        }
-
-
-        document.addEventListener(
-            "click",
-            function(e) {
-
-                const panel =
-                    document.getElementById(
-                        "settingsPanel"
-                    );
-
-
-                if (
-                    !panel.contains(e.target) &&
-                    !e.target.closest(
-                        '[onclick="toggleSettings()"]'
-                    )
-                ) {
-
-                    panel.classList.remove(
-                        "open"
-                    );
-                }
-
-            }
-        );
-
-
-        /* =========================================================
-           MOBILE MENU
-        ========================================================= */
-
-        function toggleMobileOptions() {
-
-            const panel =
-                document.getElementById(
-                    "mobileOptionsPanel"
-                );
-
-
-            const btn =
-                document.getElementById(
-                    "mobileMenuBtn"
-                );
-
-
-            panel.classList.toggle(
-                "open"
-            );
-
-
-            btn.classList.toggle(
-                "active"
-            );
-        }
-
-
-        /* =========================================================
-           FULLSCREEN
-        ========================================================= */
-
-        async function toggleFullscreen() {
-
-            try {
-
-                if (
-                    !document.fullscreenElement
-                ) {
-
-                    await document.documentElement
-                        .requestFullscreen();
-
-                } else {
-
-                    await document.exitFullscreen();
-
-                }
-
-            } catch(error) {
-
-                console.error(
-                    "Fullscreen error:",
-                    error
-                );
-            }
-        }
-
-
-        document.addEventListener(
-            "fullscreenchange",
-            function() {
-
-                const buttons =
-                    document.querySelectorAll(
-                        "#fullscreenBtn"
-                    );
-
-
-                buttons.forEach(
-                    button => {
-
-                        if (
-                            document.fullscreenElement
-                        ) {
-
-                            button.innerHTML =
-                                "⛶ Zamknij pełny ekran";
-
-                        } else {
-
-                            button.innerHTML =
-                                "⛶ <span>Pełny ekran</span>";
-
-                        }
+                        translation +=
+                            part[0];
 
                     }
-                );
-
-            }
-        );
-
-
-        /* =========================================================
-           NAWIGACJA PO STRONACH
-        ========================================================= */
-
-        function jumpToPage(inputId) {
-
-            const input =
-                document.getElementById(
-                    inputId
-                );
-
-
-            let page =
-                Number(input.value);
-
-
-            if (
-                !Number.isFinite(page)
-            ) {
-                return;
-            }
-
-
-            page =
-                Math.max(
-                    1,
-                    Math.min(
-                        3,
-                        page
-                    )
-                );
-
-
-            input.value =
-                page;
-
-
-            if (
-                page === 1
-            ) {
-
-                window.scrollTo({
-                    top: 0,
-                    behavior: "smooth"
-                });
-
-            } else {
-
-                const marker =
-                    document.getElementById(
-                        "page-marker-" +
-                        page
-                    );
-
-
-                if (marker) {
-
-                    marker.scrollIntoView({
-                        behavior: "smooth",
-                        block: "center"
-                    });
 
                 }
+            );
 
-            }
-
-
-            closeMobileMenu();
         }
 
 
-        function closeMobileMenu() {
-
-            const panel =
-                document.getElementById(
-                    "mobileOptionsPanel"
-                );
+        target.innerText =
+            translation ||
+            "Brak tłumaczenia";
 
 
-            const btn =
-                document.getElementById(
-                    "mobileMenuBtn"
-                );
+    } catch {
 
+        target.innerText =
+            "Nie udało się pobrać tłumaczenia.";
+
+    }
+
+}
+
+
+/* =========================================================
+   TOOLTIP
+========================================================= */
+
+function positionTooltip(element) {
+
+    if (
+        !element ||
+        tooltip.style.display !== "block"
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        window.innerWidth <= 900
+    ) {
+
+        tooltip.style.left =
+            "50%";
+
+        tooltip.style.top =
+            "50%";
+
+        return;
+
+    }
+
+
+    const rect =
+        element.getBoundingClientRect();
+
+
+    const scrollTop =
+        window.scrollY;
+
+
+    const scrollLeft =
+        window.scrollX;
+
+
+    const tooltipWidth =
+        tooltip.offsetWidth;
+
+
+    const tooltipHeight =
+        tooltip.offsetHeight;
+
+
+    const padding =
+        12;
+
+
+    let left =
+        rect.left +
+        scrollLeft +
+        rect.width / 2 -
+        tooltipWidth / 2;
+
+
+    let top =
+        rect.top +
+        scrollTop -
+        tooltipHeight -
+        12;
+
+
+    if (
+        left < padding
+    ) {
+
+        left =
+            padding;
+
+    }
+
+
+    if (
+        left +
+        tooltipWidth >
+        window.innerWidth +
+        scrollLeft -
+        padding
+    ) {
+
+        left =
+            window.innerWidth +
+            scrollLeft -
+            tooltipWidth -
+            padding;
+
+    }
+
+
+    if (
+        top <
+        scrollTop + 8
+    ) {
+
+        top =
+            rect.bottom +
+            scrollTop +
+            12;
+
+    }
+
+
+    tooltip.style.left =
+        left + "px";
+
+
+    tooltip.style.top =
+        top + "px";
+
+}
+
+
+/* =========================================================
+   KLIKANIE SŁOWA
+========================================================= */
+
+bookContent.addEventListener(
+    "click",
+    function(e) {
+
+        if (
+            !isTranslatorActive
+        ) {
+
+            return;
+
+        }
+
+
+        const word =
+            e.target.closest(
+                ".clickable-word"
+            );
+
+
+        if (!word) {
+            return;
+        }
+
+
+        e.stopPropagation();
+
+
+        if (
+            activeClickedWordElement === word &&
+            tooltip.style.display === "block"
+        ) {
+
+            closeTooltip();
+
+            return;
+
+        }
+
+
+        activeClickedWordElement =
+            word;
+
+
+        const cleanWord =
+            word.innerText
+                .replace(
+                    /[.,/#!$%^&*;:{}=\-_`~()"'?]/g,
+                    ""
+                )
+                .trim();
+
+
+        const sentence =
+            word.closest(
+                ".sentence-block"
+            );
+
+
+        currentSentenceText =
+            sentence
+                ? sentence.getAttribute(
+                    "data-sentence"
+                )
+                : "";
+
+
+        tooltip.style.display =
+            "block";
+
+
+        tooltipText.innerText =
+            "Tłumaczenie...";
+
+
+        sentenceBtn.style.display =
+            currentSentenceText
+                ? "block"
+                : "none";
+
+
+        positionTooltip(
+            word
+        );
+
+
+        requestTranslation(
+            cleanWord,
+            tooltipText
+        ).then(() => {
+
+            positionTooltip(
+                word
+            );
+
+        });
+
+    }
+);
+
+
+/* =========================================================
+   TŁUMACZENIE ZDANIA
+========================================================= */
+
+sentenceBtn.addEventListener(
+    "click",
+    function(e) {
+
+        e.stopPropagation();
+
+
+        if (
+            !currentSentenceText
+        ) {
+
+            return;
+
+        }
+
+
+        this.style.display =
+            "none";
+
+
+        tooltipText.innerText =
+            "Tłumaczenie zdania...";
+
+
+        requestTranslation(
+            currentSentenceText,
+            tooltipText
+        ).then(() => {
+
+            positionTooltip(
+                activeClickedWordElement
+            );
+
+        });
+
+    }
+);
+
+
+/* =========================================================
+   ZAMYKANIE TOOLTIPA
+========================================================= */
+
+function closeTooltip() {
+
+    tooltip.style.display =
+        "none";
+
+
+    activeClickedWordElement =
+        null;
+
+
+    currentSentenceText =
+        "";
+
+}
+
+
+document.addEventListener(
+    "click",
+    function(e) {
+
+        if (
+            !tooltip.contains(e.target) &&
+            !e.target.closest(
+                ".clickable-word"
+            )
+        ) {
+
+            closeTooltip();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   DROPDOWN
+========================================================= */
+
+function toggleDropdown(id) {
+
+    const dropdown =
+        document.getElementById(id);
+
+
+    dropdown.classList.toggle(
+        "open"
+    );
+
+}
+
+
+document.addEventListener(
+    "click",
+    function(e) {
+
+        const dropdown =
+            document.getElementById(
+                "themeDropdown"
+            );
+
+
+        if (
+            dropdown &&
+            !dropdown.contains(e.target)
+        ) {
+
+            dropdown.classList.remove(
+                "open"
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+function toggleSettings() {
+
+    document.getElementById(
+        "settingsPanel"
+    ).classList.toggle(
+        "open"
+    );
+
+}
+
+
+document.addEventListener(
+    "click",
+    function(e) {
+
+        const panel =
+            document.getElementById(
+                "settingsPanel"
+            );
+
+
+        if (
+            panel &&
+            !panel.contains(e.target) &&
+            !e.target.closest(
+                '[onclick="toggleSettings()"]'
+            )
+        ) {
 
             panel.classList.remove(
                 "open"
             );
 
-
-            btn.classList.remove(
-                "active"
-            );
         }
 
-
-        /* =========================================================
-           PASEK POSTĘPU
-        ========================================================= */
-
-        function updateProgress() {
-
-            const scrollTop =
-                window.scrollY;
+    }
+);
 
 
-            const documentHeight =
-                document.documentElement.scrollHeight;
+/* =========================================================
+   MOBILE OPTIONS
+========================================================= */
 
+function toggleMobileOptions() {
 
-            const viewportHeight =
-                window.innerHeight;
-
-
-            const maxScroll =
-                Math.max(
-                    1,
-                    documentHeight -
-                    viewportHeight
-                );
-
-
-            let percent =
-                (scrollTop / maxScroll) *
-                100;
-
-
-            percent =
-                Math.max(
-                    0,
-                    Math.min(
-                        100,
-                        percent
-                    )
-                );
-
-
-            const rounded =
-                Math.round(percent);
-
-
-            progressBar.style.width =
-                rounded + "%";
-
-
-            progressInfo.textContent =
-                rounded +
-                "% przeczytane";
-
-
-            mobileProgress.textContent =
-                rounded +
-                "%";
-
-
-            saveProgress();
-        }
-
-
-        /* =========================================================
-           ZAPIS POZYCJI
-        ========================================================= */
-
-        function saveProgress() {
-
-            clearTimeout(
-                saveTimer
-            );
-
-
-            saveTimer =
-                setTimeout(
-                    function() {
-
-                        localStorage.setItem(
-                            PROGRESS_KEY,
-                            JSON.stringify({
-                                scrollY:
-                                    window.scrollY,
-                                percent:
-                                    Math.round(
-                                        (
-                                            window.scrollY /
-                                            Math.max(
-                                                1,
-                                                document.documentElement.scrollHeight -
-                                                window.innerHeight
-                                            )
-                                        ) *
-                                        100
-                                    )
-                            })
-                        );
-
-                    },
-                    150
-                );
-        }
-
-
-        function restoreProgress() {
-
-            const saved =
-                localStorage.getItem(
-                    PROGRESS_KEY
-                );
-
-
-            if (!saved) {
-                return;
-            }
-
-
-            try {
-
-                const data =
-                    JSON.parse(saved);
-
-
-                if (
-                    typeof data.scrollY !==
-                    "number"
-                ) {
-                    return;
-                }
-
-
-                /*
-                   Małe opóźnienie jest celowe.
-                   Przeglądarka musi najpierw wyrenderować
-                   tekst po zastosowaniu ustawień.
-                */
-
-                setTimeout(
-                    function() {
-
-                        window.scrollTo({
-                            top: data.scrollY,
-                            behavior: "instant"
-                        });
-
-
-                        setTimeout(
-                            updateProgress,
-                            100
-                        );
-
-                    },
-                    250
-                );
-
-            } catch(error) {
-
-                console.error(
-                    "Nie udało się przywrócić pozycji:",
-                    error
-                );
-            }
-        }
-
-
-        /* =========================================================
-           ZAPIS CAŁEGO STANU
-        ========================================================= */
-
-        function saveReaderState() {
-
-            saveProgress();
-
-        }
-
-
-        window.addEventListener(
-            "scroll",
-            function() {
-
-                updateProgress();
-
-            },
-            {
-                passive: true
-            }
+    const panel =
+        document.getElementById(
+            "mobileOptionsPanel"
         );
 
 
-        window.addEventListener(
-            "beforeunload",
-            function() {
-
-                /*
-                   Bez debounce przy zamykaniu strony.
-                */
-
-                const scrollY =
-                    window.scrollY;
+    const button =
+        document.getElementById(
+            "mobileMenuBtn"
+        );
 
 
-                const maxScroll =
-                    Math.max(
-                        1,
-                        document.documentElement.scrollHeight -
-                        window.innerHeight
-                    );
+    panel.classList.toggle(
+        "open"
+    );
 
 
-                const percent =
-                    Math.round(
-                        (
-                            scrollY /
-                            maxScroll
-                        ) *
-                        100
-                    );
+    button.classList.toggle(
+        "active"
+    );
 
+}
+
+
+/* =========================================================
+   FULLSCREEN
+========================================================= */
+
+async function toggleFullscreen() {
+
+    try {
+
+        if (
+            !document.fullscreenElement
+        ) {
+
+            await document.documentElement
+                .requestFullscreen();
+
+        } else {
+
+            await document.exitFullscreen();
+
+        }
+
+    } catch(error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   SKOK DO STRONY
+========================================================= */
+
+function jumpToPage(inputId) {
+
+    const input =
+        document.getElementById(
+            inputId
+        );
+
+
+    let page =
+        Number(input.value);
+
+
+    if (
+        !Number.isFinite(page)
+    ) {
+
+        return;
+
+    }
+
+
+    page =
+        Math.max(
+            1,
+            Math.min(
+                3,
+                page
+            )
+        );
+
+
+    input.value =
+        page;
+
+
+    if (
+        page === 1
+    ) {
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+    } else {
+
+        const marker =
+            document.getElementById(
+                "page-marker-" + page
+            );
+
+
+        if (marker) {
+
+            marker.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+
+        }
+
+    }
+
+
+    closeMobileOptions();
+
+}
+
+
+function closeMobileOptions() {
+
+    const panel =
+        document.getElementById(
+            "mobileOptionsPanel"
+        );
+
+
+    const button =
+        document.getElementById(
+            "mobileMenuBtn"
+        );
+
+
+    panel.classList.remove(
+        "open"
+    );
+
+
+    button.classList.remove(
+        "active"
+    );
+
+}
+
+
+/* =========================================================
+   POSTĘP
+========================================================= */
+
+function calculateProgress() {
+
+    const scrollTop =
+        window.scrollY;
+
+
+    const documentHeight =
+        document.documentElement.scrollHeight;
+
+
+    const viewportHeight =
+        window.innerHeight;
+
+
+    const maxScroll =
+        Math.max(
+            1,
+            documentHeight -
+            viewportHeight
+        );
+
+
+    let percentage =
+        (
+            scrollTop /
+            maxScroll
+        ) * 100;
+
+
+    percentage =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                percentage
+            )
+        );
+
+
+    return Math.round(
+        percentage
+    );
+
+}
+
+
+function updateProgress() {
+
+    const percentage =
+        calculateProgress();
+
+
+    progressBar.style.width =
+        percentage + "%";
+
+
+    progressInfo.innerText =
+        percentage + "%";
+
+
+    mobileProgress.innerText =
+        percentage + "%";
+
+
+    saveProgress();
+
+}
+
+
+/* =========================================================
+   ZAPIS POZYCJI
+========================================================= */
+
+function saveProgress() {
+
+    clearTimeout(
+        saveTimer
+    );
+
+
+    saveTimer =
+        setTimeout(
+            () => {
 
                 localStorage.setItem(
                     PROGRESS_KEY,
                     JSON.stringify({
-                        scrollY,
-                        percent
+                        scrollY:
+                            window.scrollY,
+
+                        percentage:
+                            calculateProgress()
                     })
                 );
 
-            }
+            },
+            120
+        );
+
+}
+
+
+function restoreProgress() {
+
+    const saved =
+        localStorage.getItem(
+            PROGRESS_KEY
         );
 
 
-        /* =========================================================
-           UKRYWANIE INTERFEJSU
-        ========================================================= */
-
-        function toggleUI() {
-
-            document.body.classList.toggle(
-                "ui-hidden"
-            );
+    if (!saved) {
+        return;
+    }
 
 
-            const hidden =
-                document.body.classList.contains(
-                    "ui-hidden"
-                );
+    try {
+
+        const data =
+            JSON.parse(saved);
 
 
-            localStorage.setItem(
-                UI_KEY,
-                hidden
-                    ? "hidden"
-                    : "visible"
-            );
+        if (
+            typeof data.scrollY !==
+            "number"
+        ) {
 
-
-            document.getElementById(
-                "settingsPanel"
-            ).classList.remove(
-                "open"
-            );
-
-
-            closeMobileMenu();
-        }
-
-
-        function showUI() {
-
-            document.body.classList.remove(
-                "ui-hidden"
-            );
-
-
-            localStorage.setItem(
-                UI_KEY,
-                "visible"
-            );
-        }
-
-
-        function loadUIState() {
-
-            const state =
-                localStorage.getItem(
-                    UI_KEY
-                );
-
-
-            if (
-                state === "hidden"
-            ) {
-
-                document.body.classList.add(
-                    "ui-hidden"
-                );
-
-            }
+            return;
 
         }
 
 
-        /* =========================================================
-           FIREBASE AUTH
-        ========================================================= */
+        setTimeout(
+            () => {
 
-        (function() {
+                window.scrollTo({
+                    top: data.scrollY,
+                    behavior: "instant"
+                });
 
-            const script =
-                document.createElement(
-                    "script"
+
+                setTimeout(
+                    updateProgress,
+                    150
                 );
 
-
-            script.type =
-                "module";
-
-
-            script.innerHTML = `
-
-                import {
-                    initializeApp
-                } from
-                "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-
-                import {
-                    getAuth,
-                    onAuthStateChanged
-                } from
-                "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+            },
+            300
+        );
 
 
-                const firebaseConfig = {
+    } catch(error) {
 
-                    apiKey:
-                    "AIzaSyCNg0JnAgAH39y9D-8vhJKwQ10JYxx5Z0s",
+        console.error(
+            "Błąd przywracania pozycji:",
+            error
+        );
 
-                    authDomain:
-                    "cyberbook-83464.firebaseapp.com",
+    }
 
-                    projectId:
-                    "cyberbook-83464",
-
-                    storageBucket:
-                    "cyberbook-83464.firebasestorage.app",
-
-                    messagingSenderId:
-                    "93288968489",
-
-                    appId:
-                    "1:93288968489:web:61a2651a867903dff769c8"
-
-                };
+}
 
 
-                const app =
-                    initializeApp(
-                        firebaseConfig
-                    );
+/* =========================================================
+   UKRYWANIE INTERFEJSU
+========================================================= */
+
+function toggleUI() {
+
+    document.body.classList.toggle(
+        "ui-hidden"
+    );
 
 
-                const auth =
-                    getAuth(app);
+    const hidden =
+        document.body.classList.contains(
+            "ui-hidden"
+        );
 
 
-                document.body.style.opacity =
-                    "0";
+    localStorage.setItem(
+        UI_KEY,
+        hidden
+            ? "hidden"
+            : "visible"
+    );
 
 
-                onAuthStateChanged(
-                    auth,
-                    user => {
-
-                        if (!user) {
-
-                            window.location.href =
-                                "logowanie.html";
-
-                        } else {
-
-                            document.body.style.opacity =
-                                "1";
-
-                            document.body.style.transition =
-                                "opacity .4s ease";
-
-                        }
-
-                    }
-                );
-
-            `;
+    document.getElementById(
+        "settingsPanel"
+    ).classList.remove(
+        "open"
+    );
 
 
-            document.head.appendChild(
-                script
+    closeMobileOptions();
+
+}
+
+
+function showUI() {
+
+    document.body.classList.remove(
+        "ui-hidden"
+    );
+
+
+    localStorage.setItem(
+        UI_KEY,
+        "visible"
+    );
+
+}
+
+
+function loadUIState() {
+
+    const state =
+        localStorage.getItem(
+            UI_KEY
+        );
+
+
+    if (
+        state === "hidden"
+    ) {
+
+        document.body.classList.add(
+            "ui-hidden"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   SCROLL
+========================================================= */
+
+window.addEventListener(
+    "scroll",
+    function() {
+
+        updateProgress();
+
+    },
+    {
+        passive: true
+    }
+);
+
+
+/* =========================================================
+   ZAMYKANIE STRONY
+========================================================= */
+
+window.addEventListener(
+    "beforeunload",
+    function() {
+
+        localStorage.setItem(
+            PROGRESS_KEY,
+            JSON.stringify({
+
+                scrollY:
+                    window.scrollY,
+
+                percentage:
+                    calculateProgress()
+
+            })
+        );
+
+    }
+);
+
+
+/* =========================================================
+   RESIZE
+========================================================= */
+
+window.addEventListener(
+    "resize",
+    function() {
+
+        if (
+            activeClickedWordElement
+        ) {
+
+            positionTooltip(
+                activeClickedWordElement
             );
 
-        })();
+        }
+
+    }
+);
 
 
-        /* =========================================================
-           START
-        ========================================================= */
+/* =========================================================
+   FIREBASE AUTH
+========================================================= */
 
-        window.addEventListener(
-            "load",
-            function() {
+(function() {
 
-                loadUIState();
+    const script =
+        document.createElement(
+            "script"
+        );
 
-                updateProgress();
 
-                restoreProgress();
+    script.type =
+        "module";
+
+
+    script.innerHTML = `
+
+        import {
+            initializeApp
+        } from
+        "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
+
+        import {
+            getAuth,
+            onAuthStateChanged
+        } from
+        "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+
+        const firebaseConfig = {
+
+            apiKey:
+            "AIzaSyCNg0JnAgAH39y9D-8vhJKwQ10JYxx5Z0s",
+
+            authDomain:
+            "cyberbook-83464.firebaseapp.com",
+
+            projectId:
+            "cyberbook-83464",
+
+            storageBucket:
+            "cyberbook-83464.firebasestorage.app",
+
+            messagingSenderId:
+            "93288968489",
+
+            appId:
+            "1:93288968489:web:61a2651a867903dff769c8"
+
+        };
+
+
+        const app =
+            initializeApp(
+                firebaseConfig
+            );
+
+
+        const auth =
+            getAuth(app);
+
+
+        document.body.style.opacity =
+            "0";
+
+
+        onAuthStateChanged(
+            auth,
+            user => {
+
+                if (!user) {
+
+                    window.location.href =
+                        "logowanie.html";
+
+                } else {
+
+                    document.body.style.opacity =
+                        "1";
+
+                    document.body.style.transition =
+                        "opacity .35s ease";
+
+
+                    /*
+                       Dopiero po potwierdzeniu
+                       użytkownika przywracamy
+                       pozycję książki.
+                    */
+
+                    restoreProgress();
+
+                }
 
             }
         );
 
+    `;
 
-    </script>
+
+    document.head.appendChild(
+        script
+    );
+
+})();
+
+
+/* =========================================================
+   START
+========================================================= */
+
+window.addEventListener(
+    "load",
+    function() {
+
+        loadUIState();
+
+        updateProgress();
+
+    }
+);
+
+</script>
 
 </body>
 </html>
+```
